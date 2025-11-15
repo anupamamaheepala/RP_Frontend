@@ -222,105 +222,127 @@
 //   }
 // }
 
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
+// import 'config.dart'; // Add this import
+//
+// void main() {
+//   runApp(MyApp());
+// }
+//
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: MyHomePage(),
+//     );
+//   }
+// }
+//
+// class MyHomePage extends StatefulWidget {
+//   @override
+//   _MyHomePageState createState() => _MyHomePageState();
+// }
+//
+// class _MyHomePageState extends State<MyHomePage> {
+//   final _usernameController = TextEditingController();
+//   final _emailController = TextEditingController();
+//   String _response = 'Enter data and submit';
+//
+//   Future<void> sendUserData() async {
+//     // Use Config.baseUrl instead of hardcoded IP
+//     final url = Uri.parse('${Config.baseUrl}/data/add-user');
+//     print('Sending to: $url');
+//     print('Data: {"username": "${_usernameController.text}", "email": "${_emailController.text}"}');
+//     try {
+//       final response = await http.post(
+//         url,
+//         headers: {'Content-Type': 'application/json'},
+//         body: jsonEncode({
+//           'username': _usernameController.text,
+//           'email': _emailController.text,
+//         }),
+//       );
+//       print('Response status: ${response.statusCode}');
+//       print('Response body: ${response.body}');
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         setState(() {
+//           _response = data['message'] ?? 'Data saved (no message)';
+//         });
+//       } else {
+//         setState(() {
+//           _response = 'Failed: ${response.statusCode} - ${response.body}';
+//         });
+//       }
+//     } catch (e) {
+//       print('Error: $e');
+//       setState(() {
+//         _response = 'Error: $e';
+//       });
+//     }
+//   }
+//
+//   @override
+//   void dispose() {
+//     _usernameController.dispose();
+//     _emailController.dispose();
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('RP Frontend'),
+//       ),
+//       body: Padding(
+//         padding: EdgeInsets.all(16.0),
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             TextField(
+//               controller: _usernameController,
+//               decoration: InputDecoration(labelText: 'Username'),
+//             ),
+//             SizedBox(height: 20),
+//             TextField(
+//               controller: _emailController,
+//               decoration: InputDecoration(labelText: 'Email'),
+//             ),
+//             SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: sendUserData,
+//               child: Text('Submit'),
+//             ),
+//             SizedBox(height: 20),
+//             Text(_response),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'config.dart'; // Add this import
+import 'pages/home_page.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  String _response = 'Enter data and submit';
-
-  Future<void> sendUserData() async {
-    // Use Config.baseUrl instead of hardcoded IP
-    final url = Uri.parse('${Config.baseUrl}/data/add-user');
-    print('Sending to: $url');
-    print('Data: {"username": "${_usernameController.text}", "email": "${_emailController.text}"}');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': _usernameController.text,
-          'email': _emailController.text,
-        }),
-      );
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _response = data['message'] ?? 'Data saved (no message)';
-        });
-      } else {
-        setState(() {
-          _response = 'Failed: ${response.statusCode} - ${response.body}';
-        });
-      }
-    } catch (e) {
-      print('Error: $e');
-      setState(() {
-        _response = 'Error: $e';
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('RP Frontend'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: sendUserData,
-              child: Text('Submit'),
-            ),
-            SizedBox(height: 20),
-            Text(_response),
-          ],
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+      title: 'Learning Disorder Checker',
+      theme: ThemeData(useMaterial3: true),
+      home: const HomePage(),
     );
   }
 }
