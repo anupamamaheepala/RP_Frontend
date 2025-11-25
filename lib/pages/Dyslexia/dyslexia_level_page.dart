@@ -110,11 +110,6 @@ class DyslexiaLevelPage extends StatelessWidget {
               level: level["level"],
               colors: level["colors"],
               onTap: () {
-                // Later we navigate to actual Dyslexia test page
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                    Text("Selected Level ${level["level"]} for Grade $grade"),
                   ),
                 );
               },
