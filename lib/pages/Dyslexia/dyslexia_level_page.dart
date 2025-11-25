@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dyslexia_read_page.dart';
-
 
 class DyslexiaLevelPage extends StatelessWidget {
   final int grade;
@@ -112,17 +110,9 @@ class DyslexiaLevelPage extends StatelessWidget {
               level: level["level"],
               colors: level["colors"],
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DyslexiaReadPage(
-                      grade: grade,                    // grade passed to this page
-                      level: level["level"],           // level from list
-                    ),
                   ),
                 );
               },
-
             );
           }).toList(),
         ),
