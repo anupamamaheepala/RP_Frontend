@@ -2,5 +2,6 @@
 //   static const baseUrl = "https://rp-backend-production-290c.up.railway.app";
 // }
 class Config {
-  static const baseUrl = "https://rp-backend-production-290c.up.railway.app";
+  //static const baseUrl = "https://rp-backend-production-290c.up.railway.app";
+    static const String baseUrl = 'http://10.0.2.2:8000';
 }
