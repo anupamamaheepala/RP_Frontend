@@ -1,40 +1,42 @@
 import 'package:flutter/material.dart';
+import 'dyslexia_read_page.dart';
 
 class DyslexiaLevelPage extends StatelessWidget {
   final int grade;
 
   const DyslexiaLevelPage({super.key, required this.grade});
 
-  // You can customize levels per grade here later
+  // Levels Definition
   List<Map<String, dynamic>> getLevels() {
     return [
       {
         "level": 1,
         "titleSi": "මූලික වචන",
         "titleEn": "Basic Words",
-        "colors": [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
+        "colors": [Color(0xFF4facfe), Color(0xFF00f2fe)],
       },
       {
         "level": 2,
         "titleSi": "සරල වාක්‍ය",
         "titleEn": "Simple Sentences",
-        "colors": [const Color(0xFF43e97b), const Color(0xFF38f9d7)],
+        "colors": [Color(0xFF43e97b), Color(0xFF38f9d7)],
       },
       {
         "level": 3,
-        "titleSi": "කෙටි වක්‍රාන්ත",
+        "titleSi": "කෙටි වාක්‍ය ඛණ්ඩ",
         "titleEn": "Short Paragraph",
-        "colors": [const Color(0xFFfa709a), const Color(0xFFfee140)],
+        "colors": [Color(0xFFfa709a), Color(0xFFfee140)],
       },
       {
         "level": 4,
         "titleSi": "උසස් මට්ටම",
         "titleEn": "Advanced Reading",
-        "colors": [const Color(0xFFf7971e), const Color(0xFFffd200)],
+        "colors": [Color(0xFFf7971e), Color(0xFFffd200)],
       },
     ];
   }
 
+  // UI for each Level Card
   Widget _buildLevelCard({
     required String titleSi,
     required String titleEn,
@@ -60,8 +62,7 @@ class DyslexiaLevelPage extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        leading:
-        const Icon(Icons.star_rounded, color: Colors.white, size: 32),
+        leading: const Icon(Icons.star_rounded, color: Colors.white, size: 32),
         title: Text(
           "$titleSi (Level $level)",
           style: const TextStyle(
@@ -74,8 +75,7 @@ class DyslexiaLevelPage extends StatelessWidget {
           titleEn,
           style: const TextStyle(color: Colors.white70),
         ),
-        trailing:
-        const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
         onTap: onTap,
       ),
     );
@@ -110,6 +110,13 @@ class DyslexiaLevelPage extends StatelessWidget {
               level: level["level"],
               colors: level["colors"],
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DyslexiaReadPage(
+                      grade: grade,
+                      level: level["level"],
+                    ),
                   ),
                 );
               },
