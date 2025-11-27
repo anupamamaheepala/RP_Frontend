@@ -12,16 +12,19 @@ class ReadingResultPage extends StatelessWidget {
     required this.metrics,
   });
 
-  // Helpers to safely read numbers from metrics (they might be int/double)
-  double _num(dynamic v) => v is num ? v.toDouble() : double.tryParse("$v") ?? 0.0;
+  // Helper to safely convert any number-like input
+  double _toDouble(dynamic v) {
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString()) ?? 0.0;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final String reading = (metrics["transcript"] ?? "").toString();
-    final double accuracy = _num(metrics["accuracy_percent"]);
-    final double correctWords = _num(metrics["correct_words"]);
-    final double wer = _num(metrics["wer"]);
-    final double speed = _num(metrics["words_per_second"]);
+    final String transcript = metrics["transcript"]?.toString() ?? "";
+    final double accuracy = _toDouble(metrics["accuracy_percent"]);
+    final double correctWords = _toDouble(metrics["correct_words"]);
+    final double wer = _toDouble(metrics["wer"]);
+    final double speed = _toDouble(metrics["words_per_second"]);
 
     return Scaffold(
       body: Container(
@@ -73,7 +76,7 @@ class ReadingResultPage extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // ---------- MAIN CARD ----------
+              // ---------- MAIN RESULT CARD ----------
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.all(16),
@@ -97,14 +100,14 @@ class ReadingResultPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Trophy + time
+                        // Trophy + time display
                         Center(
                           child: Column(
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.yellow.shade600,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFCD34D),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -116,7 +119,9 @@ class ReadingResultPage extends StatelessWidget {
                               const SizedBox(height: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 16),
+                                  vertical: 6,
+                                  horizontal: 16,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
@@ -136,7 +141,7 @@ class ReadingResultPage extends StatelessWidget {
 
                         const SizedBox(height: 25),
 
-                        // Sentence shown
+                        // Show original sentence
                         _resultCard(
                           title: "📘 Sentence:",
                           value: displayedSentence,
@@ -145,10 +150,10 @@ class ReadingResultPage extends StatelessWidget {
 
                         const SizedBox(height: 15),
 
-                        // User reading
+                        // Show user reading transcription
                         _resultCard(
                           title: "🎤 Your Reading:",
-                          value: reading,
+                          value: transcript,
                           color: Colors.cyan.shade200,
                         ),
 
@@ -157,11 +162,9 @@ class ReadingResultPage extends StatelessWidget {
                         // Accuracy
                         _badge(
                           icon: Icons.check_circle,
-                          label:
-                          "Accuracy: ${accuracy.toStringAsFixed(1)}%",
+                          label: "Accuracy: ${accuracy.toStringAsFixed(1)}%",
                           color: Colors.green.shade500,
                         ),
-
                         const SizedBox(height: 10),
 
                         // Correct words
@@ -171,7 +174,6 @@ class ReadingResultPage extends StatelessWidget {
                           "Correct Words: ${correctWords.toStringAsFixed(1)}",
                           color: Colors.green.shade400,
                         ),
-
                         const SizedBox(height: 10),
 
                         // WER
@@ -180,7 +182,6 @@ class ReadingResultPage extends StatelessWidget {
                           label: "WER: ${wer.toStringAsFixed(2)}",
                           color: Colors.red.shade400,
                         ),
-
                         const SizedBox(height: 10),
 
                         // Speed
@@ -229,7 +230,10 @@ class ReadingResultPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(fontSize: 18, color: Colors.black),
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.black,
+            ),
           ),
         ],
       ),
