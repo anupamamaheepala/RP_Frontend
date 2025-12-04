@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -11,6 +13,7 @@ import 'reading_result_page.dart';
 class DyslexiaReadPage extends StatefulWidget {
   final int grade;
   final int level;
+
   const DyslexiaReadPage({
     super.key,
     required this.grade,
@@ -32,16 +35,17 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   int _seconds = 0;
   Timer? _timer;
 
-
   @override
   void initState() {
     super.initState();
     fetchSentence();
   }
 
+  // -------------------- LOAD RANDOM SENTENCE --------------------
   Future<void> fetchSentence() async {
     final url = Uri.parse(
-        "${Config.baseUrl}/get-random?grade=${widget.grade}&level=${widget.level}");
+      "${Config.baseUrl}/get-random?grade=${widget.grade}&level=${widget.level}",
+    );
 
     try {
       final response = await http.get(url);
@@ -50,30 +54,14 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       if (data["sentence"] != null) {
         setState(() => sentence = data["sentence"]);
       } else {
-        setState(() => error = "Failed to load data (${data["error"]})");
+        setState(() => error = "Failed to load (${data["error"]})");
       }
     } catch (e) {
       setState(() => error = "Error: $e");
     }
   }
-  String getSinhalaLevelName(int level) {
-    switch (level) {
-      case 1:
-      //return "මුලික වචන (Level 1)";
-        return "Level 1";
-      case 2:
-      //return "සරල වාක්‍ය (Level 2)";
-        return "Level 2";
-      case 3:
-        return "Level 3";
-    //return "කෙටි වාක්‍ය ඛණ්ඩ (Level 3)";
-      case 4:
-      // return "උසස් මට්ටම (Level 4)";
-        return "Level 4";
-      default:
-        return "Level $level";
-    }
-  }
+
+  // ---------------------- TIMER ----------------------
   void startTimer() {
     _seconds = 0;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -85,21 +73,23 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     _timer?.cancel();
   }
 
+  // ---------------------- RECORDING ----------------------
   Future<void> _startRecording() async {
     try {
-      bool hasPermission = await _recorder.hasPermission();
+      final hasPermission = await _recorder.hasPermission();
       if (!hasPermission) {
         setState(() => error = "Microphone permission denied");
         return;
       }
 
       final dir = await getApplicationDocumentsDirectory();
-      _audioPath =
-      "${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a";
+      _audioPath = "${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.wav";
 
       await _recorder.start(
         const RecordConfig(
-          encoder: AudioEncoder.aacLc,
+          encoder: AudioEncoder.wav,
+          sampleRate: 16000,
+          numChannels: 1,
         ),
         path: _audioPath!,
       );
@@ -107,7 +97,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       setState(() => _isRecording = true);
       startTimer();
     } catch (e) {
-      setState(() => error = "Error: $e");
+      setState(() => error = "Record error: $e");
     }
   }
 
@@ -117,6 +107,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     setState(() => _isRecording = false);
   }
 
+  // ---------------------- UPLOAD TO BACKEND ----------------------
   Future<void> _uploadAudio() async {
     if (_audioPath == null) return;
 
@@ -147,13 +138,12 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     }
   }
 
-  // ⭐ Reusable gradient (matching your design)
-
+  // ---------------------- UI ----------------------
   LinearGradient mainGradient = const LinearGradient(
     colors: [
-      Color(0xFF7F7FD5), // Purple blue
-      Color(0xFF86A8E7), // Sky blue
-      Color(0xFF91EAE4), // Aqua
+      Color(0xFF7F7FD5),
+      Color(0xFF86A8E7),
+      Color(0xFF91EAE4),
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -162,9 +152,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: mainGradient,
-      ),
+      decoration: BoxDecoration(gradient: mainGradient),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -175,187 +163,146 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
+        body: buildBody(),
+      ),
+    );
+  }
 
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-
-            child: Container(
-              padding: const EdgeInsets.all(25),
-              decoration: BoxDecoration(
-                color: Colors.lightBlue.shade100,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
+  Widget buildBody() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Container(
+        padding: const EdgeInsets.all(25),
+        decoration: BoxDecoration(
+          color: Colors.lightBlue.shade100,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              "📘 Level ${widget.level}",
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-              child: Column(
+            ),
+            const SizedBox(height: 20),
+
+            // Sentence display
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF003566), Color(0xFF005F99)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                sentence ?? "Loading...",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Timer
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ---- LEVEL TITLE ----
+                  Icon(Icons.timer, color: Colors.orange.shade700),
+                  const SizedBox(width: 6),
                   Text(
-                    "📘 Level ${widget.level}",
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Text(
-                  //   getSinhalaLevelName(widget.level),
-                  //   style: TextStyle(
-                  //     fontSize: 20,
-                  //     color: Colors.blue.shade700,
-                  //     fontWeight: FontWeight.w600,
-                  //   ),
-                  // ),
-
-                  const SizedBox(height: 20),
-
-                  // ---- BOOK ICON CIRCLE----
-                  CircleAvatar(
-                    radius: 35,
-                    backgroundColor: Colors.blue.shade100,
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      size: 40,
-                      color: Colors.blue.shade800,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // ---- READING TASK TITLE ----
-                  const Text(
-                    "📖 Reading Task",
+                    "Time: $_seconds sec",
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      fontSize: 18,
+                      color: Colors.orange.shade800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-
-                  const SizedBox(height: 6),
-
-                  // ---- SENTENCE BOX ----
-                  Container(
-                    margin: const EdgeInsets.only(top: 15, bottom: 15),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF003566), // deep dark blue
-                          Color(0xFF005F99), // soft lighter contrast
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Text(
-                      sentence ?? "Loading...",
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // ---- TIMER ----
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.timer, color: Colors.orange.shade700),
-                        const SizedBox(width: 6),
-                        Text(
-                          "Time: $_seconds sec",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.orange.shade800,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ---- BUTTONS ----
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isRecording ? null : _startRecording,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green.shade500,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                          ),
-                          child: const Text("Start", style: TextStyle(fontSize: 18 ,  color: Colors.white,fontWeight: FontWeight.bold,)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isRecording ? _stopRecording : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
-                          ),
-                          child: const Text("Stop", style: TextStyle(fontSize: 18 ,color: Colors.white,fontWeight: FontWeight.bold,)),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  // ---- UPLOAD BUTTON ----
-                  ElevatedButton.icon(
-                    onPressed:
-                    (!_isRecording && _audioPath != null) ? _uploadAudio : null,
-                    icon: const Icon(Icons.cloud_upload),
-                    label: const Text("Upload & Analyze", style: TextStyle(fontSize: 18)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple.shade700,
-                      foregroundColor: Colors.white,
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 35, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25)),
-                    ),
-                  ),
-
-                  if (error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 14),
-                      child: Text(error!,
-                          style: const TextStyle(color: Colors.red, fontSize: 16)),
-                    ),
                 ],
               ),
             ),
 
+            const SizedBox(height: 20),
+
+            // Start/Stop buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isRecording ? null : _startRecording,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                    ),
+                    child: const Text(
+                      "Start",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isRecording ? _stopRecording : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                    ),
+                    child: const Text(
+                      "Stop",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Upload button
+            ElevatedButton.icon(
+              onPressed: (!_isRecording && _audioPath != null)
+                  ? _uploadAudio
+                  : null,
+              icon: const Icon(Icons.upload),
+              label: const Text("Upload & Analyze"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple.shade700,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 15),
+                child: Text(
+                  error!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+          ],
         ),
       ),
     );
