@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Dyslexia/dyslexia_grade_page.dart';
 import 'dysgraphia_page.dart';
-import 'dyscalculia_page.dart';
+import 'Dyscalculia/dyscalculia_page.dart';
 import 'adhd_page.dart';
 
 class HomePage extends StatelessWidget {
