@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+
 
 import '../../config.dart';
 import 'reading_result_page.dart';
@@ -109,34 +111,86 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
 
   // ---------------------- UPLOAD TO BACKEND ----------------------
   Future<void> _uploadAudio() async {
-    if (_audioPath == null) return;
+    print("=======================================");
+    print("UPLOAD & ANALYZE STARTED");
+    print("=======================================");
 
-    final uri = Uri.parse("${Config.baseUrl}/dyslexia/submit-audio");
+    // Check audio path
+    if (_audioPath == null) {
+      print("❌ ERROR: _audioPath is NULL");
+      setState(() => error = "Recording not found. Please record again.");
+      return;
+    }
 
-    final request = http.MultipartRequest("POST", uri)
-      ..fields["text_id"] = "t1"
-      ..fields["duration"] = _seconds.toString()
-      ..files.add(await http.MultipartFile.fromPath("file", _audioPath!));
+    // Check if file exists
+    final audioFile = File(_audioPath!);
+    if (!audioFile.existsSync()) {
+      print("❌ ERROR: File does NOT exist at path: $_audioPath");
+      setState(() => error = "Audio file missing. Try recording again.");
+      return;
+    }
 
-    final res = await request.send();
-    final body = await res.stream.bytesToString();
-    final data = jsonDecode(body);
+    // Check sentence
+    if (sentence == null || sentence!.isEmpty) {
+      print("❌ ERROR: Sentence is NULL or empty");
+      setState(() => error = "Sentence not loaded.");
+      return;
+    }
 
-    if (data["ok"] == true) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ReadingResultPage(
-            displayedSentence: sentence!,
-            durationSeconds: _seconds,
-            metrics: data["metrics"],
+    // Backend endpoint
+    final url = "${Config.baseUrl}/dyslexia/submit-audio";
+    print("➡ Sending POST to: $url");
+    print("➡ Duration: $_seconds seconds");
+    print("➡ Sentence: $sentence");
+
+    try {
+      final uri = Uri.parse(url);
+
+      final request = http.MultipartRequest("POST", uri)
+        ..fields["reference_text"] = sentence!              // VERY IMPORTANT
+        ..fields["duration"] = _seconds.toString()
+        ..fields["grade"] = widget.grade.toString()
+        ..fields["level"] = widget.level.toString()
+        ..files.add(await http.MultipartFile.fromPath(
+          "file",
+          _audioPath!,
+          contentType: MediaType("audio", "wav"),
+        ));
+
+      print("➡ Multipart request prepared.");
+      print("➡ Uploading audio file: $_audioPath");
+
+      final streamedResponse = await request.send();
+      print("➡ Request SENT. Awaiting backend response...");
+
+      final responseBody = await streamedResponse.stream.bytesToString();
+      print("⬅ Backend Response Status: ${streamedResponse.statusCode}");
+      print("⬅ Backend Response Body: $responseBody");
+
+      final data = jsonDecode(responseBody);
+
+      if (data["ok"] == true) {
+        print("✅ SUCCESS: Navigation to result page");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ReadingResultPage(
+              displayedSentence: sentence!,
+              durationSeconds: _seconds,
+              metrics: data["metrics"],
+            ),
           ),
-        ),
-      );
-    } else {
-      setState(() => error = data["error"]);
+        );
+      } else {
+        print("❌ BACKEND ERROR: ${data["error"]}");
+        setState(() => error = data["error"] ?? "Unknown error");
+      }
+    } catch (e) {
+      print("❌ EXCEPTION during upload: $e");
+      setState(() => error = "Upload failed: $e");
     }
   }
+
 
   // ---------------------- UI ----------------------
   LinearGradient mainGradient = const LinearGradient(
