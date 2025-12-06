@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Dyslexia/dyslexia_grade_page.dart';
 import 'dysgraphia_page.dart';
-import 'Dyscalculia/dyscalculia_page.dart';
+import 'dyscalculia_page.dart';
 import 'adhd_page.dart';
+import '/profile.dart'; // Import your Profile Page here
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -57,6 +58,16 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // UPDATED: Back Button navigates to ProfilePage
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.purple),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          },
+        ),
         title: const Text(
           'කුමක් පරික්ෂා කරමු?',
           style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
@@ -90,8 +101,6 @@ class HomePage extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const DyslexiaGradePage()),
                   );
                 },
-
-
               ),
               _buildCard(
                 titleSi: 'ලිවීමේ දුෂ්කරතා',
