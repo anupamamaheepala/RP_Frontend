@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'Dyslexia/dyslexia_grade_page.dart';
-import 'dysgraphia_page.dart';
-import 'dyscalculia_page.dart';
-import 'adhd_page.dart';
-import '/profile.dart'; // Import your Profile Page here
+import 'dyscal_g03.dart';
+import 'dyscal_g04.dart';
+import 'dyscal_g05.dart';
+import 'dyscal_g06.dart';
+import 'dyscal_g07.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class DyscalGradePage extends StatelessWidget {
+  const DyscalGradePage({super.key});
 
-  Widget _buildCard({
-    required String titleSi,
-    required String titleEn,
-    required IconData icon,
+  // Beautiful gradient card builder
+  Widget _buildGradeCard({
+    required int grade,
     required List<Color> colors,
+    required BuildContext context,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -26,26 +26,27 @@ class HomePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withOpacity(0.12),
             blurRadius: 8,
             offset: const Offset(2, 4),
           ),
         ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.white, size: 35),
+        leading: const Icon(Icons.calculate_rounded, color: Colors.white, size: 35),
         title: Text(
-          titleSi,
+          "ශ්‍රේණිය $grade",
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        subtitle: Text(
-          titleEn,
-          style: const TextStyle(color: Colors.white70),
+        subtitle: const Text(
+          "Grade Level",
+          style: TextStyle(color: Colors.white70),
         ),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
         onTap: onTap,
       ),
     );
@@ -54,87 +55,98 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
+      backgroundColor: const Color(0xFF8EC5FC), // Same background as Home/Dyslexia pages
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // UPDATED: Back Button navigates to ProfilePage
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.purple),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'කුමක් පරික්ෂා කරමු?',
+          'ගණනයේ දුෂ්කරතා – Grade Selection',
           style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
               const Text(
-                "What would you like to check?",
+                "Select your grade level",
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+
               const SizedBox(height: 20),
 
-              // 4 clickable cards
-              _buildCard(
-                titleSi: 'කියවීමේ දුෂ්කරතා',
-                titleEn: 'Dyslexia',
-                icon: Icons.menu_book_rounded,
+              // Grade 3
+              _buildGradeCard(
+                grade: 3,
                 colors: [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
+                context: context,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const DyslexiaGradePage()),
+                    MaterialPageRoute(builder: (_) => const DyscalG03Page()),
                   );
                 },
               ),
-              _buildCard(
-                titleSi: 'ලිවීමේ දුෂ්කරතා',
-                titleEn: 'Dysgraphia',
-                icon: Icons.edit_note,
+
+              // Grade 4
+              _buildGradeCard(
+                grade: 4,
                 colors: [const Color(0xFF43e97b), const Color(0xFF38f9d7)],
+                context: context,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const DysgraphiaPage()),
+                    MaterialPageRoute(builder: (_) => const DyscalG04Page()),
                   );
                 },
               ),
-              _buildCard(
-                titleSi: 'ගණනයේ දුෂ්කරතා',
-                titleEn: 'Dyscalculia',
-                icon: Icons.calculate_rounded,
+
+              // Grade 5
+              _buildGradeCard(
+                grade: 5,
                 colors: [const Color(0xFFfa709a), const Color(0xFFfee140)],
+                context: context,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const DyscalculiaPage()),
+                    MaterialPageRoute(builder: (_) => const DyscalG05Page()),
                   );
                 },
               ),
-              _buildCard(
-                titleSi: 'අධිමානසික නෝයීන්තා',
-                titleEn: 'ADHD',
-                icon: Icons.psychology_alt_rounded,
-                colors: [const Color(0xFFf7971e), const Color(0xFFffd200)],
+
+              // Grade 6
+              _buildGradeCard(
+                grade: 6,
+                colors: [const Color(0xFFF68084), const Color(0xFF8EC5FC)],
+                context: context,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ADHDPage()),
+                    MaterialPageRoute(builder: (_) => const DyscalG06Page()),
+                  );
+                },
+              ),
+
+              // Grade 7
+              _buildGradeCard(
+                grade: 7,
+                colors: [const Color(0xFFf7971e), const Color(0xFFffd200)],
+                context: context,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DyscalG07Page()),
                   );
                 },
               ),

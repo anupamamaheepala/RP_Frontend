@@ -1,15 +1,21 @@
-class Config {
-  // 🎯 CHOOSE ONE OPTION BELOW based on your testing device:
 
-  // Option 1: For Android Emulator (Most Common)
-  static const String baseUrl = 'http://10.0.2.2:8000';
+//ANUPAMA
+//class Config {
+//  static const baseUrl = "https://rp-backend-production-afe6.up.railway.app";
+//}
 
-// Option 2: For iOS Simulator
-// static const String baseUrl = 'http://localhost:8000';
+//SADITH
+//class Config {
+//  static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
+//}
 
-// Option 3: For Physical Device (Same Network)
-// static const String baseUrl = 'http://192.168.56.1:8000';
+//RASHINI
+//class Config {
+//  static const baseUrl = "https://rp-backend-production-ca77.up.railway.app";
+//}
 
-// Option 4: For Web Browser (Chrome)
-// static const String baseUrl = 'http://localhost:8000';
-}
+//HIMANSA
+//class Config {
+//  static const baseUrl = "https://rp-backend-production-2448.up.railway.app";
+//}
+
