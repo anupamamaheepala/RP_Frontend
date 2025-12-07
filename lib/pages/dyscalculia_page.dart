@@ -17,40 +17,42 @@ class DyscalculiaPage extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 160,
-        height: 160,
-        padding: const EdgeInsets.all(16),
+        // FIXED: Increased size from 200 to 220 to prevent overflow
+        width: 220,
+        height: 220,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(2, 4),
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(4, 6),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: Colors.white),
-            const SizedBox(height: 12),
+            Icon(icon, size: 70, color: Colors.white),
+            // Adjusted spacing slightly to fit content better
+            const SizedBox(height: 10),
             Text(
               titleSi,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14, // Slightly smaller to fit Sinhala text
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
             Text(
               titleEn,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 10,
+                fontSize: 14,
                 color: Colors.white70,
               ),
             ),
@@ -63,7 +65,6 @@ class DyscalculiaPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Matching the Home Page background color
       backgroundColor: const Color(0xFF8EC5FC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -79,61 +80,55 @@ class DyscalculiaPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "Choose an Option",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black54,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // REMOVED: "Choose an Option" text was here
+
+                const SizedBox(height: 20),
+
+                // Button 1: Detect Dyscalculia
+                _buildSquareButton(
+                  context: context,
+                  titleSi: 'දුෂ්කරතා හඳුනාගැනිම',
+                  titleEn: 'Detect Dyscalculia',
+                  icon: Icons.search_rounded,
+                  gradient: AppGradients.mathDetect,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DyscalGradePage(),
+                      ),
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(height: 30),
 
-              // Row containing the two square buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Button 1: Detect Dyscalculia
-                  _buildSquareButton(
-                    context: context,
-                    titleSi: 'දුෂ්කරතා හඳුනාගැනිම',
-                    titleEn: 'Detect Dyscalculia',
-                    icon: Icons.search_rounded,
-                    gradient: AppGradients.mathDetect, // Pink/Yellow
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DyscalGradePage(),
-                        ),
-                      );
-                    },
-                  ),
+                const SizedBox(height: 40), // Spacing between vertical buttons
 
-                  // Button 2: Improve Skills
-                  _buildSquareButton(
-                    context: context,
-                    titleSi: 'හැකියාවන් දියුණු කිරීම',
-                    titleEn: 'Improve Maths Skills',
-                    icon: Icons.trending_up_rounded,
-                    gradient: AppGradients.mathImprove, // Purple/Blue
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DyscalImprovePage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
+                // Button 2: Improve Skills
+                _buildSquareButton(
+                  context: context,
+                  titleSi: 'හැකියාවන් දියුණු කිරීම',
+                  titleEn: 'Improve Maths Skills',
+                  icon: Icons.trending_up_rounded,
+                  gradient: AppGradients.mathImprove,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DyscalImprovePage(),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
