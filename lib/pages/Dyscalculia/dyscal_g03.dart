@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import '/theme.dart'; // Adjust path if needed
+import '/theme.dart';
 
 // --- Model Class for Questions ---
 class QuizQuestion {
   final String question;
-  final List<String> answers; // List because some questions have 2 answers
+  final List<String> answers; // List for multiple answers
+  final List<String> units;   // List for units corresponding to answers (e.g., "cm", "Rupees", "")
 
-  QuizQuestion({required this.question, required this.answers});
+  QuizQuestion({
+    required this.question,
+    required this.answers,
+    // If units are not provided, default to empty strings
+    List<String>? units,
+  }) : units = units ?? List.filled(answers.length, "");
 }
 
 class DyscalG03Page extends StatefulWidget {
@@ -17,106 +23,125 @@ class DyscalG03Page extends StatefulWidget {
 }
 
 class _DyscalG03PageState extends State<DyscalG03Page> {
-  // --- Data Source ---
+  // --- Data Source (Updated from RP_Grade_03_Task.docx) ---
   final List<List<QuizQuestion>> _allTasks = [
-    // Task 01
+    // --- Task 01 [cite: 1] ---
     [
       QuizQuestion(
-          question: "කූඩයකට ඇපල් 15 ක් තියෙනවා. ඔබ තවත් ඇපල් 8 ක් එකතු කළහොත්, කූඩයේ ඇපල් කීයක් තිබේද?",
-          answers: ["23"]
-      ),
+          question: "කූඩයකට ඇපල් 15 ක් තියෙනවා.\nඔබ තවත් ඇපල් 8 ක් එකතු කළහොත්, කූඩයේ ඇපල් කීයක් තිබේද?",
+          answers: ["23"],
+          units: ["Apples"]
+      ), // [cite: 2, 3, 4]
       QuizQuestion(
-          question: "සාරා ළඟ ස්ටිකර් 23 ක් තිබුණා. ඇය ඇගේ මිතුරියට ස්ටිකර් 7 ක් දුන්නා. දැන් සාරා ළඟ ස්ටිකර් කීයක් තියෙනවද?",
-          answers: ["16"]
-      ),
-      QuizQuestion(question: "සරල එකතු කිරීම : 34 + 19 = ______", answers: ["53"]),
-      QuizQuestion(question: "සරල අඩු කිරීම : 52 - 28 = ______", answers: ["24"]),
-      QuizQuestion(question: "නැතිවූ අංකය සොයා ගන්න : 45 + ___ = 68", answers: ["23"]),
+          question: "සාරා ළඟ ස්ටිකර් 23 ක් තිබුණා.\nඇය ඇගේ මිතුරියට ස්ටිකර් 7 ක් දුන්නා.\nදැන් සාරා ළඟ ස්ටිකර් කීයක් තියෙනවද?",
+          answers: ["16"],
+          units: ["Stickers"]
+      ), // [cite: 5, 6, 7, 8]
+      QuizQuestion(question: "සරල එකතු කිරීම : 34 + 19 = ______", answers: ["53"]), // [cite: 9]
+      QuizQuestion(question: "සරල අඩු කිරීම : 52 - 28 = ______", answers: ["24"]), // [cite: 10]
+      QuizQuestion(question: "නැතිවූ අංකය සොයා ගන්න : 45 + ___ = 68", answers: ["23"]), // [cite: 11]
     ],
-    // Task 02
+
+    // --- Task 02 [cite: 12] ---
     [
       QuizQuestion(
           question: "සෑම පැන්සල් පැකට්ටුවකම පැන්සල් 6 ක් තිබේ නම්, ඇසුරුම් 5 ක පැන්සල් කීයක් තිබේද?",
-          answers: ["30"]
-      ),
+          answers: ["30"],
+          units: ["Pencils"]
+      ), // [cite: 13, 14]
       QuizQuestion(
-          question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති. සෑම පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?",
-          answers: ["8"]
-      ),
-      QuizQuestion(question: "සරල ගුණ කිරීම : 7 × 4 = ______", answers: ["28"]),
-      QuizQuestion(question: "සරල බෙදීම : 36 ÷ 4 = ______", answers: ["9"]),
+          question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති.\nසෑම පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?",
+          answers: ["8"],
+          units: ["Students"]
+      ), // [cite: 15, 16, 17]
+      QuizQuestion(question: "සරල ගුණ කිරීම : 7 × 4 = ______", answers: ["28"]), // [cite: 18]
+      QuizQuestion(question: "සරල බෙදීම : 36 ÷ 4 = ______", answers: ["9"]), // [cite: 19]
       QuizQuestion(
           question: "ඔබ බෑග් 3 ක් මිල දී ගෙන එක් බෑගයක මිල රුපියල් 12 ක් නම්, බෑග් 3 සඳහා කොපමණ මුදලක් වැය වේද?",
-          answers: ["36"]
+          answers: ["36"],
+          units: ["Rupees"] // [cite: 20, 21]
       ),
     ],
-    // Task 03
+
+    // --- Task 03 [cite: 22] ---
     [
       QuizQuestion(
           question: "රටාව සම්පූර්ණ කරන්න : 5, 10, 15, ___, ___, 30",
           answers: ["20", "25"]
-      ),
+      ), // [cite: 23]
       QuizQuestion(
           question: "අතුරුදහන් අංකය පුරවන්න : 24, __, 36, __, 48",
           answers: ["30", "42"]
-      ),
+      ), // [cite: 24]
       QuizQuestion(
           question: "දෙකෙන් ගණන් කරන්න : 2, 4, 6, ___, ___",
           answers: ["8", "10"]
-      ),
+      ), // [cite: 25]
       QuizQuestion(
-          question: "සති 5 ක් තුළ දින කීයක් තිබේද? (ඉඟිය : සතිය 1 = දින 7)",
-          answers: ["35"]
+          question: "සති 5 ක් තුළ දින කීයක් තිබේද?\n(ඉඟිය : සතිය 1 = දින 7)",
+          answers: ["35"],
+          units: ["Days"] // [cite: 26, 27]
       ),
-      QuizQuestion(question: "3, 6, 9, 12, ___ රටාවේ 8 වන අංකය කුමක්ද?", answers: ["24"]),
+      QuizQuestion(question: "3, 6, 9, 12, ___ රටාවේ 8 වන අංකය කුමක්ද?", answers: ["24"]), // [cite: 28, 29]
     ],
-    // Task 04
+
+    // --- Task 04 [cite: 30] ---
     [
       QuizQuestion(
-          question: "පැන්සලක් සෙන්ටිමීටර 12 ක් දිගයි. ඔබට පැන්සල් 5 ක් තිබේ නම්, ඒවායේ මුළු දිග කොපමණද?",
-          answers: ["60"]
+          question: "පැන්සලක් සෙන්ටිමීටර 12 ක් දිගයි.\nඔබට පැන්සල් 5 ක් තිබේ නම්, ඒවායේ මුළු දිග කොපමණද?",
+          answers: ["60"],
+          units: ["cm"] // [cite: 31, 32, 33]
       ),
       QuizQuestion(
-          question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 6 ක් සහ පළල සෙන්ටිමීටර 4 කි. සෘජුකෝණාස්‍රයේ වර්ගඵලය කුමක්ද?",
-          answers: ["24"]
+          question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 6 ක් සහ පළල සෙන්ටිමීටර 4 කි.\nසෘජුකෝණාස්‍රයේ වර්ගඵලය කුමක්ද?",
+          answers: ["24"],
+          units: ["square centimeters"] // [cite: 34, 35]
       ),
       QuizQuestion(
-          question: "ගසක් උස මීටර් 18 කි. ගස සෑම වසරකම මීටර් 3 ක් වැඩෙන්නේ නම්, වසර 4 කට පසු එය කොපමණ උස වේද?",
-          answers: ["30"]
+          question: "ගසක් උස මීටර් 18 කි.\nගස සෑම වසරකම මීටර් 3 ක් වැඩෙන්නේ නම්, වසර 4 කට පසු එය කොපමණ උස වේද?",
+          answers: ["30"],
+          units: ["meters"] // [cite: 36, 37, 38]
       ),
-      QuizQuestion(question: "ත්‍රිකෝණයක පැති කීයක් තිබේද?", answers: ["3"]),
+      QuizQuestion(question: "ත්‍රිකෝණයක පැති කීයක් තිබේද?", answers: ["3"]), // [cite: 39]
       QuizQuestion(
           question: "ඔබේ පන්තිය උදේ 9:00 ට ආරම්භ වී සවස 3:00 ට අවසන් වන්නේ නම්, පන්තිය පැය කීයක් පවතීද?",
-          answers: ["6"]
+          answers: ["6"],
+          units: ["Hours"] // [cite: 40, 41]
       ),
     ],
-    // Task 05
+
+    // --- Task 05 [cite: 42] ---
     [
       QuizQuestion(
-          question: "ඔබට රුපියල් 50 ක් තිබේ. ඔබ රුපියල් 15 බැගින් වූ සෙල්ලම් බඩු 2 ක් මිලදී ගන්නේ නම්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?",
-          answers: ["20"]
+          question: "ඔබට රුපියල් 50 ක් තිබේ.\nඔබ රුපියල් 15 බැගින් වූ සෙල්ලම් බඩු 2 ක් මිලදී ගන්නේ නම්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?",
+          answers: ["20"],
+          units: ["Rupees"] // [cite: 43, 44, 45]
       ),
       QuizQuestion(
-          question: "ඔබට රුපියල් 10 ක් ඇති අතර, ඔබේ මිතුරාගෙන් ඔබට රුපියල් 20 ක් ලැබේ. දැන් ඔබ සතුව කොපමණ මුදලක් තිබේද?",
-          answers: ["30"]
+          question: "ඔබට රුපියල් 10 ක් ඇති අතර, ඔබේ මිතුරාගෙන් ඔබට රුපියල් 20 ක් ලැබේ.\nදැන් ඔබ සතුව කොපමණ මුදලක් තිබේද?",
+          answers: ["30"],
+          units: ["Rupees"] // [cite: 46, 47, 48]
       ),
       QuizQuestion(
-          question: "දොඩම් මල්ලක් රුපියල් 35 කි. ඔබ බෑග් 3 ක් මිලදී ගන්නේ නම්, ඔබ මුළු මුදල කොපමණද?",
-          answers: ["105"]
+          question: "දොඩම් මල්ලක් රුපියල් 35 කි.\nඔබ බෑග් 3 ක් මිලදී ගන්නේ නම්, ඔබ මුළු මුදල කොපමණද?",
+          answers: ["105"],
+          units: ["Rupees"] // [cite: 49, 50, 51]
       ),
       QuizQuestion(
-          question: "ඔබට රුපියල් 100 ක් ඇත. ඔබ රුපියල් 45 ක් වියදම් කරන්නේ නම්, කොපමණ මුදලක් ඉතිරි වේද?",
-          answers: ["55"]
+          question: "ඔබට රුපියල් 100 ක් ඇත.\nඔබ රුපියල් 45 ක් වියදම් කරන්නේ නම්, කොපමණ මුදලක් ඉතිරි වේද?",
+          answers: ["55"],
+          units: ["Rupees"] // [cite: 52, 53, 54]
       ),
       QuizQuestion(
           question: "ඔබට රුපියල් 10 කාසි දෙකක්, රුපියල් 5 කාසි තුනක් සහ රුපියල් 1 කාසි හතරක් තිබේ නම්, ඔබට කොපමණ මුදලක් තිබේද?",
-          answers: ["39"]
+          answers: ["39"],
+          units: ["Rupees"] // [cite: 55, 56]
       ),
     ],
   ];
 
   // --- State Variables ---
-  int _selectedTaskIndex = -1; // -1 means showing the Task Menu
+  int _selectedTaskIndex = -1;
   int _currentQuestionIndex = 0;
 
   // Controllers for input fields (up to 2)
@@ -297,12 +322,12 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
 
           // Dynamic Input Fields (1 or 2 inputs)
           answerCount == 1
-              ? _buildSingleInput(0)
+              ? _buildSingleInput(0, question.units[0])
               : Row(
             children: [
-              Expanded(child: _buildSingleInput(0)),
+              Expanded(child: _buildSingleInput(0, question.units[0])),
               const SizedBox(width: 10),
-              Expanded(child: _buildSingleInput(1)),
+              Expanded(child: _buildSingleInput(1, question.units[1])),
             ],
           ),
 
@@ -425,7 +450,8 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     );
   }
 
-  Widget _buildSingleInput(int index) {
+  // Updated Input Builder with Unit Support
+  Widget _buildSingleInput(int index, String unit) {
     return TextField(
       controller: _controllers[index],
       keyboardType: TextInputType.number,
@@ -433,6 +459,13 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       decoration: InputDecoration(
         hintText: "?",
+        // Show the unit (e.g., "cm", "Rupees") as a suffix if it exists
+        suffixText: unit.isNotEmpty ? unit : null,
+        suffixStyle: const TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontWeight: FontWeight.bold
+        ),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
@@ -445,14 +478,13 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
 
   @override
   Widget build(BuildContext context) {
-    // Handling Back Button Logic
     return WillPopScope(
       onWillPop: () async {
         if (_selectedTaskIndex != -1) {
           _backToMenu();
-          return false; // Don't exit app, just go back to menu
+          return false;
         }
-        return true; // Exit page
+        return true;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF8EC5FC),

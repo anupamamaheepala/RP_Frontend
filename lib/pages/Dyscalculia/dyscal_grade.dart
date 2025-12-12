@@ -64,7 +64,7 @@ class DyscalGradePage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'ගණනයේ දුෂ්කරතා – Grade Selection',
+          'ගණනයේ දුෂ්කරතා',
           style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
