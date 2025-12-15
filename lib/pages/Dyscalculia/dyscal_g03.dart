@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import '/theme.dart';
+import 'task_result.dart'; // Import the result page
 
-// --- Model Class for Questions ---
 class QuizQuestion {
   final String question;
-  final List<String> answers; // List for multiple answers
-  final List<String> units;   // List for units corresponding to answers (e.g., "cm", "Rupees", "")
+  final List<String> answers;
+  final List<String> units;
 
   QuizQuestion({
     required this.question,
     required this.answers,
-    // If units are not provided, default to empty strings
     List<String>? units,
   }) : units = units ?? List.filled(answers.length, "");
 }
@@ -23,138 +22,50 @@ class DyscalG03Page extends StatefulWidget {
 }
 
 class _DyscalG03PageState extends State<DyscalG03Page> {
-  // --- Data Source (Updated from RP_Grade_03_Task.docx) ---
   final List<List<QuizQuestion>> _allTasks = [
-    // --- Task 01 [cite: 1] ---
     [
-      QuizQuestion(
-          question: "කූඩයකට ඇපල් 15 ක් තියෙනවා.\nඔබ තවත් ඇපල් 8 ක් එකතු කළහොත්, කූඩයේ ඇපල් කීයක් තිබේද?",
-          answers: ["23"],
-          units: ["Apples"]
-      ), // [cite: 2, 3, 4]
-      QuizQuestion(
-          question: "සාරා ළඟ ස්ටිකර් 23 ක් තිබුණා.\nඇය ඇගේ මිතුරියට ස්ටිකර් 7 ක් දුන්නා.\nදැන් සාරා ළඟ ස්ටිකර් කීයක් තියෙනවද?",
-          answers: ["16"],
-          units: ["Stickers"]
-      ), // [cite: 5, 6, 7, 8]
-      QuizQuestion(question: "සරල එකතු කිරීම : 34 + 19 = ______", answers: ["53"]), // [cite: 9]
-      QuizQuestion(question: "සරල අඩු කිරීම : 52 - 28 = ______", answers: ["24"]), // [cite: 10]
-      QuizQuestion(question: "නැතිවූ අංකය සොයා ගන්න : 45 + ___ = 68", answers: ["23"]), // [cite: 11]
+      QuizQuestion(question: "කූඩයකට ඇපල් 15 ක් තියෙනවා.\nඔබ තවත් ඇපල් 8 ක් එකතු කළහොත්, කූඩයේ ඇපල් කීයක් තිබේද?", answers: ["23"], units: ["Apples"]),
+      QuizQuestion(question: "සාරා ළඟ ස්ටිකර් 23 ක් තිබුණා.\nඇය ඇගේ මිතුරියට ස්ටිකර් 7 ක් දුන්නා.\nදැන් සාරා ළඟ ස්ටිකර් කීයක් තියෙනවද?", answers: ["16"], units: ["Stickers"]),
+      QuizQuestion(question: "සරල එකතු කිරීම : 34 + 19 = ______", answers: ["53"]),
+      QuizQuestion(question: "සරල අඩු කිරීම : 52 - 28 = ______", answers: ["24"]),
+      QuizQuestion(question: "නැතිවූ අංකය සොයා ගන්න : 45 + ___ = 68", answers: ["23"]),
     ],
-
-    // --- Task 02 [cite: 12] ---
     [
-      QuizQuestion(
-          question: "සෑම පැන්සල් පැකට්ටුවකම පැන්සල් 6 ක් තිබේ නම්, ඇසුරුම් 5 ක පැන්සල් කීයක් තිබේද?",
-          answers: ["30"],
-          units: ["Pencils"]
-      ), // [cite: 13, 14]
-      QuizQuestion(
-          question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති.\nසෑම පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?",
-          answers: ["8"],
-          units: ["Students"]
-      ), // [cite: 15, 16, 17]
-      QuizQuestion(question: "සරල ගුණ කිරීම : 7 × 4 = ______", answers: ["28"]), // [cite: 18]
-      QuizQuestion(question: "සරල බෙදීම : 36 ÷ 4 = ______", answers: ["9"]), // [cite: 19]
-      QuizQuestion(
-          question: "ඔබ බෑග් 3 ක් මිල දී ගෙන එක් බෑගයක මිල රුපියල් 12 ක් නම්, බෑග් 3 සඳහා කොපමණ මුදලක් වැය වේද?",
-          answers: ["36"],
-          units: ["Rupees"] // [cite: 20, 21]
-      ),
+      QuizQuestion(question: "සෑම පැන්සල් පැකට්ටුවකම පැන්සල් 6 ක් තිබේ නම්, ඇසුරුම් 5 ක පැන්සල් කීයක් තිබේද?", answers: ["30"], units: ["Pencils"]),
+      QuizQuestion(question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති.\nසෑම පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?", answers: ["8"], units: ["Students"]),
+      QuizQuestion(question: "සරල ගුණ කිරීම : 7 × 4 = ______", answers: ["28"]),
+      QuizQuestion(question: "සරල බෙදීම : 36 ÷ 4 = ______", answers: ["9"]),
+      QuizQuestion(question: "ඔබ බෑග් 3 ක් මිල දී ගෙන එක් බෑගයක මිල රුපියල් 12 ක් නම්, බෑග් 3 සඳහා කොපමණ මුදලක් වැය වේද?", answers: ["36"], units: ["Rupees"]),
     ],
-
-    // --- Task 03 [cite: 22] ---
     [
-      QuizQuestion(
-          question: "රටාව සම්පූර්ණ කරන්න : 5, 10, 15, ___, ___, 30",
-          answers: ["20", "25"]
-      ), // [cite: 23]
-      QuizQuestion(
-          question: "අතුරුදහන් අංකය පුරවන්න : 24, __, 36, __, 48",
-          answers: ["30", "42"]
-      ), // [cite: 24]
-      QuizQuestion(
-          question: "දෙකෙන් ගණන් කරන්න : 2, 4, 6, ___, ___",
-          answers: ["8", "10"]
-      ), // [cite: 25]
-      QuizQuestion(
-          question: "සති 5 ක් තුළ දින කීයක් තිබේද?\n(ඉඟිය : සතිය 1 = දින 7)",
-          answers: ["35"],
-          units: ["Days"] // [cite: 26, 27]
-      ),
-      QuizQuestion(question: "3, 6, 9, 12, ___ රටාවේ 8 වන අංකය කුමක්ද?", answers: ["24"]), // [cite: 28, 29]
+      QuizQuestion(question: "රටාව සම්පූර්ණ කරන්න : 5, 10, 15, ___, ___, 30", answers: ["20", "25"]),
+      QuizQuestion(question: "අතුරුදහන් අංකය පුරවන්න : 24, __, 36, __, 48", answers: ["30", "42"]),
+      QuizQuestion(question: "දෙකෙන් ගණන් කරන්න : 2, 4, 6, ___, ___", answers: ["8", "10"]),
+      QuizQuestion(question: "සති 5 ක් තුළ දින කීයක් තිබේද?\n(ඉඟිය : සතිය 1 = දින 7)", answers: ["35"], units: ["Days"]),
+      QuizQuestion(question: "3, 6, 9, 12, ___ රටාවේ 8 වන අංකය කුමක්ද?", answers: ["24"]),
     ],
-
-    // --- Task 04 [cite: 30] ---
     [
-      QuizQuestion(
-          question: "පැන්සලක් සෙන්ටිමීටර 12 ක් දිගයි.\nඔබට පැන්සල් 5 ක් තිබේ නම්, ඒවායේ මුළු දිග කොපමණද?",
-          answers: ["60"],
-          units: ["cm"] // [cite: 31, 32, 33]
-      ),
-      QuizQuestion(
-          question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 6 ක් සහ පළල සෙන්ටිමීටර 4 කි.\nසෘජුකෝණාස්‍රයේ වර්ගඵලය කුමක්ද?",
-          answers: ["24"],
-          units: ["square centimeters"] // [cite: 34, 35]
-      ),
-      QuizQuestion(
-          question: "ගසක් උස මීටර් 18 කි.\nගස සෑම වසරකම මීටර් 3 ක් වැඩෙන්නේ නම්, වසර 4 කට පසු එය කොපමණ උස වේද?",
-          answers: ["30"],
-          units: ["meters"] // [cite: 36, 37, 38]
-      ),
-      QuizQuestion(question: "ත්‍රිකෝණයක පැති කීයක් තිබේද?", answers: ["3"]), // [cite: 39]
-      QuizQuestion(
-          question: "ඔබේ පන්තිය උදේ 9:00 ට ආරම්භ වී සවස 3:00 ට අවසන් වන්නේ නම්, පන්තිය පැය කීයක් පවතීද?",
-          answers: ["6"],
-          units: ["Hours"] // [cite: 40, 41]
-      ),
+      QuizQuestion(question: "පැන්සලක් සෙන්ටිමීටර 12 ක් දිගයි.\nඔබට පැන්සල් 5 ක් තිබේ නම්, ඒවායේ මුළු දිග කොපමණද?", answers: ["60"], units: ["cm"]),
+      QuizQuestion(question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 6 ක් සහ පළල සෙන්ටිමීටර 4 කි.\nසෘජුකෝණාස්‍රයේ වර්ගඵලය කුමක්ද?", answers: ["24"], units: ["square centimeters"]),
+      QuizQuestion(question: "ගසක් උස මීටර් 18 කි.\nගස සෑම වසරකම මීටර් 3 ක් වැඩෙන්නේ නම්, වසර 4 කට පසු එය කොපමණ උස වේද?", answers: ["30"], units: ["meters"]),
+      QuizQuestion(question: "ත්‍රිකෝණයක පැති කීයක් තිබේද?", answers: ["3"]),
+      QuizQuestion(question: "ඔබේ පන්තිය උදේ 9:00 ට ආරම්භ වී සවස 3:00 ට අවසන් වන්නේ නම්, පන්තිය පැය කීයක් පවතීද?", answers: ["6"], units: ["Hours"]),
     ],
-
-    // --- Task 05 [cite: 42] ---
     [
-      QuizQuestion(
-          question: "ඔබට රුපියල් 50 ක් තිබේ.\nඔබ රුපියල් 15 බැගින් වූ සෙල්ලම් බඩු 2 ක් මිලදී ගන්නේ නම්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?",
-          answers: ["20"],
-          units: ["Rupees"] // [cite: 43, 44, 45]
-      ),
-      QuizQuestion(
-          question: "ඔබට රුපියල් 10 ක් ඇති අතර, ඔබේ මිතුරාගෙන් ඔබට රුපියල් 20 ක් ලැබේ.\nදැන් ඔබ සතුව කොපමණ මුදලක් තිබේද?",
-          answers: ["30"],
-          units: ["Rupees"] // [cite: 46, 47, 48]
-      ),
-      QuizQuestion(
-          question: "දොඩම් මල්ලක් රුපියල් 35 කි.\nඔබ බෑග් 3 ක් මිලදී ගන්නේ නම්, ඔබ මුළු මුදල කොපමණද?",
-          answers: ["105"],
-          units: ["Rupees"] // [cite: 49, 50, 51]
-      ),
-      QuizQuestion(
-          question: "ඔබට රුපියල් 100 ක් ඇත.\nඔබ රුපියල් 45 ක් වියදම් කරන්නේ නම්, කොපමණ මුදලක් ඉතිරි වේද?",
-          answers: ["55"],
-          units: ["Rupees"] // [cite: 52, 53, 54]
-      ),
-      QuizQuestion(
-          question: "ඔබට රුපියල් 10 කාසි දෙකක්, රුපියල් 5 කාසි තුනක් සහ රුපියල් 1 කාසි හතරක් තිබේ නම්, ඔබට කොපමණ මුදලක් තිබේද?",
-          answers: ["39"],
-          units: ["Rupees"] // [cite: 55, 56]
-      ),
+      QuizQuestion(question: "ඔබට රුපියල් 50 ක් තිබේ.\nඔබ රුපියල් 15 බැගින් වූ සෙල්ලම් බඩු 2 ක් මිලදී ගන්නේ නම්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?", answers: ["20"], units: ["Rupees"]),
+      QuizQuestion(question: "ඔබට රුපියල් 10 ක් ඇති අතර, ඔබේ මිතුරාගෙන් ඔබට රුපියල් 20 ක් ලැබේ.\nදැන් ඔබ සතුව කොපමණ මුදලක් තිබේද?", answers: ["30"], units: ["Rupees"]),
+      QuizQuestion(question: "දොඩම් මල්ලක් රුපියල් 35 කි.\nඔබ බෑග් 3 ක් මිලදී ගන්නේ නම්, ඔබ මුළු මුදල කොපමණද?", answers: ["105"], units: ["Rupees"]),
+      QuizQuestion(question: "ඔබට රුපියල් 100 ක් ඇත.\nඔබ රුපියල් 45 ක් වියදම් කරන්නේ නම්, කොපමණ මුදලක් ඉතිරි වේද?", answers: ["55"], units: ["Rupees"]),
+      QuizQuestion(question: "ඔබට රුපියල් 10 කාසි දෙකක්, රුපියල් 5 කාසි තුනක් සහ රුපියල් 1 කාසි හතරක් තිබේ නම්, ඔබට කොපමණ මුදලක් තිබේද?", answers: ["39"], units: ["Rupees"]),
     ],
   ];
 
-  // --- State Variables ---
   int _selectedTaskIndex = -1;
   int _currentQuestionIndex = 0;
-
-  // Controllers for input fields (up to 2)
-  final List<TextEditingController> _controllers = [
-    TextEditingController(),
-    TextEditingController()
-  ];
-
+  final List<TextEditingController> _controllers = [TextEditingController(), TextEditingController()];
   String _feedbackMessage = "";
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
-
-  // --- Logic Methods ---
 
   void _selectTask(int index) {
     setState(() {
@@ -176,20 +87,16 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
 
   void _checkAnswer() {
     if (_selectedTaskIndex == -1) return;
-
     List<QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     int answerCount = currentQ.answers.length;
-
     bool allCorrect = true;
-
     for (int i = 0; i < answerCount; i++) {
       if (_controllers[i].text.trim() != currentQ.answers[i]) {
         allCorrect = false;
         break;
       }
     }
-
     setState(() {
       _isChecked = true;
       if (allCorrect) {
@@ -229,9 +136,6 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     });
   }
 
-  // --- UI Builders ---
-
-  // 1. Task Selection Menu
   Widget _buildTaskMenu() {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
@@ -243,28 +147,15 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
             margin: const EdgeInsets.only(bottom: 15),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: AppGradients.mathDetect, // Pink/Yellow
+              gradient: AppGradients.mathDetect,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(2, 4),
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(2, 4))],
             ),
             child: Row(
               children: [
                 const Icon(Icons.assignment, color: Colors.white, size: 30),
                 const SizedBox(width: 20),
-                Text(
-                  "පැවරුම 0${index + 1} (Task ${index + 1})",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                Text("පැවරුම 0${index + 1} (Task ${index + 1})", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                 const Spacer(),
                 const Icon(Icons.arrow_forward_ios, color: Colors.white),
               ],
@@ -275,7 +166,6 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     );
   }
 
-  // 2. Quiz View
   Widget _buildQuizView() {
     QuizQuestion question = _allTasks[_selectedTaskIndex][_currentQuestionIndex];
     int answerCount = question.answers.length;
@@ -285,163 +175,80 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Question Card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
             ),
             child: Column(
               children: [
-                Text(
-                  "ප්‍රශ්නය ${_currentQuestionIndex + 1} / 5",
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                ),
+                Text("ප්‍රශ්නය ${_currentQuestionIndex + 1} / 5", style: const TextStyle(color: Colors.grey, fontSize: 14)),
                 const SizedBox(height: 10),
-                Text(
-                  question.question,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
+                Text(question.question, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               ],
             ),
           ),
-
           const SizedBox(height: 30),
-
-          // Dynamic Input Fields (1 or 2 inputs)
           answerCount == 1
               ? _buildSingleInput(0, question.units[0])
-              : Row(
-            children: [
-              Expanded(child: _buildSingleInput(0, question.units[0])),
-              const SizedBox(width: 10),
-              Expanded(child: _buildSingleInput(1, question.units[1])),
-            ],
-          ),
-
+              : Row(children: [Expanded(child: _buildSingleInput(0, question.units[0])), const SizedBox(width: 10), Expanded(child: _buildSingleInput(1, question.units[1]))]),
           const SizedBox(height: 20),
-
-          // Feedback Message
           if (_isChecked)
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _feedbackColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _feedbackColor),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _feedbackColor == Colors.green ? Icons.check_circle : Icons.error,
-                    color: _feedbackColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _feedbackMessage,
-                    style: TextStyle(
-                      color: _feedbackColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
+              decoration: BoxDecoration(color: _feedbackColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10), border: Border.all(color: _feedbackColor)),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(_feedbackColor == Colors.green ? Icons.check_circle : Icons.error, color: _feedbackColor), const SizedBox(width: 10), Text(_feedbackMessage, style: TextStyle(color: _feedbackColor, fontWeight: FontWeight.bold, fontSize: 16))]),
             ),
-
           const SizedBox(height: 30),
-
-          // Check & Retry Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Check Button
-              ElevatedButton.icon(
-                onPressed: _checkAnswer,
-                icon: const Icon(Icons.check),
-                label: const Text("Check"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-              ),
-              // Retry Button
-              ElevatedButton.icon(
-                onPressed: _resetQuestion,
-                icon: const Icon(Icons.refresh),
-                label: const Text("Retry"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-              ),
-            ],
-          ),
-
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            ElevatedButton.icon(onPressed: _checkAnswer, icon: const Icon(Icons.check), label: const Text("Check"), style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
+            ElevatedButton.icon(onPressed: _resetQuestion, icon: const Icon(Icons.refresh), label: const Text("Retry"), style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
+          ]),
           const SizedBox(height: 30),
-
-          // Navigation (Prev/Next) & Final Back Button
           Column(
             children: [
-              // Next / Prev Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Previous Button (Hide on first question)
-                  _currentQuestionIndex > 0
-                      ? IconButton(
-                    onPressed: _prevQuestion,
-                    icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.purple),
-                  )
-                      : const SizedBox(width: 30),
-
-                  // Next Button (Hide on last question)
-                  _currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1
-                      ? IconButton(
-                    onPressed: _nextQuestion,
-                    icon: const Icon(Icons.arrow_forward_ios, size: 30, color: Colors.purple),
-                  )
-                      : const SizedBox(width: 30),
-                ],
-              ),
-
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                _currentQuestionIndex > 0 ? IconButton(onPressed: _prevQuestion, icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.purple)) : const SizedBox(width: 30),
+                _currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1 ? IconButton(onPressed: _nextQuestion, icon: const Icon(Icons.arrow_forward_ios, size: 30, color: Colors.purple)) : const SizedBox(width: 30),
+              ]),
               const SizedBox(height: 20),
-
-              // BIG "Back to Tasks" button (Only on Last Question)
               if (isLastQuestion)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _backToMenu,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          elevation: 5,
+                        ),
+                        child: const Text("ප්‍රතිඵල බලන්න (View Results)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
-                      elevation: 5,
                     ),
-                    child: const Text(
-                      "Back to Tasks (අවසන් කරන්න)",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _backToMenu,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          elevation: 5,
+                        ),
+                        child: const Text("අවසන් කරන්න (Back to Tasks)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
             ],
           ),
@@ -450,7 +257,6 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     );
   }
 
-  // Updated Input Builder with Unit Support
   Widget _buildSingleInput(int index, String unit) {
     return TextField(
       controller: _controllers[index],
@@ -459,19 +265,11 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
       decoration: InputDecoration(
         hintText: "?",
-        // Show the unit (e.g., "cm", "Rupees") as a suffix if it exists
         suffixText: unit.isNotEmpty ? unit : null,
-        suffixStyle: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-            fontWeight: FontWeight.bold
-        ),
+        suffixStyle: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
       ),
     );
   }
@@ -491,20 +289,14 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.purple),
-            onPressed: () {
-              if (_selectedTaskIndex != -1) {
-                _backToMenu();
-              } else {
-                Navigator.pop(context);
-              }
-            },
-          ),
-          title: Text(
-            _selectedTaskIndex == -1 ? 'ශ්‍රේණිය 3 (Grade 3)' : 'පැවරුම 0${_selectedTaskIndex + 1}',
-            style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
-          ),
+          leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () {
+            if (_selectedTaskIndex != -1) {
+              _backToMenu();
+            } else {
+              Navigator.pop(context);
+            }
+          }),
+          title: Text(_selectedTaskIndex == -1 ? 'ශ්‍රේණිය 3 (Grade 3)' : 'පැවරුම 0${_selectedTaskIndex + 1}', style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
         body: _selectedTaskIndex == -1 ? _buildTaskMenu() : _buildQuizView(),

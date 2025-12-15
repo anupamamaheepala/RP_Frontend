@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '/theme.dart'; // Adjust this path if your theme.dart is in a different folder
+import '/theme.dart';
+import 'task_result.dart';
 
 // --- Private Model Class to avoid conflicts with other Grade files ---
 class _QuizQuestion {
@@ -460,26 +461,53 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
 
               const SizedBox(height: 20),
 
-              // BIG "Back to Tasks" button (Only on Last Question)
+              // --- UPDATED SECTION: View Results + Back to Tasks ---
               if (isLastQuestion)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _backToMenu,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Navigate to TaskResultPage
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green, // Green color for success/results
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          "ප්‍රතිඵල බලන්න (View Results)",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      elevation: 5,
                     ),
-                    child: const Text(
-                      "Back to Tasks (අවසන් කරන්න)",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _backToMenu,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          "Back to Tasks (අවසන් කරන්න)",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
             ],
           ),
