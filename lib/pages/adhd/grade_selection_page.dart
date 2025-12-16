@@ -67,7 +67,7 @@ class GradeSelectionPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'අධිමානසික නෝයීන්තා – Grade Selection',
+          'අවධාන ඌණතා – Grade Selection',
           style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

@@ -7,6 +7,9 @@ import 'dyscalculia_page.dart';
 import 'adhd_page.dart';
 import '/profile.dart'; // Import your Profile Page here
 
+
+import 'ADHD/grade_selection_page.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -60,7 +63,6 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // UPDATED: Back Button navigates to ProfilePage
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.purple),
           onPressed: () {
@@ -91,7 +93,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // 4 clickable cards
+              // Dyslexia – unchanged (your friend's code)
               _buildCard(
                 titleSi: 'කියවීමේ දුෂ්කරතා',
                 titleEn: 'Dyslexia',
@@ -104,6 +106,8 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // Dysgraphia – unchanged (your friend's code)
               _buildCard(
                 titleSi: 'ලිවීමේ දුෂ්කරතා',
                 titleEn: 'Dysgraphia',
@@ -116,6 +120,8 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // Dyscalculia – unchanged (your friend's code)
               _buildCard(
                 titleSi: 'ගණනයේ දුෂ්කරතා',
                 titleEn: 'Dyscalculia',
@@ -128,15 +134,17 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // ADHD/ADD – ONLY THIS PART CHANGED (your component)
               _buildCard(
-                titleSi: 'අධිමානසික නෝයීන්තා',
+                titleSi: 'අවධාන ඌණතා',
                 titleEn: 'ADHD',
                 icon: Icons.psychology_alt_rounded,
                 colors: [const Color(0xFFf7971e), const Color(0xFFffd200)],
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ADHDPage()),
+                    MaterialPageRoute(builder: (_) => const GradeSelectionPage()),
                   );
                 },
               ),
