@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'Dyslexia/dyslexia_grade_page.dart';
 import 'dysgraphia_page.dart';
 import 'dyscalculia_page.dart';
-import 'adhd_page.dart';
-import '/profile.dart'; // Import your Profile Page here
+import 'adhd_page.dart'; // You can remove this later if not needed
+import '/profile.dart';
+import 'adhd/grade_selection_page.dart'; // ← NEW IMPORT
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -58,7 +59,6 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // UPDATED: Back Button navigates to ProfilePage
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.purple),
           onPressed: () {
@@ -89,7 +89,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // 4 clickable cards
+              // Dyslexia card (unchanged for now)
               _buildCard(
                 titleSi: 'කියවීමේ දුෂ්කරතා',
                 titleEn: 'Dyslexia',
@@ -102,6 +102,8 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // Dysgraphia card (unchanged)
               _buildCard(
                 titleSi: 'ලිවීමේ දුෂ්කරතා',
                 titleEn: 'Dysgraphia',
@@ -114,6 +116,8 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // Dyscalculia card (unchanged)
               _buildCard(
                 titleSi: 'ගණනයේ දුෂ්කරතා',
                 titleEn: 'Dyscalculia',
@@ -126,15 +130,19 @@ class HomePage extends StatelessWidget {
                   );
                 },
               ),
+
+              // ADHD card – NOW FIXED to go to GradeSelectionPage
               _buildCard(
-                titleSi: 'අධිමානසික නෝයීන්තා',
+                titleSi: 'අවධාන ඌණතා',
                 titleEn: 'ADHD',
                 icon: Icons.psychology_alt_rounded,
                 colors: [const Color(0xFFf7971e), const Color(0xFFffd200)],
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ADHDPage()),
+                    MaterialPageRoute(
+                      builder: (_) => const GradeSelectionPage(),
+                    ),
                   );
                 },
               ),

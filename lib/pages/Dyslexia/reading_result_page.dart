@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class ReadingResultPage extends StatelessWidget {
   final String displayedSentence;
   final int durationSeconds;
