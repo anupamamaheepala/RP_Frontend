@@ -1,0 +1,794 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:http/http.dart' as http;
+import 'dart:math' as math;
+
+class DysgraphiaPage extends StatefulWidget {
+  final String activityType; // 'letters', 'words', or 'sentences'
+
+  const DysgraphiaPage({super.key, required this.activityType});
+
+  @override
+  State<DysgraphiaPage> createState() => _DysgraphiaPageState();
+}
+
+class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProviderStateMixin {
+  late List<String> _prompts;
+  int _currentIndex = 0;
+  int _attemptsCompleted = 0;
+  bool _isDrawing = false;
+  List<List<Offset>> _currentStrokes = [];
+  List<List<List<Offset>>> _allStrokes = [];
+  List<double> _timesTaken = [];
+  DateTime? _startTime;
+  Map<String, dynamic>? _metrics;
+  String? _error;
+  int _stars = 0;
+  late AnimationController _celebrationController;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePrompts();
+    _celebrationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _startPrompt();
+  }
+
+  void _initializePrompts() {
+    switch (widget.activityType) {
+      case 'letters':
+        _prompts = ['ළ', 'ඩ', 'ම', 'ණ', 'ශ', 'ෂ', 'ඤ', 'ය', 'ස', 'ත', 'ධ', 'බ', 'ඛ', 'භ', 'ච'];
+        break;
+      case 'words':
+        _prompts = ['දර', 'ගාල', 'බය', 'යාල', 'රිසි', 'අකුරු', 'දරුවා', 'පවුල', 'ප්‍රතිකාර'];
+        break;
+      case 'sentences':
+        _prompts = [
+          'ගිරවාඅඹකයි.',
+          'ගස්වැල්රැකගනිමු.',
+          'අම්මාඅපටආදරෙයි.',
+          'පරිසරයපිරිසිදුවතබාගනිමු.',
+          'වර්ෂාකාලයහාවාටසතුටකි.',
+          'පලතුරුපපෝෂ්‍යදායකයි.',
+          'ජාතිකකොඩියටගෞරවකරමු.',
+          'පොරමොලාගේඊයක්වැරදීගියේකලාතුරකිනි.',
+        ];
+        break;
+      default:
+        _prompts = [];
+    }
+  }
+
+  @override
+  void dispose() {
+    _celebrationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _isLetter(String prompt) => prompt.length <= 2;
+  bool _isWord(String prompt) => prompt.length > 2 && prompt.length <= 10;
+  bool _isSentence(String prompt) => prompt.length > 10;
+  int _maxAttempts() => 1;
+
+  String _getTitle() {
+    final prompt = _prompts[_currentIndex];
+    if (_isLetter(prompt)) return 'අකුරු ඉගෙනීම';
+    if (_isWord(prompt)) return 'වචන ලිවීම';
+    return 'වාක්‍ය ලිවීම';
+  }
+
+  String _getTip() {
+    final prompt = _prompts[_currentIndex];
+    if (_isLetter(prompt)) return 'මෙම අකුර පැහැදිලිව ලියන්න';
+    if (_isWord(prompt)) return 'අකුරු අතර සමාන පරතරයක් තබන්න';
+    return 'වාක්‍යය පැහැදිලිව හා සුමටව ලියන්න';
+  }
+
+  String _getFeedback() {
+    final prompt = _prompts[_currentIndex];
+    if (_isLetter(prompt)) return 'නියමයි! දිගටම කරගෙන යන්න! 🎯';
+    if (_isWord(prompt)) return 'හොඳින් කරනවා! පැහැදිලිව ලියන්න 📝';
+    return 'විශිෂ්ටයි! ඔබ හොඳින් ඉගෙන ගන්නවා! ⭐';
+  }
+
+  void _startPrompt() {
+    if (_currentIndex >= _prompts.length) {
+      _uploadAllData();
+      return;
+    }
+    setState(() {
+      _currentStrokes = [];
+      _attemptsCompleted = 0;
+      _startTime = DateTime.now();
+    });
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    setState(() {
+      _isDrawing = true;
+      _currentStrokes.add([details.localPosition]);
+    });
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    if (!_isDrawing) return;
+    setState(() {
+      _currentStrokes.last.add(details.localPosition);
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    setState(() => _isDrawing = false);
+  }
+
+  void _clearCanvas() {
+    setState(() {
+      _currentStrokes = [];
+    });
+  }
+
+  void _submitAttempt() {
+    if (_startTime == null || _currentStrokes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('කරුණාකර පළමුව ලියන්න!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final timeTaken = DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
+    setState(() {
+      _timesTaken.add(timeTaken);
+      _allStrokes.add(List.from(_currentStrokes));
+      _attemptsCompleted++;
+      _currentStrokes = [];
+      _startTime = DateTime.now();
+
+      if (_attemptsCompleted % _maxAttempts() == 0) {
+        _stars++;
+        _celebrationController.forward().then((_) => _celebrationController.reset());
+        _currentIndex++;
+        Future.delayed(const Duration(milliseconds: 600), _startPrompt);
+      }
+    });
+  }
+
+  Future<void> _uploadAllData() async {
+    if (_allStrokes.isEmpty) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('ප්‍රතිඵල සැකසෙමින්...', style: TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final data = {
+      'grade': 3,
+      'prompts': _prompts,
+      'strokes': _allStrokes.map((strokes) => strokes.map((path) => path.map((offset) => {'x': offset.dx, 'y': offset.dy}).toList()).toList()).toList(),
+      'times_taken': _timesTaken,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://your-api-url.com/dysgraphia/submit-writing'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        final metrics = jsonDecode(response.body);
+        setState(() {
+          _metrics = metrics;
+          _error = null;
+        });
+        _showResults();
+      } else {
+        setState(() => _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})');
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      setState(() => _error = 'දෝෂය: $e');
+    }
+  }
+
+  void _showResults() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.purple.shade100, Colors.blue.shade100],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
+              const SizedBox(height: 16),
+              const Text(
+                'සුභ පැතුම්! 🎉',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'ඔබ වැඩ ${_prompts.length} ක් සම්පූර්ණ කළා!',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (i) => Icon(
+                        i < _stars ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 32,
+                      )),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'සමස්ත කාලය: ${_timesTaken.fold(0.0, (a, b) => a + b).toStringAsFixed(1)} තත්පර',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'සාමාන්‍ය කාලය: ${(_timesTaken.fold(0.0, (a, b) => a + b) / _timesTaken.length).toStringAsFixed(1)} තත්පර',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.check_circle),
+                label: const Text('හරි', style: TextStyle(fontSize: 18)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawingArea() {
+    final currentPrompt = _prompts[_currentIndex];
+    final isLetter = _isLetter(currentPrompt);
+    final isSentence = _isSentence(currentPrompt);
+
+    final orientation = MediaQuery.of(context).orientation;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    double canvasWidth;
+    double canvasHeight;
+
+    if (orientation == Orientation.landscape) {
+      canvasWidth = screenWidth - 100;
+      canvasHeight = isLetter ? 180 : (isSentence ? 300 : 220);
+    } else {
+      canvasWidth = screenWidth - 48;
+      canvasHeight = isLetter ? 200 : (isSentence ? 400 : 280);
+    }
+
+    final canvasSize = Size(canvasWidth, canvasHeight);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.blue.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          if ((isSentence || _isWord(currentPrompt)) && orientation == Orientation.portrait)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.orange.shade300),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.screen_rotation, color: Colors.orange.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'තිරය කරකවා වැඩි ඉඩක් ලබා ගන්න',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.orange.shade900,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          if (isLetter)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade100, Colors.blue.shade100],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.purple.shade300, width: 2),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'මෙම අකුර ලියන්න:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    currentPrompt,
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade100, Colors.blue.shade100],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.purple.shade300, width: 2),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'මෙය ලියන්න:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    currentPrompt,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+
+          // Drawing Canvas - Using Listener to prevent scrolling
+          Container(
+            width: canvasSize.width,
+            height: canvasSize.height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.purple.shade300, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: Listener(
+                onPointerDown: (details) {
+                  _onPanStart(DragStartDetails(
+                    localPosition: details.localPosition,
+                    globalPosition: details.position,
+                  ));
+                },
+                onPointerMove: (details) {
+                  _onPanUpdate(DragUpdateDetails(
+                    localPosition: details.localPosition,
+                    globalPosition: details.position,
+                    delta: details.delta,
+                  ));
+                },
+                onPointerUp: (details) {
+                  _onPanEnd(DragEndDetails());
+                },
+                child: Stack(
+                  children: [
+                    CustomPaint(
+                      size: canvasSize,
+                      painter: _BaselinePainter(
+                        canvasSize,
+                        isLetter ? 'letter' : _isWord(currentPrompt) ? 'word' : 'sentence',
+                      ),
+                    ),
+                    CustomPaint(
+                      size: canvasSize,
+                      painter: _StrokePainter(_currentStrokes, canvasSize),
+                    ),
+                    if (_currentStrokes.isEmpty)
+                      Center(
+                        child: Text(
+                          'මෙහි ලියන්න ✍️',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.grey.shade400,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (_currentIndex + 1) / _prompts.length;
+
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.purple.shade50, Colors.blue.shade50],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _getTitle(),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Row(
+                          children: List.generate(
+                            5,
+                                (i) => AnimatedScale(
+                              scale: i < _stars ? 1.2 : 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: Icon(
+                                i < _stars ? Icons.star : Icons.star_border,
+                                color: i < _stars ? Colors.amber : Colors.grey.shade300,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.purple.shade100,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
+                              minHeight: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade100,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${_currentIndex + 1}/${_prompts.length}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.blue.shade100, Colors.purple.shade100],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _getTip(),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+                      Expanded(child: _buildDrawingArea()),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _clearCanvas,
+                              icon: const Icon(Icons.refresh, size: 22),
+                              label: const Text(
+                                'මකන්න',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange.shade400,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 4,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _submitAttempt,
+                              icon: const Icon(Icons.check_circle, size: 22),
+                              label: Text(
+                                _attemptsCompleted < _maxAttempts() - 1 ? 'ඊළඟ' : 'හරි',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              _error!,
+                              style: const TextStyle(color: Colors.red, fontSize: 12),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StrokePainter extends CustomPainter {
+  final List<List<Offset>> strokes;
+  final Size canvasSize;
+
+  _StrokePainter(this.strokes, this.canvasSize);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.purple.shade700
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.stroke;
+
+    for (final path in strokes) {
+      if (path.length < 2) continue;
+      final pathPoints = Path();
+      pathPoints.moveTo(path[0].dx, path[0].dy);
+      for (int i = 1; i < path.length; i++) {
+        pathPoints.lineTo(path[i].dx, path[i].dy);
+      }
+      canvas.drawPath(pathPoints, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _BaselinePainter extends CustomPainter {
+  final Size canvasSize;
+  final String type;
+
+  _BaselinePainter(this.canvasSize, this.type);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.purple.withOpacity(0.3)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final dashPaint = Paint()
+      ..color = Colors.blue.withOpacity(0.2)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    if (type == 'letter' || type == 'word') {
+      final y = canvasSize.height / 2;
+      _drawDashedLine(canvas, dashPaint, Offset(0, y), Offset(canvasSize.width, y));
+    } else {
+      final spacing = canvasSize.height / 4;
+      for (int i = 1; i < 4; i++) {
+        _drawDashedLine(
+          canvas,
+          dashPaint,
+          Offset(0, spacing * i),
+          Offset(canvasSize.width, spacing * i),
+        );
+      }
+    }
+  }
+
+  void _drawDashedLine(Canvas canvas, Paint paint, Offset start, Offset end) {
+    const dashWidth = 8.0;
+    const dashSpace = 5.0;
+    double distance = (end - start).distance;
+    double dashCount = (distance / (dashWidth + dashSpace)).floorToDouble();
+
+    for (int i = 0; i < dashCount; i++) {
+      double startX = start.dx + (end.dx - start.dx) * (i * (dashWidth + dashSpace) / distance);
+      double startY = start.dy + (end.dy - start.dy) * (i * (dashWidth + dashSpace) / distance);
+      double endX = start.dx + (end.dx - start.dx) * ((i * (dashWidth + dashSpace) + dashWidth) / distance);
+      double endY = start.dy + (end.dy - start.dy) * ((i * (dashWidth + dashSpace) + dashWidth) / distance);
+      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
