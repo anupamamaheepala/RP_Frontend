@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dysgraphia_page.dart';
 
 class DysgraphiaSelectionPage extends StatefulWidget {
-  const DysgraphiaSelectionPage({super.key});
+  final int grade;
+
+  const DysgraphiaSelectionPage({super.key, required this.grade});
 
   @override
   State<DysgraphiaSelectionPage> createState() => _DysgraphiaSelectionPageState();
@@ -36,7 +38,9 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DysgraphiaPage(activityType: activityType),
+        builder: (context) => DysgraphiaPage(
+          activityType: activityType,
+        ),
       ),
     );
   }
@@ -194,15 +198,27 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                       icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    const Expanded(
-                      child: Text(
-                        'ලිවීමේ වැඩහුළුව',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                        textAlign: TextAlign.center,
+                    Expanded(
+                      child: Column(
+                        children: [
+                          const Text(
+                            'ලිවීමේ වැඩහුළුව',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            'ශ්‍රේණිය ${widget.grade}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.purple.shade400,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 48),
@@ -216,54 +232,6 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Welcome Section
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.amber.shade100, Colors.orange.shade100],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.orange.withOpacity(0.2),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.emoji_emotions,
-                              size: 64,
-                              color: Colors.orange.shade600,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'ආයුබෝවන්!',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'අද ඔබ කුමක් ඉගෙන ගන්නද?',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black.withOpacity(0.7),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
                       // Section Title
                       Padding(
                         padding: const EdgeInsets.only(left: 4, bottom: 16),
@@ -304,70 +272,12 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                         activityType: 'sentences',
                         itemCount: 8,
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // Tips Section
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.purple.shade200, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.purple.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.lightbulb, color: Colors.amber, size: 28),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'උපදෙස්:',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.purple.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            _buildTipItem('✓ අකුරු වලින් ආරම්භ කරන්න'),
-                            _buildTipItem('✓ සෑම අකුරක්ම හොඳින් පුහුණු කරන්න'),
-                            _buildTipItem('✓ වචන සඳහා සුමට ලිවීමක් පවත්වා ගන්න'),
-                            _buildTipItem('✓ දිගු වාක්‍ය සඳහා තිරය කරකවන්න'),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 15,
-          color: Colors.black.withOpacity(0.7),
-          height: 1.4,
         ),
       ),
     );
