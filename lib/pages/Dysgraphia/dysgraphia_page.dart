@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
+import 'dysgraphia_data.dart'; // Import the data file
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType; // 'letters', 'words', or 'sentences'
+  final int grade; // Grade level (3-7)
 
-  const DysgraphiaPage({super.key, required this.activityType});
+  const DysgraphiaPage({
+    super.key,
+    required this.activityType,
+    required this.grade,
+  });
 
   @override
   State<DysgraphiaPage> createState() => _DysgraphiaPageState();
@@ -40,27 +46,12 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   }
 
   void _initializePrompts() {
-    switch (widget.activityType) {
-      case 'letters':
-        _prompts = ['ළ', 'ඩ', 'ම', 'ණ', 'ශ', 'ෂ', 'ඤ', 'ය', 'ස', 'ත', 'ධ', 'බ', 'ඛ', 'භ', 'ච'];
-        break;
-      case 'words':
-        _prompts = ['දර', 'ගාල', 'බය', 'යාල', 'රිසි', 'අකුරු', 'දරුවා', 'පවුල', 'ප්‍රතිකාර'];
-        break;
-      case 'sentences':
-        _prompts = [
-          'ගිරවාඅඹකයි.',
-          'ගස්වැල්රැකගනිමු.',
-          'අම්මාඅපටආදරෙයි.',
-          'පරිසරයපිරිසිදුවතබාගනිමු.',
-          'වර්ෂාකාලයහාවාටසතුටකි.',
-          'පලතුරුපපෝෂ්‍යදායකයි.',
-          'ජාතිකකොඩියටගෞරවකරමු.',
-          'පොරමොලාගේඊයක්වැරදීගියේකලාතුරකිනි.',
-        ];
-        break;
-      default:
-        _prompts = [];
+    // Load prompts from the data file based on grade and activity type
+    _prompts = DysgraphiaData.getPrompts(widget.grade, widget.activityType);
+
+    // Fallback if no data found
+    if (_prompts.isEmpty) {
+      _prompts = ['දෝෂයක්']; // Error message
     }
   }
 
@@ -72,15 +63,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   }
 
   bool _isLetter(String prompt) => prompt.length <= 2;
-  bool _isWord(String prompt) => prompt.length > 2 && prompt.length <= 10;
-  bool _isSentence(String prompt) => prompt.length > 10;
+  bool _isWord(String prompt) => prompt.length > 2 && prompt.length <= 15;
+  bool _isSentence(String prompt) => prompt.length > 15;
   int _maxAttempts() => 1;
 
   String _getTitle() {
-    final prompt = _prompts[_currentIndex];
-    if (_isLetter(prompt)) return 'අකුරු ඉගෙනීම';
-    if (_isWord(prompt)) return 'වචන ලිවීම';
-    return 'වාක්‍ය ලිවීම';
+    switch (widget.activityType) {
+      case 'letters':
+        return 'අකුරු ඉගෙනීම - ශ්‍රේණිය ${widget.grade}';
+      case 'words':
+        return 'වචන ලිවීම - ශ්‍රේණිය ${widget.grade}';
+      case 'sentences':
+        return 'වාක්‍ය ලිවීම - ශ්‍රේණිය ${widget.grade}';
+      default:
+        return 'ලිවීමේ වැඩහුළුව';
+    }
   }
 
   String _getTip() {
@@ -185,7 +182,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     );
 
     final data = {
-      'grade': 3,
+      'grade': widget.grade,
+      'activity_type': widget.activityType,
       'prompts': _prompts,
       'strokes': _allStrokes.map((strokes) => strokes.map((path) => path.map((offset) => {'x': offset.dx, 'y': offset.dy}).toList()).toList()).toList(),
       'times_taken': _timesTaken,
@@ -244,6 +242,11 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 'ඔබ වැඩ ${_prompts.length} ක් සම්පූර්ණ කළා!',
                 style: const TextStyle(fontSize: 18),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'ශ්‍රේණිය ${widget.grade} - ${_getActivityName()}',
+                style: TextStyle(fontSize: 16, color: Colors.purple.shade700, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -291,6 +294,19 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
         ),
       ),
     );
+  }
+
+  String _getActivityName() {
+    switch (widget.activityType) {
+      case 'letters':
+        return 'අකුරු ඉගෙනීම';
+      case 'words':
+        return 'වචන ලිවීම';
+      case 'sentences':
+        return 'වාක්‍ය ලිවීම';
+      default:
+        return '';
+    }
   }
 
   Widget _buildDrawingArea() {
@@ -421,7 +437,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
             ),
           const SizedBox(height: 20),
 
-          // Drawing Canvas - Using Listener to prevent scrolling
+          // Drawing Canvas
           Container(
             width: canvasSize.width,
             height: canvasSize.height,
@@ -530,7 +546,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                           child: Text(
                             _getTitle(),
                             style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
