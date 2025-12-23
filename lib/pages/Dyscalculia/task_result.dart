@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/profile.dart';
 
 class TaskResultPage extends StatelessWidget {
   const TaskResultPage({super.key});
@@ -16,6 +17,7 @@ class TaskResultPage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.purple),
+
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
@@ -56,8 +58,16 @@ class TaskResultPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const SizedBox(height: 30),
+
+              // --- UPDATED BUTTON ---
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  // Navigate to ProfilePage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
                   foregroundColor: Colors.white,
@@ -66,8 +76,10 @@ class TaskResultPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15)
                   ),
                 ),
-                child: const Text("ආපසු (Back)"),
+                child: const Text("පැතිකඩට ආපසු යන්න (Back to Profile)", textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
               ),
+              // ----------------------
+
             ],
           ),
         ),
