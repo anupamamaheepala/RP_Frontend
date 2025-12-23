@@ -40,6 +40,7 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
       MaterialPageRoute(
         builder: (context) => DysgraphiaPage(
           activityType: activityType,
+          grade: widget.grade,
         ),
       ),
     );
