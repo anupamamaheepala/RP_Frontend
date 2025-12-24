@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
-import 'dysgraphia_data.dart'; // Import the data file
+import 'dysgraphia_data.dart';
 
 class DysgraphiaPage extends StatefulWidget {
-  final String activityType; // 'letters', 'words', or 'sentences'
-  final int grade; // Grade level (3-7)
+  final String activityType;
+  final int grade;
 
   const DysgraphiaPage({
     super.key,
@@ -33,6 +33,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   int _stars = 0;
   late AnimationController _celebrationController;
   final ScrollController _scrollController = ScrollController();
+  bool _canScroll = true; // Control scroll behavior
 
   @override
   void initState() {
@@ -46,12 +47,9 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   }
 
   void _initializePrompts() {
-    // Load prompts from the data file based on grade and activity type
     _prompts = DysgraphiaData.getPrompts(widget.grade, widget.activityType);
-
-    // Fallback if no data found
     if (_prompts.isEmpty) {
-      _prompts = ['දෝෂයක්']; // Error message
+      _prompts = ['දෝෂයක්'];
     }
   }
 
@@ -109,6 +107,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _isDrawing = true;
+      _canScroll = false; // Disable scrolling when drawing starts
       _currentStrokes.add([details.localPosition]);
     });
   }
@@ -121,7 +120,10 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   }
 
   void _onPanEnd(DragEndDetails details) {
-    setState(() => _isDrawing = false);
+    setState(() {
+      _isDrawing = false;
+      _canScroll = true; // Re-enable scrolling when drawing ends
+    });
   }
 
   void _clearCanvas() {
@@ -320,12 +322,13 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     double canvasWidth;
     double canvasHeight;
 
+    // Increased canvas heights for better writing space
     if (orientation == Orientation.landscape) {
       canvasWidth = screenWidth - 100;
-      canvasHeight = isLetter ? 180 : (isSentence ? 300 : 220);
+      canvasHeight = isLetter ? 180 : (isSentence ? 450 : 250);
     } else {
       canvasWidth = screenWidth - 48;
-      canvasHeight = isLetter ? 200 : (isSentence ? 400 : 280);
+      canvasHeight = isLetter ? 200 : (isSentence ? 600 : 320);
     }
 
     final canvasSize = Size(canvasWidth, canvasHeight);
@@ -425,8 +428,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                   const SizedBox(height: 8),
                   Text(
                     currentPrompt,
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: TextStyle(
+                      fontSize: isSentence ? 24 : 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.purple,
                     ),
@@ -437,7 +440,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
             ),
           const SizedBox(height: 20),
 
-          // Drawing Canvas
+          // Drawing Canvas - Now with increased height
           Container(
             width: canvasSize.width,
             height: canvasSize.height,
@@ -604,8 +607,11 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 ),
               ),
 
+              // WRAPPED IN SingleChildScrollView for scrolling
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: _canScroll ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     children: [
@@ -651,7 +657,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                       ),
 
                       const SizedBox(height: 12),
-                      Expanded(child: _buildDrawingArea()),
+                      _buildDrawingArea(),
                       const SizedBox(height: 12),
 
                       Row(
@@ -778,8 +784,9 @@ class _BaselinePainter extends CustomPainter {
       final y = canvasSize.height / 2;
       _drawDashedLine(canvas, dashPaint, Offset(0, y), Offset(canvasSize.width, y));
     } else {
-      final spacing = canvasSize.height / 4;
-      for (int i = 1; i < 4; i++) {
+      // More lines for sentences to guide writing
+      final spacing = canvasSize.height / 5;
+      for (int i = 1; i < 5; i++) {
         _drawDashedLine(
           canvas,
           dashPaint,
