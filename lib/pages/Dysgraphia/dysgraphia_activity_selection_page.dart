@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dysgraphia_page.dart';
+import 'dysgraphia_data.dart'; // Import the data file
 
 class DysgraphiaSelectionPage extends StatefulWidget {
   final int grade;
@@ -52,8 +53,10 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
     required IconData icon,
     required Color color,
     required String activityType,
-    required int itemCount,
   }) {
+    // Get dynamic item count from data file
+    final itemCount = DysgraphiaData.getItemCount(widget.grade, activityType);
+
     return ScaleTransition(
       scale: _scaleAnimation,
       child: GestureDetector(
@@ -246,14 +249,13 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                         ),
                       ),
 
-                      // Activity Cards
+                      // Activity Cards - Now with dynamic counts
                       _buildActivityCard(
                         title: 'අකුරු ඉගෙනීම',
                         subtitle: 'සිංහල අකුරු පුහුණුව',
                         icon: Icons.abc,
                         color: Colors.purple,
                         activityType: 'letters',
-                        itemCount: 15,
                       ),
 
                       _buildActivityCard(
@@ -262,7 +264,6 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                         icon: Icons.edit_note,
                         color: Colors.blue,
                         activityType: 'words',
-                        itemCount: 9,
                       ),
 
                       _buildActivityCard(
@@ -271,7 +272,6 @@ class _DysgraphiaSelectionPageState extends State<DysgraphiaSelectionPage> with 
                         icon: Icons.article,
                         color: Colors.green,
                         activityType: 'sentences',
-                        itemCount: 8,
                       ),
                     ],
                   ),
