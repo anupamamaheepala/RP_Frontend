@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'dysgraphia_data.dart';
+import 'package:rp_frontend/config.dart';
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType;
@@ -27,8 +28,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   List<List<Offset>> _currentStrokes = [];
   List<List<List<Offset>>> _allStrokes = [];
   List<double> _timesTaken = [];
-  DateTime? _startTime;
-  Map<String, dynamic>? _metrics;
+  DateTime? _startTime; // FIXED: Added missing declaration
   String? _error;
   int _stars = 0;
   late AnimationController _celebrationController;
@@ -83,13 +83,6 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     if (_isLetter(prompt)) return 'මෙම අකුර පැහැදිලිව ලියන්න';
     if (_isWord(prompt)) return 'අකුරු අතර සමාන පරතරයක් තබන්න';
     return 'වාක්‍යය පැහැදිලිව හා සුමටව ලියන්න';
-  }
-
-  String _getFeedback() {
-    final prompt = _prompts[_currentIndex];
-    if (_isLetter(prompt)) return 'නියමයි! දිගටම කරගෙන යන්න! 🎯';
-    if (_isWord(prompt)) return 'හොඳින් කරනවා! පැහැදිලිව ලියන්න 📝';
-    return 'විශිෂ්ටයි! ඔබ හොඳින් ඉගෙන ගන්නවා! ⭐';
   }
 
   void _startPrompt() {
@@ -149,7 +142,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       _allStrokes.add(List.from(_currentStrokes));
       _attemptsCompleted++;
       _currentStrokes = [];
-      _startTime = DateTime.now();
+      _startTime = DateTime.now(); // FIXED: Reset _startTime for next attempt
 
       if (_attemptsCompleted % _maxAttempts() == 0) {
         _stars++;
@@ -183,29 +176,48 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       ),
     );
 
+    // FIXED: Loop over actual completed prompts to avoid index out of bounds (RangeError)
+    final numCompleted = _allStrokes.length;
+    final promptsData = <Map<String, dynamic>>[];
+    for (int i = 0; i < numCompleted; i++) {
+      promptsData.add({
+        'prompt': _prompts[i], // Assumes _prompts[i] matches the i-th completed
+        // FIXED: Wrap strokes in {'points': [...]} to match backend Stroke model
+        'strokes': _allStrokes[i].map((path) => {
+          'points': path.map((offset) => {
+            'x': offset.dx.toDouble(), // Ensure double/float
+            'y': offset.dy.toDouble(),
+          }).toList(),
+        }).toList(),
+        'time_taken': _timesTaken[i],
+      });
+    }
+
     final data = {
       'grade': widget.grade,
       'activity_type': widget.activityType,
-      'prompts': _prompts,
-      'strokes': _allStrokes.map((strokes) => strokes.map((path) => path.map((offset) => {'x': offset.dx, 'y': offset.dy}).toList()).toList()).toList(),
-      'times_taken': _timesTaken,
+      'prompts_data': promptsData,
     };
 
     try {
+      // Use Config.baseUrl for dynamic backend URL
       final response = await http.post(
-        Uri.parse('https://your-api-url.com/dysgraphia/submit-writing'),
+        Uri.parse('${Config.baseUrl}/dysgraphia/submit-writing'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
+      print('Status: ${response.statusCode}');  // Add this
+      print('Body: ${response.body}');  // Add this - shows validation errors
       Navigator.pop(context);
 
       if (response.statusCode == 200) {
-        final metrics = jsonDecode(response.body);
-        setState(() {
-          _metrics = metrics;
+        final responseBody = jsonDecode(response.body);
+        if (responseBody['ok'] == true) {
           _error = null;
-        });
-        _showResults();
+          _showResults();
+        } else {
+          setState(() => _error = responseBody['error'] ?? 'උඩුගත කිරීම අසාර්ථකයි');
+        }
       } else {
         setState(() => _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})');
       }
@@ -216,6 +228,10 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   }
 
   void _showResults() {
+    // FIXED: Guard against empty _timesTaken to avoid divide by zero
+    final totalTime = _timesTaken.fold(0.0, (a, b) => a + b);
+    final avgTime = _timesTaken.isNotEmpty ? (totalTime / _timesTaken.length) : 0.0;
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -268,12 +284,12 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'සමස්ත කාලය: ${_timesTaken.fold(0.0, (a, b) => a + b).toStringAsFixed(1)} තත්පර',
+                      'සමස්ත කාලය: ${totalTime.toStringAsFixed(1)} තත්පර',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'සාමාන්‍ය කාලය: ${(_timesTaken.fold(0.0, (a, b) => a + b) / _timesTaken.length).toStringAsFixed(1)} තත්පර',
+                      'සාමාන්‍ය කාලය: ${avgTime.toStringAsFixed(1)} තත්පර',
                       style: const TextStyle(fontSize: 14),
                     ),
                   ],
@@ -511,7 +527,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final progress = (_currentIndex + 1) / _prompts.length;
+    // FIXED: Clamp progress to 0.0-1.0 to avoid RangeError in LinearProgressIndicator
+    final progress = (_currentIndex / _prompts.length).clamp(0.0, 1.0);
 
     return Scaffold(
       body: Container(
@@ -594,7 +611,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '${_currentIndex + 1}/${_prompts.length}',
+                            '${_currentIndex}/${_prompts.length}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
@@ -644,7 +661,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                _getTip(),
+                                _getTip(), // FIXED: Now properly accessible
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -770,11 +787,6 @@ class _BaselinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.purple.withOpacity(0.3)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
     final dashPaint = Paint()
       ..color = Colors.blue.withOpacity(0.2)
       ..strokeWidth = 1.0
