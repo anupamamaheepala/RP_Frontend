@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // Required for Timers
 import '/theme.dart';
 import 'task_result.dart';
 
-// --- Private Model Class to avoid conflicts with other Grade files ---
 class _QuizQuestion {
   final String question;
   final List<String> answers;
@@ -24,159 +24,52 @@ class DyscalG07Page extends StatefulWidget {
 
 class _DyscalG07PageState extends State<DyscalG07Page> {
 
-  // --- Data Source: Grade 7 Tasks (Cleaned) ---
+  // --- GRADE 7 DATA ---
   final List<List<_QuizQuestion>> _allTasks = [
     // --- Task 01 ---
     [
-      _QuizQuestion(
-          question: "7/9 + 4/5 =",
-          answers: ["71/45"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "3/8 × 5/6 =",
-          answers: ["5/16"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "7/10, 2/5 න් බෙදන්න සහ පිළිතුර සරල කරන්න.",
-          answers: ["7/4"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "ප්‍රතිශත ගණනය කිරීම : 420 න් 35% ක් යනු කුමක්ද?",
-          answers: ["147"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "කූඩයක ඇපල් 5 ක්, කෙසෙල් 2 ක් සහ දොඩම් 3 ක් අඩංගු වේ.\nමුළු පලතුරෙන් කෙසෙල් යනු කුමන කොටසද?\n(පිළිතුර සරල කරන්න)",
-          answers: ["1/5"],
-          units: [""]
-      ),
+      _QuizQuestion(question: "7/9 + 4/5 =", answers: ["71/45"], units: [""]),
+      _QuizQuestion(question: "3/8 × 5/6 =", answers: ["5/16"], units: [""]),
+      _QuizQuestion(question: "7/10, 2/5 න් බෙදන්න සහ පිළිතුර සරල කරන්න.", answers: ["7/4"], units: [""]),
+      _QuizQuestion(question: "ප්‍රතිශත ගණනය කිරීම : 420 න් 35% ක් යනු කුමක්ද?", answers: ["147"], units: [""]),
+      _QuizQuestion(question: "කූඩයක ඇපල් 5 ක්, කෙසෙල් 2 ක් සහ දොඩම් 3 ක් අඩංගු වේ.\nමුළු පලතුරෙන් කෙසෙල් යනු කුමන කොටසද?\n(පිළිතුර සරල කරන්න)", answers: ["1/5"], units: [""]),
     ],
-
     // --- Task 02 ---
     [
-      _QuizQuestion(
-          question: "x: 2x+5=17 විසඳන්න.",
-          answers: ["6"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "3a + 5a − 2b + 7b සරල කරන්න.",
-          answers: ["8a + 5b"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "5(x − 2) = 30 නම්, x හි අගය සොයන්න.",
-          answers: ["8"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "සංඛ්‍යා දෙකක එකතුව 29 කි.\nඑක් සංඛ්‍යාවක් අනෙකට වඩා දෙගුණයකට වඩා 5 වැඩිය.\nසංඛ්‍යා දෙක කුමක්ද? (විශාල \nසංඛ්‍යාව මුලින් සඳහන් කරන්න)",
-          answers: ["21", "8"],
-          units: ["", ""]
-      ),
-      _QuizQuestion(
-          question: "ප්‍රකාශනය සරල කරන්න : (4x − 2) + (3x + 5).",
-          answers: ["7x + 3"],
-          units: [""]
-      ),
+      _QuizQuestion(question: "x: 2x+5=17 විසඳන්න.", answers: ["6"], units: [""]),
+      _QuizQuestion(question: "3a + 5a − 2b + 7b සරල කරන්න.", answers: ["8a + 5b"], units: [""]),
+      _QuizQuestion(question: "5(x − 2) = 30 නම්, x හි අගය සොයන්න.", answers: ["8"], units: [""]),
+      _QuizQuestion(question: "සංඛ්‍යා දෙකක එකතුව 29 කි.\nඑක් සංඛ්‍යාවක් අනෙකට වඩා දෙගුණයකට වඩා 5 වැඩිය.\nසංඛ්‍යා දෙක කුමක්ද? (විශාල \nසංඛ්‍යාව මුලින් සඳහන් කරන්න)", answers: ["21", "8"], units: ["", ""]),
+      _QuizQuestion(question: "ප්‍රකාශනය සරල කරන්න : (4x − 2) + (3x + 5).", answers: ["7x + 3"], units: [""]),
     ],
-
     // --- Task 03 ---
     [
-      _QuizQuestion(
-          question: "පන්තියක පිරිමි ළමයින් හා ගැහැණු ළමයින් අතර අනුපාතය 5:3 කි.\nපිරිමි ළමයින් 40 ක් සිටී නම්, ගැහැණු ළමයින් කී දෙනෙක් සිටීද?",
-          answers: ["24"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "පොත් 8 ක් රුපියල් 240 ක් නම්, පොතකට එකම මිලකට පොත් 15 ක් කොපමණ මුදලක් වැය වේද?",
-          answers: ["450"],
-          units: ["rupees"]
-      ),
-      _QuizQuestion(
-          question: "වට්ටෝරුවකට පිටි කෝප්ප 2 ක් සහ සීනි කෝප්ප 3 ක් අවශ්‍ය වේ.\nපිටි කෝප්ප 6 ක් භාවිතා කරන්නේ නම් කොපමණ සීනි අවශ්‍ය වේද?",
-          answers: ["9"],
-          units: ["cups"]
-      ),
-      _QuizQuestion(
-          question: "x සඳහා 5/8 = x/12 අනුපාතයෙන් විසඳන්න.",
-          answers: ["7.5"],
-          units: [""]
-      ),
-      _QuizQuestion(
-          question: "සමීක්ෂණයක දී, තේ වලට කැමති පුද්ගලයින් සහ කෝපි වලට කැමති පුද්ගලයින් අතර අනුපාතය 7:5 කි.\nකෝපි වලට කැමති පුද්ගලයින් 70 ක් නම්, තේ වලට කැමති පුද්ගලයින් කී දෙනෙක්ද?",
-          answers: ["98"],
-          units: [""]
-      ),
+      _QuizQuestion(question: "පන්තියක පිරිමි ළමයින් හා ගැහැණු ළමයින් අතර අනුපාතය 5:3 කි.\nපිරිමි ළමයින් 40 ක් සිටී නම්, ගැහැණු ළමයින් කී දෙනෙක් සිටීද?", answers: ["24"], units: [""]),
+      _QuizQuestion(question: "පොත් 8 ක් රුපියල් 240 ක් නම්, පොතකට එකම මිලකට පොත් 15 ක් කොපමණ මුදලක් වැය වේද?", answers: ["450"], units: ["rupees"]),
+      _QuizQuestion(question: "වට්ටෝරුවකට පිටි කෝප්ප 2 ක් සහ සීනි කෝප්ප 3 ක් අවශ්‍ය වේ.\nපිටි කෝප්ප 6 ක් භාවිතා කරන්නේ නම් කොපමණ සීනි අවශ්‍ය වේද?", answers: ["9"], units: ["cups"]),
+      _QuizQuestion(question: "x සඳහා 5/8 = x/12 අනුපාතයෙන් විසඳන්න.", answers: ["7.5"], units: [""]),
+      _QuizQuestion(question: "සමීක්ෂණයක දී, තේ වලට කැමති පුද්ගලයින් සහ කෝපි වලට කැමති පුද්ගලයින් අතර අනුපාතය 7:5 කි.\nකෝපි වලට කැමති පුද්ගලයින් 70 ක් නම්, තේ වලට කැමති පුද්ගලයින් කී දෙනෙක්ද?", answers: ["98"], units: [""]),
     ],
-
     // --- Task 04 ---
     [
-      _QuizQuestion(
-          question: "ත්‍රිකෝණයක පාදම සෙන්ටිමීටර 13 ක් සහ උස සෙන්ටිමීටර 6 කි.\nත්‍රිකෝණයේ වර්ගඵලය කුමක්ද?",
-          answers: ["39"],
-          units: ["sq cm"]
-      ),
-      _QuizQuestion(
-          question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 23 ක් සහ පළල සෙන්ටිමීටර 12 කි.\nසෘජුකෝණාස්‍රයේ පරිමිතිය කුමක්ද?",
-          answers: ["70"],
-          units: ["cm"]
-      ),
-      _QuizQuestion(
-          question: "උද්‍යානයක් මීටර් 37 ක් දිග සහ මීටර් 28 ක් පළල සෘජුකෝණාස්‍රයක හැඩයෙන් යුක්ත වේ.\nඋද්‍යානයේ වර්ගඵලය කොපමණද?",
-          answers: ["1036"],
-          units: ["sq m"]
-      ),
-      _QuizQuestion(
-          question: "සෙන්ටිමීටර 8 ක් දිග, සෙන්ටිමීටර 6 ක් පළල සහ සෙන්ටිමීටර 7 ක් උස ඝනකාභයක පරිමාව සොයන්න.",
-          answers: ["336"],
-          units: ["cubic cm"]
-      ),
-      _QuizQuestion(
-          question: "බස් රථයක් පැයට කිලෝමීටර 45 ක වේගයෙන් ගමන් කරයි.\nකිලෝමීටර 225 ක් ගමන් කිරීමට කොපමණ කාලයක් ගතවේද?",
-          answers: ["5"],
-          units: ["hours"]
-      ),
+      _QuizQuestion(question: "ත්‍රිකෝණයක පාදම සෙන්ටිමීටර 13 ක් සහ උස සෙන්ටිමීටර 6 කි.\nත්‍රිකෝණයේ වර්ගඵලය කුමක්ද?", answers: ["39"], units: ["sq cm"]),
+      _QuizQuestion(question: "සෘජුකෝණාස්‍රයක දිග සෙන්ටිමීටර 23 ක් සහ පළල සෙන්ටිමීටර 12 කි.\nසෘජුකෝණාස්‍රයේ පරිමිතිය කුමක්ද?", answers: ["70"], units: ["cm"]),
+      _QuizQuestion(question: "උද්‍යානයක් මීටර් 37 ක් දිග සහ මීටර් 28 ක් පළල සෘජුකෝණාස්‍රයක හැඩයෙන් යුක්ත වේ.\nඋද්‍යානයේ වර්ගඵලය කොපමණද?", answers: ["1036"], units: ["sq m"]),
+      _QuizQuestion(question: "සෙන්ටිමීටර 8 ක් දිග, සෙන්ටිමීටර 6 ක් පළල සහ සෙන්ටිමීටර 7 ක් උස ඝනකාභයක පරිමාව සොයන්න.", answers: ["336"], units: ["cubic cm"]),
+      _QuizQuestion(question: "බස් රථයක් පැයට කිලෝමීටර 45 ක වේගයෙන් ගමන් කරයි.\nකිලෝමීටර 225 ක් ගමන් කිරීමට කොපමණ කාලයක් ගතවේද?", answers: ["5"], units: ["hours"]),
     ],
-
     // --- Task 05 ---
     [
-      _QuizQuestion(
-          question: "පන්තියක සිසුන් 5 දෙනෙකුගේ වයස අවුරුදු 10, 12, 14, 11 සහ 13 වේ.\nසාමාන්‍ය වයස කීයද?",
-          answers: ["12"],
-          units: ["years"]
-      ),
-      _QuizQuestion(
-          question: "බයිසිකල්කරුවෙකු පැය 6 කින් කිලෝමීටර 258 ක දුරක් ගමන් කරයි.\nබයිසිකල්කරුගේ සාමාන්‍ය වේගය කොපමණද?",
-          answers: ["43"],
-          units: ["km/h"]
-      ),
-      _QuizQuestion(
-          question: "සාප්පුවක් පොතක් රුපියල් 450 කට විකුණයි.\n20% ක වට්ටමක් ලබා දෙන්නේ නම්, පොතේ නව මිල කොපමණද?",
-          answers: ["360"],
-          units: ["rupees"]
-      ),
-      _QuizQuestion(
-          question: "වෙළෙන්දෙකු දොඩම් මල්ලක් රුපියල් 150 කට මිලදී ගෙන රුපියල් 180 කට විකුණයි.\nලාභ ප්‍රතිශතය කීයද?",
-          answers: ["20"],
-          units: ["%"]
-      ),
-      _QuizQuestion(
-          question: "භාණ්ඩයක මිල රුපියල් 500 සිට රුපියල් 600 දක්වා වැඩි වේ.\nමිලෙහි වැඩිවීමේ ප්‍රතිශතය කීයද?",
-          answers: ["20"],
-          units: ["%"]
-      ),
+      _QuizQuestion(question: "පන්තියක සිසුන් 5 දෙනෙකුගේ වයස අවුරුදු 10, 12, 14, 11 සහ 13 වේ.\nසාමාන්‍ය වයස කීයද?", answers: ["12"], units: ["years"]),
+      _QuizQuestion(question: "බයිසිකල්කරුවෙකු පැය 6 කින් කිලෝමීටර 258 ක දුරක් ගමන් කරයි.\nබයිසිකල්කරුගේ සාමාන්‍ය වේගය කොපමණද?", answers: ["43"], units: ["km/h"]),
+      _QuizQuestion(question: "සාප්පුවක් පොතක් රුපියල් 450 කට විකුණයි.\n20% ක වට්ටමක් ලබා දෙන්නේ නම්, පොතේ නව මිල කොපමණද?", answers: ["360"], units: ["rupees"]),
+      _QuizQuestion(question: "වෙළෙන්දෙකු දොඩම් මල්ලක් රුපියල් 150 කට මිලදී ගෙන රුපියල් 180 කට විකුණයි.\nලාභ ප්‍රතිශතය කීයද?", answers: ["20"], units: ["%"]),
+      _QuizQuestion(question: "භාණ්ඩයක මිල රුපියල් 500 සිට රුපියල් 600 දක්වා වැඩි වේ.\nමිලෙහි වැඩිවීමේ ප්‍රතිශතය කීයද?", answers: ["20"], units: ["%"]),
     ],
   ];
 
-  // --- State Variables ---
   int _selectedTaskIndex = -1;
   int _currentQuestionIndex = 0;
-
-  // Controllers for multiple inputs
   final List<TextEditingController> _controllers = [
     TextEditingController(),
     TextEditingController(),
@@ -189,12 +82,42 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
-  // --- Logic Methods ---
+  // --- NEW METRICS VARIABLES ---
+  final Stopwatch _taskStopwatch = Stopwatch();
+  final Stopwatch _questionStopwatch = Stopwatch();
+
+  int _totalCorrect = 0;
+  int _retryCount = 0;
+  int _backtrackCount = 0;
+  int _skippedCount = 0;
+  List<double> _responseTimes = [];
+  List<double> _hesitationTimes = [];
+  bool _hasInteractedWithCurrent = false;
+  DateTime? _questionLoadTime;
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   void _selectTask(int index) {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
+
+      _totalCorrect = 0;
+      _retryCount = 0;
+      _backtrackCount = 0;
+      _skippedCount = 0;
+      _responseTimes = [];
+      _hesitationTimes = [];
+
+      _taskStopwatch.reset();
+      _taskStopwatch.start();
+
       _resetQuestion();
     });
   }
@@ -202,12 +125,30 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   void _resetQuestion() {
     for (var controller in _controllers) {
       controller.clear();
+      controller.removeListener(_onTextChanged);
+      controller.addListener(_onTextChanged);
     }
     setState(() {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
+
+      _questionStopwatch.reset();
+      _questionStopwatch.start();
+      _questionLoadTime = DateTime.now();
+      _hasInteractedWithCurrent = false;
     });
+  }
+
+  void _onTextChanged() {
+    if (!_hasInteractedWithCurrent && _questionLoadTime != null) {
+      bool isAnyText = _controllers.any((c) => c.text.isNotEmpty);
+      if (isAnyText) {
+        _hasInteractedWithCurrent = true;
+        final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
+        _hesitationTimes.add(hesitation);
+      }
+    }
   }
 
   void _checkAnswer() {
@@ -234,12 +175,40 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       } else {
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
+        _retryCount++;
       }
     });
   }
 
+  void _recordQuestionMetrics() {
+    _questionStopwatch.stop();
+    _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
+
+    List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
+    _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+    bool allCorrect = true;
+    bool isEmpty = true;
+
+    for (int i = 0; i < currentQ.answers.length; i++) {
+      String text = _controllers[i].text.trim();
+      if (text.isNotEmpty) isEmpty = false;
+      if (text != currentQ.answers[i]) {
+        allCorrect = false;
+      }
+    }
+
+    if (isEmpty) {
+      _skippedCount++;
+    } else if (allCorrect) {
+      _totalCorrect++;
+    }
+  }
+
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
+
+    _recordQuestionMetrics();
+
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -251,10 +220,34 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   void _prevQuestion() {
     if (_currentQuestionIndex > 0) {
       setState(() {
+        _backtrackCount++;
         _currentQuestionIndex--;
         _resetQuestion();
       });
     }
+  }
+
+  void _finishTask() {
+    _recordQuestionMetrics();
+    _taskStopwatch.stop();
+
+    double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
+    double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
+
+    double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
+    double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TaskResultPage(
+      grade: 7,
+      taskNumber: _selectedTaskIndex + 1,
+      accuracy: _totalCorrect,
+      avgResponseTime: avgResponse,
+      avgHesitationTime: avgHesitation,
+      retries: _retryCount,
+      backtracks: _backtrackCount,
+      skipped: _skippedCount,
+      totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
+    )));
   }
 
   void _backToMenu() {
@@ -264,8 +257,6 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       _resetQuestion();
     });
   }
-
-  // --- UI Builders ---
 
   Widget _buildTaskMenu() {
     return ListView.builder(
@@ -278,7 +269,7 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
             margin: const EdgeInsets.only(bottom: 15),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: AppGradients.mathDetect, // Ensure theme.dart is imported
+              gradient: AppGradients.mathDetect,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -319,7 +310,6 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Question Card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -351,10 +341,7 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
               ],
             ),
           ),
-
           const SizedBox(height: 30),
-
-          // Dynamic Input Fields (Supports multiple inputs)
           if (answerCount == 1)
             _buildSingleInput(0, question.units[0])
           else
@@ -369,10 +356,7 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                 );
               }),
             ),
-
           const SizedBox(height: 20),
-
-          // Feedback Message
           if (_isChecked)
             Container(
               padding: const EdgeInsets.all(10),
@@ -400,14 +384,10 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                 ],
               ),
             ),
-
           const SizedBox(height: 30),
-
-          // Check & Retry Buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Check Button
               ElevatedButton.icon(
                 onPressed: _checkAnswer,
                 icon: const Icon(Icons.check),
@@ -418,7 +398,6 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
               ),
-              // Retry Button
               ElevatedButton.icon(
                 onPressed: _resetQuestion,
                 icon: const Icon(Icons.refresh),
@@ -431,25 +410,18 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
               ),
             ],
           ),
-
           const SizedBox(height: 30),
-
-          // Navigation (Prev/Next) & Final Back Button
           Column(
             children: [
-              // Next / Prev Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Previous Button
                   _currentQuestionIndex > 0
                       ? IconButton(
                     onPressed: _prevQuestion,
                     icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.purple),
                   )
                       : const SizedBox(width: 30),
-
-                  // Next Button
                   _currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1
                       ? IconButton(
                     onPressed: _nextQuestion,
@@ -458,22 +430,16 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                       : const SizedBox(width: 30),
                 ],
               ),
-
               const SizedBox(height: 20),
-
-              // --- UPDATED SECTION: View Results + Back to Tasks ---
               if (isLastQuestion)
                 Column(
                   children: [
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Navigate to TaskResultPage
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
-                        },
+                        onPressed: _finishTask,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green, // Green color for success/results
+                          backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(

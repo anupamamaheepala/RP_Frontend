@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // Required for Timers
 import '/theme.dart';
-import 'task_result.dart'; // Import result page
+import 'task_result.dart';
 
-class QuizQuestion {
+class _QuizQuestion {
   final String question;
   final List<String> answers;
   final List<String> units;
 
-  QuizQuestion({
+  _QuizQuestion({
     required this.question,
     required this.answers,
     List<String>? units,
@@ -22,41 +23,42 @@ class DyscalG04Page extends StatefulWidget {
 }
 
 class _DyscalG04PageState extends State<DyscalG04Page> {
-  final List<List<QuizQuestion>> _allTasks = [
+  // --- GRADE 4 DATA ---
+  final List<List<_QuizQuestion>> _allTasks = [
     [
-      QuizQuestion(question: "අනුපිළිවෙල සම්පූර්ණ කරන්න : 2, 4, 6, __, __, __.", answers: ["8", "10", "12"], units: ["", "", ""]),
-      QuizQuestion(question: "ඔබට යුෂ මිලි ලීටර් 500 ක් තිබේ.\nඔබ මිලි ලීටර් 150 ක් පානය කළහොත් කොපමණ යුෂ ප්‍රමාණයක් ඉතිරි වේද?", answers: ["350"], units: ["milliliters"]),
-      QuizQuestion(question: "හිස්තැන් පුරවන්න : 12 + 7 = __ සහ 20 - 8 = __.", answers: ["19", "12"], units: ["", ""]),
-      QuizQuestion(question: "එකතුව සම්පූර්ණ කරන්න : 753 + 249 = ______.", answers: ["1002"], units: [""]),
-      QuizQuestion(question: "රටාව සොයා ගන්න : 100, 200, 300, __, __, __.", answers: ["400", "500", "600"], units: ["", "", ""]),
+      _QuizQuestion(question: "අනුපිළිවෙල සම්පූර්ණ කරන්න : 2, 4, 6, __, __, __.", answers: ["8", "10", "12"], units: ["", "", ""]),
+      _QuizQuestion(question: "ඔබට යුෂ මිලි ලීටර් 500 ක් තිබේ.\nඔබ මිලි ලීටර් 150 ක් පානය කළහොත් කොපමණ යුෂ ප්‍රමාණයක් ඉතිරි වේද?", answers: ["350"], units: ["milliliters"]),
+      _QuizQuestion(question: "හිස්තැන් පුරවන්න : 12 + 7 = __ සහ 20 - 8 = __.", answers: ["19", "12"], units: ["", ""]),
+      _QuizQuestion(question: "එකතුව සම්පූර්ණ කරන්න : 753 + 249 = ______.", answers: ["1002"], units: [""]),
+      _QuizQuestion(question: "රටාව සොයා ගන්න : 100, 200, 300, __, __, __.", answers: ["400", "500", "600"], units: ["", "", ""]),
     ],
     [
-      QuizQuestion(question: "ලීටර් 3 ක මිලිලීටර් කීයක් තිබේද?", answers: ["3000"], units: ["milliliters"]),
-      QuizQuestion(question: "ඔබට මීටර් 3 ක් දිග කඹයක් සහ මීටර් 4.5 ක් දිග තවත් කඹයක් තිබේ නම්, මුළු දිග කුමක්ද?", answers: ["7.5"], units: ["meters"]),
-      QuizQuestion(question: "ඔබට ජලය ලීටර් 7 ක් ඇති අතර, ඔබ ශාකයක් සඳහා ලීටර් 2.5 ක් භාවිතා කරයි.\nකොපමණ ප්‍රමාණයක් ඉතිරි වේද?", answers: ["4.5"], units: ["liters"]),
-      QuizQuestion(question: "එක් පෙට්ටියක බර ග්‍රෑම් 800 ක් නම්, පෙට්ටි 5 ක මුළු බර කොපමණද?", answers: ["4000"], units: ["grams"]),
-      QuizQuestion(question: "කිලෝග්‍රෑම් 3.5 ක ග්‍රෑම් කීයක් තිබේද?", answers: ["3500"], units: ["grams"]),
+      _QuizQuestion(question: "ලීටර් 3 ක මිලිලීටර් කීයක් තිබේද?", answers: ["3000"], units: ["milliliters"]),
+      _QuizQuestion(question: "ඔබට මීටර් 3 ක් දිග කඹයක් සහ මීටර් 4.5 ක් දිග තවත් කඹයක් තිබේ නම්, මුළු දිග කුමක්ද?", answers: ["7.5"], units: ["meters"]),
+      _QuizQuestion(question: "ඔබට ජලය ලීටර් 7 ක් ඇති අතර, ඔබ ශාකයක් සඳහා ලීටර් 2.5 ක් භාවිතා කරයි.\nකොපමණ ප්‍රමාණයක් ඉතිරි වේද?", answers: ["4.5"], units: ["liters"]),
+      _QuizQuestion(question: "එක් පෙට්ටියක බර ග්‍රෑම් 800 ක් නම්, පෙට්ටි 5 ක මුළු බර කොපමණද?", answers: ["4000"], units: ["grams"]),
+      _QuizQuestion(question: "කිලෝග්‍රෑම් 3.5 ක ග්‍රෑම් කීයක් තිබේද?", answers: ["3500"], units: ["grams"]),
     ],
     [
-      QuizQuestion(question: "ගුණ කිරීම : 8 × 7 = ______", answers: ["56"], units: [""]),
-      QuizQuestion(question: "පැන්සලක මිල රුපියල් 15 ක් නම්, පැන්සල් 12 ක් කොපමණ වේද?", answers: ["180"], units: ["rupees"]),
-      QuizQuestion(question: "බෙදීම : 72 ÷ 8 = ______", answers: ["9"], units: [""]),
-      QuizQuestion(question: "ඔබට රුපියල් 45 ක් ඇති අතර ඔබට ස්ටිකර් පැකට් 5 ක් මිලදී ගැනීමට අවශ්‍ය වේ.\nඑක් පැකට්ටුවක මිල කොපමණද?", answers: ["9"], units: ["rupees"]),
-      QuizQuestion(question: "ඉතිරිය සහිත බෙදීම : 37 ÷ 5 = ______ ඉතිරිය ______", answers: ["7", "2"], units: ["", "remainder"]),
+      _QuizQuestion(question: "ගුණ කිරීම : 8 × 7 = ______", answers: ["56"], units: [""]),
+      _QuizQuestion(question: "පැන්සලක මිල රුපියල් 15 ක් නම්, පැන්සල් 12 ක් කොපමණ වේද?", answers: ["180"], units: ["rupees"]),
+      _QuizQuestion(question: "බෙදීම : 72 ÷ 8 = ______", answers: ["9"], units: [""]),
+      _QuizQuestion(question: "ඔබට රුපියල් 45 ක් ඇති අතර ඔබට ස්ටිකර් පැකට් 5 ක් මිලදී ගැනීමට අවශ්‍ය වේ.\nඑක් පැකට්ටුවක මිල කොපමණද?", answers: ["9"], units: ["rupees"]),
+      _QuizQuestion(question: "ඉතිරිය සහිත බෙදීම : 37 ÷ 5 = ______ ඉතිරිය ______", answers: ["7", "2"], units: ["", "remainder"]),
     ],
     [
-      QuizQuestion(question: "දුම්රියක් පෙ.ව. 10:30 ට පිටත් වී ප.ව. 12:15 ට පැමිණේ නම්, ගමනට කොපමණ කාලයක් ගතවේද?", answers: ["1", "45"], units: ["hours", "minutes"]),
-      QuizQuestion(question: "ඔබට රුපියල් 250 ක් තිබේ.\nඔබ සෙල්ලම් බඩු 3 ක් මිලට ගන්නේ නම්, එකක් රු. 60 බැගින්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?", answers: ["70"], units: ["rupees"]),
-      QuizQuestion(question: "ඔබේ පාසල පෙ.ව. 8:00 ට ආරම්භ වී ප.ව. 2:30 ට අවසන් වන්නේ නම්, ඔබ පාසලේ පැය සහ මිනිත්තු කීයක් සිටිනවාද?", answers: ["6", "30"], units: ["hours", "minutes"]),
-      QuizQuestion(question: "බෑගයක මිල රු. 1500 කි. ඔබ සතුව රු. 5000 ක් තිබේ නම්, ඔබට බෑග් කීයක් මිලදී ගත හැකිද?", answers: ["3"], units: [""]),
-      QuizQuestion(question: "පැය 3 යි මිනිත්තු 20 කින් මිනිත්තු කීයක් තිබේද?", answers: ["200"], units: ["minutes"]),
+      _QuizQuestion(question: "දුම්රියක් පෙ.ව. 10:30 ට පිටත් වී ප.ව. 12:15 ට පැමිණේ නම්, ගමනට කොපමණ කාලයක් ගතවේද?", answers: ["1", "45"], units: ["hours", "minutes"]),
+      _QuizQuestion(question: "ඔබට රුපියල් 250 ක් තිබේ.\nඔබ සෙල්ලම් බඩු 3 ක් මිලට ගන්නේ නම්, එකක් රු. 60 බැගින්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?", answers: ["70"], units: ["rupees"]),
+      _QuizQuestion(question: "ඔබේ පාසල පෙ.ව. 8:00 ට ආරම්භ වී ප.ව. 2:30 ට අවසන් වන්නේ නම්, ඔබ පාසලේ පැය සහ මිනිත්තු කීයක් සිටිනවාද?", answers: ["6", "30"], units: ["hours", "minutes"]),
+      _QuizQuestion(question: "බෑගයක මිල රු. 1500 කි. ඔබ සතුව රු. 5000 ක් තිබේ නම්, ඔබට බෑග් කීයක් මිලදී ගත හැකිද?", answers: ["3"], units: [""]),
+      _QuizQuestion(question: "පැය 3 යි මිනිත්තු 20 කින් මිනිත්තු කීයක් තිබේද?", answers: ["200"], units: ["minutes"]),
     ],
     [
-      QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["4"], units: [""]),
-      QuizQuestion(question: "චතුරස්‍රයක සමමිතික රේඛා කීයක් තිබේද?", answers: ["2"], units: [""]),
-      QuizQuestion(question: "6 cm, 8 cm සහ 10 cm දිග පැති සහිත ත්‍රිකෝණයක පරිමිතිය සොයා ගන්න.", answers: ["24"], units: ["cm"]),
-      QuizQuestion(question: "ඔබ සතුව ඇපල් ගෙඩි 12 ක් ඇති අතර ඉන් 4 ක් කොළ පාට නම්, ඇපල් ගෙඩිවලින් කොළ පාට කොටස කුමක්ද?", answers: ["1/3"], units: [""]),
-      QuizQuestion(question: "ප්‍රතිඵලය කුමක්ද? 560 ÷ 8 = ___.", answers: ["70"], units: [""]),
+      _QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["4"], units: [""]),
+      _QuizQuestion(question: "චතුරස්‍රයක සමමිතික රේඛා කීයක් තිබේද?", answers: ["2"], units: [""]),
+      _QuizQuestion(question: "6 cm, 8 cm සහ 10 cm දිග පැති සහිත ත්‍රිකෝණයක පරිමිතිය සොයා ගන්න.", answers: ["24"], units: ["cm"]),
+      _QuizQuestion(question: "ඔබ සතුව ඇපල් ගෙඩි 12 ක් ඇති අතර ඉන් 4 ක් කොළ පාට නම්, ඇපල් ගෙඩිවලින් කොළ පාට කොටස කුමක්ද?", answers: ["1/3"], units: [""]),
+      _QuizQuestion(question: "ප්‍රතිඵලය කුමක්ද? 560 ÷ 8 = ___.", answers: ["70"], units: [""]),
     ],
   ];
 
@@ -67,10 +69,42 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
+  // --- NEW METRICS VARIABLES ---
+  final Stopwatch _taskStopwatch = Stopwatch();
+  final Stopwatch _questionStopwatch = Stopwatch();
+
+  int _totalCorrect = 0;
+  int _retryCount = 0;
+  int _backtrackCount = 0;
+  int _skippedCount = 0;
+  List<double> _responseTimes = [];
+  List<double> _hesitationTimes = [];
+  bool _hasInteractedWithCurrent = false;
+  DateTime? _questionLoadTime;
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   void _selectTask(int index) {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
+
+      _totalCorrect = 0;
+      _retryCount = 0;
+      _backtrackCount = 0;
+      _skippedCount = 0;
+      _responseTimes = [];
+      _hesitationTimes = [];
+
+      _taskStopwatch.reset();
+      _taskStopwatch.start();
+
       _resetQuestion();
     });
   }
@@ -78,18 +112,36 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
   void _resetQuestion() {
     for (var controller in _controllers) {
       controller.clear();
+      controller.removeListener(_onTextChanged);
+      controller.addListener(_onTextChanged);
     }
     setState(() {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
+
+      _questionStopwatch.reset();
+      _questionStopwatch.start();
+      _questionLoadTime = DateTime.now();
+      _hasInteractedWithCurrent = false;
     });
+  }
+
+  void _onTextChanged() {
+    if (!_hasInteractedWithCurrent && _questionLoadTime != null) {
+      bool isAnyText = _controllers.any((c) => c.text.isNotEmpty);
+      if (isAnyText) {
+        _hasInteractedWithCurrent = true;
+        final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
+        _hesitationTimes.add(hesitation);
+      }
+    }
   }
 
   void _checkAnswer() {
     if (_selectedTaskIndex == -1) return;
-    List<QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
-    QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+    List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
+    _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     int answerCount = currentQ.answers.length;
     bool allCorrect = true;
     for (int i = 0; i < answerCount; i++) {
@@ -106,12 +158,40 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
       } else {
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
+        _retryCount++;
       }
     });
   }
 
+  void _recordQuestionMetrics() {
+    _questionStopwatch.stop();
+    _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
+
+    List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
+    _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+    bool allCorrect = true;
+    bool isEmpty = true;
+
+    for (int i = 0; i < currentQ.answers.length; i++) {
+      String text = _controllers[i].text.trim();
+      if (text.isNotEmpty) isEmpty = false;
+      if (text != currentQ.answers[i]) {
+        allCorrect = false;
+      }
+    }
+
+    if (isEmpty) {
+      _skippedCount++;
+    } else if (allCorrect) {
+      _totalCorrect++;
+    }
+  }
+
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
+
+    _recordQuestionMetrics();
+
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -123,10 +203,34 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
   void _prevQuestion() {
     if (_currentQuestionIndex > 0) {
       setState(() {
+        _backtrackCount++;
         _currentQuestionIndex--;
         _resetQuestion();
       });
     }
+  }
+
+  void _finishTask() {
+    _recordQuestionMetrics();
+    _taskStopwatch.stop();
+
+    double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
+    double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
+
+    double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
+    double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TaskResultPage(
+      grade: 4,
+      taskNumber: _selectedTaskIndex + 1,
+      accuracy: _totalCorrect,
+      avgResponseTime: avgResponse,
+      avgHesitationTime: avgHesitation,
+      retries: _retryCount,
+      backtracks: _backtrackCount,
+      skipped: _skippedCount,
+      totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
+    )));
   }
 
   void _backToMenu() {
@@ -168,7 +272,7 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
   }
 
   Widget _buildQuizView() {
-    QuizQuestion question = _allTasks[_selectedTaskIndex][_currentQuestionIndex];
+    _QuizQuestion question = _allTasks[_selectedTaskIndex][_currentQuestionIndex];
     int answerCount = question.answers.length;
     bool isLastQuestion = _currentQuestionIndex == _allTasks[_selectedTaskIndex].length - 1;
 
@@ -224,9 +328,7 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
-                        },
+                        onPressed: _finishTask,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,

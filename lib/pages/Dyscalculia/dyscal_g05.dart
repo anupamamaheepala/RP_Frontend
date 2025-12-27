@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // Required for Timers
 import '/theme.dart';
-import 'task_result.dart'; // Import result page
+import 'task_result.dart';
 
 class _QuizQuestion {
   final String question;
@@ -22,6 +23,7 @@ class DyscalG05Page extends StatefulWidget {
 }
 
 class _DyscalG05PageState extends State<DyscalG05Page> {
+  // --- QUESTIONS (Same as before) ---
   final List<List<_QuizQuestion>> _allTasks = [
     [
       _QuizQuestion(question: "245 සහ 376 එකතු කරන්න. එකතුව කුමක්ද?", answers: ["621"], units: [""]),
@@ -67,10 +69,45 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
+  // --- METRICS VARIABLES ---
+  Stopwatch _taskStopwatch = Stopwatch(); // Total task time
+  Stopwatch _questionStopwatch = Stopwatch(); // Time per question
+
+  // Accumulated stats
+  int _totalCorrect = 0;
+  int _retryCount = 0;
+  int _backtrackCount = 0;
+  int _skippedCount = 0;
+  List<double> _responseTimes = []; // List of times taken per question
+  List<double> _hesitationTimes = []; // Time until first type
+
+  bool _hasInteractedWithCurrent = false; // To track hesitation
+  DateTime? _questionLoadTime;
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   void _selectTask(int index) {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
+
+      // Reset Metrics
+      _totalCorrect = 0;
+      _retryCount = 0;
+      _backtrackCount = 0;
+      _skippedCount = 0;
+      _responseTimes = [];
+      _hesitationTimes = [];
+
+      _taskStopwatch.reset();
+      _taskStopwatch.start();
+
       _resetQuestion();
     });
   }
@@ -78,40 +115,98 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
   void _resetQuestion() {
     for (var controller in _controllers) {
       controller.clear();
+      // Remove old listener to avoid duplicates, add new one
+      controller.removeListener(_onTextChanged);
+      controller.addListener(_onTextChanged);
     }
+
     setState(() {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
+
+      // Reset Question Timer & Hesitation logic
+      _questionStopwatch.reset();
+      _questionStopwatch.start();
+      _questionLoadTime = DateTime.now();
+      _hasInteractedWithCurrent = false;
     });
+  }
+
+  // Detect hesitation: First time user types
+  void _onTextChanged() {
+    if (!_hasInteractedWithCurrent && _questionLoadTime != null) {
+      bool isAnyText = _controllers.any((c) => c.text.isNotEmpty);
+      if (isAnyText) {
+        _hasInteractedWithCurrent = true;
+        final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
+        _hesitationTimes.add(hesitation);
+      }
+    }
   }
 
   void _checkAnswer() {
     if (_selectedTaskIndex == -1) return;
+
     List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     int answerCount = currentQ.answers.length;
     bool allCorrect = true;
+
     for (int i = 0; i < answerCount; i++) {
       if (_controllers[i].text.trim() != currentQ.answers[i]) {
         allCorrect = false;
         break;
       }
     }
+
     setState(() {
       _isChecked = true;
       if (allCorrect) {
         _feedbackMessage = "නියමයි! (Correct!)";
         _feedbackColor = Colors.green;
+
+        // Record success if not already done for this question index
+        // (Simplified logic: we count correct at the end check, but here we can increment accuracy)
       } else {
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
+        _retryCount++; // Metric: Retry
       }
     });
   }
 
+  // Record time when leaving a question (Next or Results)
+  void _recordQuestionMetrics() {
+    _questionStopwatch.stop();
+    _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
+
+    // Check if correct for accuracy count
+    List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
+    _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+    bool allCorrect = true;
+    bool isEmpty = true;
+
+    for (int i = 0; i < currentQ.answers.length; i++) {
+      String text = _controllers[i].text.trim();
+      if (text.isNotEmpty) isEmpty = false;
+      if (text != currentQ.answers[i]) {
+        allCorrect = false;
+      }
+    }
+
+    if (isEmpty) {
+      _skippedCount++;
+    } else if (allCorrect) {
+      _totalCorrect++;
+    }
+  }
+
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
+
+    _recordQuestionMetrics(); // Save time/accuracy for current Q
+
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -122,11 +217,39 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
 
   void _prevQuestion() {
     if (_currentQuestionIndex > 0) {
+      // Note: We don't record 'accuracy' when going back usually,
+      // but to keep logic simple, we won't double count.
+      // We just track backtracking behavior here.
       setState(() {
+        _backtrackCount++; // Metric: Backtracking
         _currentQuestionIndex--;
         _resetQuestion();
       });
     }
+  }
+
+  void _finishTask() {
+    _recordQuestionMetrics(); // Record the last question
+    _taskStopwatch.stop();
+
+    // Calculate Averages
+    double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
+    double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
+
+    double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
+    double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TaskResultPage(
+      grade: 5,
+      taskNumber: _selectedTaskIndex + 1,
+      accuracy: _totalCorrect, // out of 5
+      avgResponseTime: avgResponse,
+      avgHesitationTime: avgHesitation,
+      retries: _retryCount,
+      backtracks: _backtrackCount,
+      skipped: _skippedCount,
+      totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
+    )));
   }
 
   void _backToMenu() {
@@ -224,9 +347,7 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
-                        },
+                        onPressed: _finishTask, // Changed to _finishTask
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,

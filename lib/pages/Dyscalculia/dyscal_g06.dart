@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // Required for Timers
 import '/theme.dart';
-import 'task_result.dart'; // Import result page
+import 'task_result.dart';
 
 class _QuizQuestion {
   final String question;
@@ -22,6 +23,7 @@ class DyscalG06Page extends StatefulWidget {
 }
 
 class _DyscalG06PageState extends State<DyscalG06Page> {
+  // --- GRADE 6 DATA ---
   final List<List<_QuizQuestion>> _allTasks = [
     [
       _QuizQuestion(question: "\"හාරලක්ෂ පනස් හයදහස්, හත්සිය අසූ නවය\" යන වචන අංකයක් ලෙස ලියන්න.", answers: ["456790"], units: [""]),
@@ -67,10 +69,42 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
+  // --- NEW METRICS VARIABLES ---
+  final Stopwatch _taskStopwatch = Stopwatch();
+  final Stopwatch _questionStopwatch = Stopwatch();
+
+  int _totalCorrect = 0;
+  int _retryCount = 0;
+  int _backtrackCount = 0;
+  int _skippedCount = 0;
+  List<double> _responseTimes = [];
+  List<double> _hesitationTimes = [];
+  bool _hasInteractedWithCurrent = false;
+  DateTime? _questionLoadTime;
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   void _selectTask(int index) {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
+
+      _totalCorrect = 0;
+      _retryCount = 0;
+      _backtrackCount = 0;
+      _skippedCount = 0;
+      _responseTimes = [];
+      _hesitationTimes = [];
+
+      _taskStopwatch.reset();
+      _taskStopwatch.start();
+
       _resetQuestion();
     });
   }
@@ -78,12 +112,30 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   void _resetQuestion() {
     for (var controller in _controllers) {
       controller.clear();
+      controller.removeListener(_onTextChanged);
+      controller.addListener(_onTextChanged);
     }
     setState(() {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
+
+      _questionStopwatch.reset();
+      _questionStopwatch.start();
+      _questionLoadTime = DateTime.now();
+      _hasInteractedWithCurrent = false;
     });
+  }
+
+  void _onTextChanged() {
+    if (!_hasInteractedWithCurrent && _questionLoadTime != null) {
+      bool isAnyText = _controllers.any((c) => c.text.isNotEmpty);
+      if (isAnyText) {
+        _hasInteractedWithCurrent = true;
+        final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
+        _hesitationTimes.add(hesitation);
+      }
+    }
   }
 
   void _checkAnswer() {
@@ -106,12 +158,40 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       } else {
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
+        _retryCount++;
       }
     });
   }
 
+  void _recordQuestionMetrics() {
+    _questionStopwatch.stop();
+    _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
+
+    List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
+    _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+    bool allCorrect = true;
+    bool isEmpty = true;
+
+    for (int i = 0; i < currentQ.answers.length; i++) {
+      String text = _controllers[i].text.trim();
+      if (text.isNotEmpty) isEmpty = false;
+      if (text != currentQ.answers[i]) {
+        allCorrect = false;
+      }
+    }
+
+    if (isEmpty) {
+      _skippedCount++;
+    } else if (allCorrect) {
+      _totalCorrect++;
+    }
+  }
+
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
+
+    _recordQuestionMetrics();
+
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -123,10 +203,34 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   void _prevQuestion() {
     if (_currentQuestionIndex > 0) {
       setState(() {
+        _backtrackCount++;
         _currentQuestionIndex--;
         _resetQuestion();
       });
     }
+  }
+
+  void _finishTask() {
+    _recordQuestionMetrics();
+    _taskStopwatch.stop();
+
+    double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
+    double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
+
+    double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
+    double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TaskResultPage(
+      grade: 6,
+      taskNumber: _selectedTaskIndex + 1,
+      accuracy: _totalCorrect,
+      avgResponseTime: avgResponse,
+      avgHesitationTime: avgHesitation,
+      retries: _retryCount,
+      backtracks: _backtrackCount,
+      skipped: _skippedCount,
+      totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
+    )));
   }
 
   void _backToMenu() {
@@ -229,9 +333,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskResultPage()));
-                        },
+                        onPressed: _finishTask,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
