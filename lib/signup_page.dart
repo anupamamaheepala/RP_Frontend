@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'theme.dart';
-import 'profile.dart'; // Import to navigate to Profile Page
+import 'login_page.dart';
+import '/config.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -10,9 +13,95 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  // State variables to track selection
+  // State variables to track selection and inputs
   int? selectedAge;
   int? selectedGrade;
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  // --- SIGNUP LOGIC ---
+  Future<void> _handleSignup() async {
+    // 1. Basic Validation
+    if (_usernameController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty ||
+        selectedAge == null ||
+        selectedGrade == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields (කරුණාකර සියලුම විස්තර පුරවන්න)")),
+      );
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match (මුරපද නොගැලපේ)")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 2. Send Data to Backend
+      final url = Uri.parse("${Config.baseUrl}/auth/signup");
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "username": _usernameController.text.trim(),
+          "password": _passwordController.text,
+          "age": selectedAge,
+          "grade": selectedGrade,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 3. Success -> Navigate to Login Page
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account created! Please Login. (ගිණුම සාදන ලදී. කරුණාකර ඇතුල් වන්න.)"),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate to Login Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        }
+      } else {
+        // 4. Handle Backend Errors (e.g., Username exists)
+        final body = jsonDecode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(body['detail'] ?? "Signup failed"), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Connection Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +159,9 @@ class _SignupPageState extends State<SignupPage> {
 
                         // --- Username Field ---
                         _buildTextField(
+                          controller: _usernameController,
                           icon: Icons.person_outline,
-                          hintText: 'පරිශීලක නාමය',
+                          hintText: 'පරිශීලක නාමය (Username)',
                         ),
 
                         const SizedBox(height: 15),
@@ -155,14 +245,16 @@ class _SignupPageState extends State<SignupPage> {
 
                         // --- Password Field ---
                         _buildTextField(
+                          controller: _passwordController,
                           icon: Icons.lock_outline,
-                          hintText: 'මුරපදය',
+                          hintText: 'මුරපදය (Password)',
                           isObscure: true,
                         ),
                         const SizedBox(height: 10),
 
                         // --- Confirm Password Field ---
                         _buildTextField(
+                          controller: _confirmPasswordController,
                           icon: Icons.lock_reset,
                           hintText: 'මුරපදය තහවුරු කරන්න',
                           isObscure: true,
@@ -171,12 +263,13 @@ class _SignupPageState extends State<SignupPage> {
                         const SizedBox(height: 30),
 
                         // --- Register Button ---
-                        Container(
+                        _isLoading
+                            ? const CircularProgressIndicator()
+                            : Container(
                           width: double.infinity,
                           height: 55,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              // Slightly redder pink for the Signup button as per image
                               colors: [Color(0xFFFF758C), Color(0xFFFF7EB3)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
@@ -193,13 +286,7 @@ class _SignupPageState extends State<SignupPage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {
-                                // Navigate to Profile Page
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                                );
-                              },
+                              onTap: _handleSignup, // Call logic
                               borderRadius: BorderRadius.circular(30),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -282,6 +369,7 @@ class _SignupPageState extends State<SignupPage> {
 
   // Helper: Build Text Field
   Widget _buildTextField({
+    required TextEditingController controller,
     required IconData icon,
     required String hintText,
     bool isObscure = false,
@@ -293,6 +381,7 @@ class _SignupPageState extends State<SignupPage> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isObscure,
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.grey),

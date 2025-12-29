@@ -1,15 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'theme.dart';
 import 'profile.dart';
 import 'signup_page.dart';
+import '/config.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+  State<LoginPage> createState() => _LoginPageState();
+}
 
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // --- LOGIN LOGIC ---
+  Future<void> _handleLogin() async {
+    // 1. Basic Validation
+    if (_usernameController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter username and password")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 2. Send Credentials to Backend
+      final url = Uri.parse("${Config.baseUrl}/auth/login");
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "username": _usernameController.text.trim(),
+          "password": _passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 3. Success -> Parse Data
+        final data = jsonDecode(response.body);
+
+        // 4. Save User Data Locally (SharedPreferences)
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_id', data['user_id']);
+        await prefs.setString('username', data['username']);
+        await prefs.setInt('age', data['age']);
+        await prefs.setInt('grade', data['grade']);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login Successful! (සාර්ථකයි!)"), backgroundColor: Colors.green),
+          );
+
+          // 5. Navigate to Profile Page (Replacement so back button doesn't return to login)
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfilePage()),
+          );
+        }
+      } else {
+        // 6. Handle Errors (Wrong password, etc.)
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Login failed. Check username/password. (ඇතුල් වීමට නොහැක. නම හෝ මුරපදය පරීක්ෂා කරන්න.)"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Connection Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -64,21 +151,25 @@ class LoginPage extends StatelessWidget {
 
                         // --- Username Field ---
                         _buildTextField(
+                          controller: _usernameController,
                           icon: Icons.person_outline,
-                          hintText: 'පරිශීලක නාමය',
+                          hintText: 'පරිශීලක නාමය (Username)',
                         ),
                         const SizedBox(height: 16),
 
                         // --- Password Field ---
                         _buildTextField(
+                          controller: _passwordController,
                           icon: Icons.lock_outline,
-                          hintText: 'මුරපදය',
+                          hintText: 'මුරපදය (Password)',
                           isObscure: true,
                         ),
                         const SizedBox(height: 30),
 
                         // --- Login Button (Gradient) ---
-                        Container(
+                        _isLoading
+                            ? const CircularProgressIndicator()
+                            : Container(
                           width: double.infinity,
                           height: 55,
                           decoration: BoxDecoration(
@@ -95,13 +186,7 @@ class LoginPage extends StatelessWidget {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () {
-                                // Navigate to Profile Page
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                                );
-                              },
+                              onTap: _handleLogin, // Call Login Logic
                               borderRadius: BorderRadius.circular(30),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -202,6 +287,7 @@ class LoginPage extends StatelessWidget {
 
   // Helper method for consistent TextFields
   Widget _buildTextField({
+    required TextEditingController controller,
     required IconData icon,
     required String hintText,
     bool isObscure = false,
@@ -213,6 +299,7 @@ class LoginPage extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isObscure,
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.grey),

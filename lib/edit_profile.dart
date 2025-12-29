@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'theme.dart';
-import 'profile.dart'; // To navigate back
+import 'profile.dart';
+import '/config.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -10,10 +14,100 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  // Mock Data
+  // State variables
   int selectedAge = 9;
   int selectedGrade = 4;
-  final TextEditingController _usernameController = TextEditingController(text: 'Username');
+  final TextEditingController _usernameController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentData();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  // --- 1. Load Existing Data from Local Storage ---
+  Future<void> _loadCurrentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _usernameController.text = prefs.getString('username') ?? "";
+      selectedAge = prefs.getInt('age') ?? 9;
+      selectedGrade = prefs.getInt('grade') ?? 4;
+    });
+  }
+
+  // --- 2. Save Changes to Backend & Local Storage ---
+  Future<void> _saveChanges() async {
+    setState(() => _isLoading = true);
+
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+
+    // Safety check: if no user ID, forced to login (or handle error)
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: User not logged in.")),
+        );
+        Navigator.pop(context);
+      }
+      return;
+    }
+
+    try {
+      // A. Send PUT Request to Backend
+      final url = Uri.parse("${Config.baseUrl}/auth/profile/$userId");
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "username": _usernameController.text.trim(),
+          "age": selectedAge,
+          "grade": selectedGrade,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // B. Update Local Storage (so Profile Page updates immediately)
+        await prefs.setString('username', _usernameController.text.trim());
+        await prefs.setInt('age', selectedAge);
+        await prefs.setInt('grade', selectedGrade);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Profile Updated Successfully! (පැතිකඩ යාවත්කාලීන කරන ලදී!)"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // C. Return to Profile Page
+          Navigator.pop(context);
+        }
+      } else {
+        // Handle Server Error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Update failed. Please try again."), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Connection Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +161,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                     const SizedBox(height: 20),
 
-                    // --- Avatar with Camera Icon ---
+                    // --- Avatar (Static for now) ---
                     Stack(
                       children: [
                         Container(
@@ -142,8 +236,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             width: 45,
                             height: 45,
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.white : Colors.white, // Both white per design?
-                              // Actually design shows white chips with shadows, maybe highlight border
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(10),
                               border: isSelected ? Border.all(color: Colors.purple, width: 2) : null,
                               boxShadow: [
@@ -208,11 +301,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     const SizedBox(height: 30),
 
                     // --- Save Changes Button ---
-                    Container(
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : Container(
                       width: double.infinity,
                       height: 55,
                       decoration: BoxDecoration(
-                        gradient: AppGradients.greenAction, // Use the green gradient
+                        gradient: AppGradients.greenAction,
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
@@ -225,14 +320,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () {
-                            // Navigate back to ProfilePage
-                            // Using pushReplacement to refresh state if needed, or pop
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ProfilePage()),
-                            );
-                          },
+                          onTap: _saveChanges, // Call Save Logic
                           borderRadius: BorderRadius.circular(30),
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -262,6 +350,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  // Helper: Get Color based on Grade
   Color _getGradeColor(int grade) {
     switch (grade) {
       case 3: return AppColors.grade3;

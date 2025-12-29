@@ -1,10 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
-import 'pages/home_page.dart';
-import 'edit_profile.dart'; // Import Edit Profile Page
+import 'pages/home_page.dart'; 
+import 'edit_profile.dart';
+import 'login_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // State variables to hold user data
+  String username = "Loading...";
+  int age = 0;
+  int grade = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // --- Load Data from SharedPreferences ---
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username') ?? "User";
+      age = prefs.getInt('age') ?? 0;
+      grade = prefs.getInt('grade') ?? 0;
+    });
+  }
+
+  // --- Logout Logic ---
+  Future<void> _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all saved data
+
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false, // Remove all previous routes
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +93,6 @@ class ProfilePage extends StatelessWidget {
                         child: const CircleAvatar(
                           radius: 60,
                           backgroundColor: Color(0xFFE0E0E0),
-                          // Use an asset image for the boy avatar if available
-                          // backgroundImage: AssetImage('assets/avatar_boy.png'),
                           child: Icon(Icons.person, size: 80, color: Colors.white),
                         ),
                       ),
@@ -60,10 +100,10 @@ class ProfilePage extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    // --- Username ---
-                    const Text(
-                      'username',
-                      style: TextStyle(
+                    // --- Username Display ---
+                    Text(
+                      username, // Dynamic Username
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF2D0050), // Deep purple/black
@@ -76,9 +116,9 @@ class ProfilePage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildInfoChip('Age: 9 🎂'),
+                        _buildInfoChip('Age: $age 🎂'),
                         const SizedBox(width: 16),
-                        _buildInfoChip('Grade: 4 📚'),
+                        _buildInfoChip('Grade: $grade 📚'),
                       ],
                     ),
 
@@ -103,8 +143,8 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            // Navigate to HomePage
-                            Navigator.pushReplacement(
+                            // Navigate to HomePage (Main Dashboard)
+                            Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const HomePage()),
                             );
@@ -140,12 +180,14 @@ class ProfilePage extends StatelessWidget {
 
                     // --- Edit Profile Button ---
                     TextButton.icon(
-                      onPressed: () {
-                        // Navigate to EditProfilePage
-                        Navigator.push(
+                      onPressed: () async {
+                        // Navigate to EditProfilePage and wait for result
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const EditProfilePage()),
                         );
+                        // Refresh data when returning
+                        _loadUserData();
                       },
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFFF0F0F5),
@@ -161,6 +203,18 @@ class ProfilePage extends StatelessWidget {
                           color: Colors.black87,
                           fontWeight: FontWeight.w600,
                         ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // --- Logout Button ---
+                    TextButton.icon(
+                      onPressed: _handleLogout,
+                      icon: const Icon(Icons.logout, size: 18, color: Colors.redAccent),
+                      label: const Text(
+                        'Logout (ඉවත් වන්න)',
+                        style: TextStyle(color: Colors.redAccent),
                       ),
                     ),
                   ],
