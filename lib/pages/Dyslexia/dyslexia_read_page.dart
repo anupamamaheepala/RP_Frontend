@@ -12,6 +12,8 @@ import '../../config.dart';
 import 'reading_result_page.dart';
 import 'eye_tracking_service.dart';
 import 'eye_tracker_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class DyslexiaReadPage extends StatefulWidget {
   final int grade;
@@ -43,6 +45,17 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   // Eye tracking metrics
   late EyeTrackingMetrics _eyeMetrics;
 
+  String? _username;
+  String? _userId;
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username');
+      _userId = prefs.getString('user_id');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +63,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     //Initialize eye tracking metrics
     _eyeMetrics = EyeTrackingMetrics();
 
+    _loadUserData();
 
     if (widget.initialSentence != null) {
       sentence = widget.initialSentence;
@@ -132,14 +146,20 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   // ================= UPLOAD =================
   Future<void> _uploadAudio() async {
     _eyeMetrics.finalize();
-    if (_audioPath == null || sentence == null) return;
-
+   // if (_audioPath == null || sentence == null) return;
+    if (_audioPath == null || sentence == null || _username == null) {
+      setState(() {
+        error = "පරිශීලකයා ඇතුල් වී නොමැත (User not logged in)";
+      });
+      return;
+    }
     try {
       final request = http.MultipartRequest(
         "POST",
         Uri.parse("${Config.baseUrl}/dyslexia/submit-audio"),
       )
-
+        ..fields["username"] = _username!
+        ..fields["user_id"] = _userId ?? ""
         ..fields["reference_text"] = sentence!
         ..fields["duration"] = _seconds.toString()
         ..fields["grade"] = widget.grade.toString()
