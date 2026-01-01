@@ -48,6 +48,20 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   String? _username;
   String? _userId;
 
+  Future<void> _refreshSentence() async {
+    if (_isRecording) {
+      await _stopRecording();
+    }
+
+    setState(() {
+      error = null;
+      sentence = null;
+      _resetState();
+    });
+
+    await fetchSentence();
+  }
+
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -262,10 +276,25 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+
+          // 🔄 Refresh Button (ABOVE level)
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.purple, size: 30),
+              tooltip: "නව වාක්‍යයක් ලබාගන්න",
+              onPressed: _isRecording ? null : _refreshSentence,
+            ),
+          ),
+
           Text(
             "📘 මට්ටම ${widget.level}",
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+
           const SizedBox(height: 16),
           _sentenceCard(),
           const SizedBox(height: 40),
