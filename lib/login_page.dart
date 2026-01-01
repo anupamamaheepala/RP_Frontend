@@ -62,19 +62,23 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setInt('age', data['age']);
         await prefs.setInt('grade', data['grade']);
 
+        // --- FIX IS HERE: Save the avatar image! ---
+        // If the backend sends null, we default to "plogo1"
+        await prefs.setString('avatar_image', data['avatar_image'] ?? "plogo1");
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Login Successful! (සාර්ථකයි!)"), backgroundColor: Colors.green),
           );
 
-          // 5. Navigate to Profile Page (Replacement so back button doesn't return to login)
+          // 5. Navigate to Profile Page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const ProfilePage()),
           );
         }
       } else {
-        // 6. Handle Errors (Wrong password, etc.)
+        // 6. Handle Errors
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -109,13 +113,13 @@ class _LoginPageState extends State<LoginPage> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Stack(
-                clipBehavior: Clip.none, // Allow the icon to overflow the stack
+                clipBehavior: Clip.none,
                 alignment: Alignment.topCenter,
                 children: [
                   // --- White Card Container ---
                   Container(
-                    margin: const EdgeInsets.only(top: 40), // Space for the floating icon
-                    padding: const EdgeInsets.fromLTRB(24, 60, 24, 30), // Top padding for icon
+                    margin: const EdgeInsets.only(top: 40),
+                    padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24.0),
@@ -130,7 +134,6 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Title Sinhala
                         const Text(
                           'පිවිසෙන්න',
                           style: TextStyle(
@@ -139,17 +142,12 @@ class _LoginPageState extends State<LoginPage> {
                             color: Color(0xFF2D3436),
                           ),
                         ),
-                        // Title English
                         const Text(
                           'Sign In to your account',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                         const SizedBox(height: 30),
 
-                        // --- Username Field ---
                         _buildTextField(
                           controller: _usernameController,
                           icon: Icons.person_outline,
@@ -157,7 +155,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // --- Password Field ---
                         _buildTextField(
                           controller: _passwordController,
                           icon: Icons.lock_outline,
@@ -166,7 +163,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 30),
 
-                        // --- Login Button (Gradient) ---
                         _isLoading
                             ? const CircularProgressIndicator()
                             : Container(
@@ -186,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: _handleLogin, // Call Login Logic
+                              onTap: _handleLogin,
                               borderRadius: BorderRadius.circular(30),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +205,6 @@ class _LoginPageState extends State<LoginPage> {
 
                         const SizedBox(height: 20),
 
-                        // --- No Account Text ---
                         const Text(
                           'ගිණුමක් නොමැතිද? / Don\'t have an account?',
                           style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -217,13 +212,11 @@ class _LoginPageState extends State<LoginPage> {
 
                         const SizedBox(height: 10),
 
-                        // --- Register Button (Light Purple) ---
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Navigate to Signup Page
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const SignupPage()),
@@ -239,10 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             child: const Text(
                               'ලියාපදිංචි වන්න',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -250,7 +240,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  // --- Floating Icon (Top Center) ---
                   Positioned(
                     top: 0,
                     child: Container(
@@ -268,11 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                       child: const Center(
-                        child: Icon(
-                          Icons.vpn_key_rounded,
-                          color: Colors.white,
-                          size: 40,
-                        ),
+                        child: Icon(Icons.vpn_key_rounded, color: Colors.white, size: 40),
                       ),
                     ),
                   ),
@@ -285,7 +270,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Helper method for consistent TextFields
   Widget _buildTextField({
     required TextEditingController controller,
     required IconData icon,
