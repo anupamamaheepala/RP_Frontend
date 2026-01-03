@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; // Required for Timers
+// Required for Timers
 import '/theme.dart';
 import 'task_result.dart';
 
@@ -70,8 +70,8 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
   bool _isChecked = false;
 
   // --- METRICS VARIABLES ---
-  Stopwatch _taskStopwatch = Stopwatch(); // Total task time
-  Stopwatch _questionStopwatch = Stopwatch(); // Time per question
+  final Stopwatch _taskStopwatch = Stopwatch(); // Total task time
+  final Stopwatch _questionStopwatch = Stopwatch(); // Time per question
 
   // Accumulated stats
   int _totalCorrect = 0;

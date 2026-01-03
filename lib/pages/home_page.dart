@@ -4,7 +4,6 @@ import 'Dysgraphia/dysgraphia_grade_selection.dart';
 // import 'Dyscalculia/dyscalculia_page.dart';
 import 'dyscalculia_page.dart';
 
-import 'adhd_page.dart';
 import '/profile.dart'; // Import your Profile Page here
 
 

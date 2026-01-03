@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
-import 'dart:math' as math;
 import 'dysgraphia_data.dart';
 import 'package:rp_frontend/config.dart';
 
@@ -26,8 +24,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   int _attemptsCompleted = 0;
   bool _isDrawing = false;
   List<List<Offset>> _currentStrokes = [];
-  List<List<List<Offset>>> _allStrokes = [];
-  List<double> _timesTaken = [];
+  final List<List<List<Offset>>> _allStrokes = [];
+  final List<double> _timesTaken = [];
   DateTime? _startTime; // FIXED: Added missing declaration
   String? _error;
   int _stars = 0;
@@ -611,7 +609,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '${_currentIndex}/${_prompts.length}',
+                            '$_currentIndex/${_prompts.length}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
