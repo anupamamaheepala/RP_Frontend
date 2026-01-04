@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
-import 'pages/home_page.dart'; // Ensure this exists
-import 'edit_profile.dart'; // Import Edit Profile Page
-import 'login_page.dart';   // Import Login Page
+import 'pages/home_page.dart';
+import 'edit_profile.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,7 +17,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String username = "Loading...";
   int age = 0;
   int grade = 0;
-  String avatarImage = "plogo1"; // Default image
+  String avatarImage = "plogo1";
 
   @override
   void initState() {
@@ -25,22 +25,19 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
-  // --- Load Data from SharedPreferences ---
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       username = prefs.getString('username') ?? "User";
       age = prefs.getInt('age') ?? 0;
       grade = prefs.getInt('grade') ?? 0;
-      // Load the saved avatar name, or default to 'plogo1'
       avatarImage = prefs.getString('avatar_image') ?? "plogo1";
     });
   }
 
-  // --- Logout Logic ---
   Future<void> _handleLogout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear all data
+    await prefs.clear();
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
@@ -56,8 +53,15 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.mainBackground,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -70,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(24.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.purple.withOpacity(0.1), // Soft purple shadow
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -79,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // --- Avatar Section (UPDATED) ---
+                    // --- Avatar Section ---
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
@@ -95,10 +99,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: CircleAvatar(
                           radius: 60,
                           backgroundColor: const Color(0xFFE0E0E0),
-                          // Display the selected asset image
                           backgroundImage: AssetImage('assets/$avatarImage.png'),
                           onBackgroundImageError: (_, __) {
-                            // Fallback if image not found
                             print("Image not found: assets/$avatarImage.png");
                           },
                         ),
@@ -180,7 +182,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     // --- Edit Profile Button ---
                     TextButton.icon(
                       onPressed: () async {
-                        // Wait for Edit Page to close, then reload data
                         await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const EditProfilePage()),
@@ -225,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)],
+        boxShadow: [BoxShadow(color: Colors.purple.withOpacity(0.05), blurRadius: 5)],
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),

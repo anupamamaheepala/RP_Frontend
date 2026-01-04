@@ -72,7 +72,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 final avatarName = avatarList[index];
                 return GestureDetector(
                   onTap: () {
-                    // Update state and close dialog
                     setState(() {
                       selectedAvatar = avatarName;
                     });
@@ -119,7 +118,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     try {
-      // 1. Send data to Backend (including avatar_image)
       final url = Uri.parse("${Config.baseUrl}/auth/profile/$userId");
       final response = await http.put(
         url,
@@ -128,12 +126,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
           "username": _usernameController.text.trim(),
           "age": selectedAge,
           "grade": selectedGrade,
-          "avatar_image": selectedAvatar, // Sending the new image name
+          "avatar_image": selectedAvatar,
         }),
       );
 
       if (response.statusCode == 200) {
-        // 2. Save Avatar & Data Locally
         await prefs.setString('username', _usernameController.text.trim());
         await prefs.setInt('age', selectedAge);
         await prefs.setInt('grade', selectedGrade);
@@ -167,8 +164,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.mainBackground,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -181,7 +185,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   borderRadius: BorderRadius.circular(24.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.purple.withOpacity(0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -196,9 +200,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                     const SizedBox(height: 20),
 
-                    // --- CURRENT AVATAR DISPLAY WITH EDIT BUTTON ---
+                    // --- CURRENT AVATAR ---
                     GestureDetector(
-                      onTap: _showAvatarSelectionDialog, // Click anywhere on image to edit
+                      onTap: _showAvatarSelectionDialog,
                       child: Stack(
                         children: [
                           Container(

@@ -55,15 +55,12 @@ class _LoginPageState extends State<LoginPage> {
         // 3. Success -> Parse Data
         final data = jsonDecode(response.body);
 
-        // 4. Save User Data Locally (SharedPreferences)
+        // 4. Save User Data Locally
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id', data['user_id']);
         await prefs.setString('username', data['username']);
         await prefs.setInt('age', data['age']);
         await prefs.setInt('grade', data['grade']);
-
-        // --- FIX IS HERE: Save the avatar image! ---
-        // If the backend sends null, we default to "plogo1"
         await prefs.setString('avatar_image', data['avatar_image'] ?? "plogo1");
 
         if (mounted) {
@@ -105,8 +102,15 @@ class _LoginPageState extends State<LoginPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.mainBackground,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -125,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(24.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.purple.withOpacity(0.1), // Soft purple shadow
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -223,8 +227,8 @@ class _LoginPageState extends State<LoginPage> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondaryButton,
-                              foregroundColor: AppColors.secondaryButtonText,
+                              backgroundColor: const Color(0xFFEFEFEF), // Adjusted for light theme
+                              foregroundColor: Colors.purple, // Adjusted text color
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),

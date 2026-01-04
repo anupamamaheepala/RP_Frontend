@@ -84,7 +84,7 @@ class _SignupPageState extends State<SignupPage> {
           );
         }
       } else {
-        // 4. Handle Backend Errors (e.g., Username exists)
+        // 4. Handle Backend Errors
         final body = jsonDecode(response.body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -109,8 +109,15 @@ class _SignupPageState extends State<SignupPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.mainBackground,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
         child: SafeArea(
           child: Center(
@@ -122,14 +129,14 @@ class _SignupPageState extends State<SignupPage> {
                 children: [
                   // --- White Card ---
                   Container(
-                    margin: const EdgeInsets.only(top: 40), // Space for floating icon
+                    margin: const EdgeInsets.only(top: 40),
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.purple.withOpacity(0.1), // Soft purple shadow
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -224,7 +231,6 @@ class _SignupPageState extends State<SignupPage> {
                                 decoration: BoxDecoration(
                                   color: _getGradeColor(grade),
                                   borderRadius: BorderRadius.circular(10),
-                                  // Add a border if selected to make it pop
                                   border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null,
                                 ),
                                 alignment: Alignment.center,
@@ -286,7 +292,7 @@ class _SignupPageState extends State<SignupPage> {
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: _handleSignup, // Call logic
+                              onTap: _handleSignup,
                               borderRadius: BorderRadius.circular(30),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -342,7 +348,7 @@ class _SignupPageState extends State<SignupPage> {
                     top: 0,
                     left: 0,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.arrow_back, color: Colors.purple, size: 28), // Changed to purple for visibility
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
