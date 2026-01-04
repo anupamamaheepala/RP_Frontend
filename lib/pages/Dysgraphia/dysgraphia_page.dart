@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
+import 'dart:math' as math;
 import 'dysgraphia_data.dart';
 import 'package:rp_frontend/config.dart';
+import 'dysgraphia_results_page.dart'; // NEW IMPORT
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType;
@@ -24,14 +27,18 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   int _attemptsCompleted = 0;
   bool _isDrawing = false;
   List<List<Offset>> _currentStrokes = [];
-  final List<List<List<Offset>>> _allStrokes = [];
-  final List<double> _timesTaken = [];
-  DateTime? _startTime; // FIXED: Added missing declaration
+  List<List<List<Offset>>> _allStrokes = [];
+  List<double> _timesTaken = [];
+  List<int> _clearsPerPrompt = []; // NEW: Track clears per prompt
+  int _currentPromptClears = 0; // NEW: Clears for current prompt
+  DateTime? _startTime;
   String? _error;
   int _stars = 0;
   late AnimationController _celebrationController;
   final ScrollController _scrollController = ScrollController();
-  bool _canScroll = true; // Control scroll behavior
+  bool _canScroll = true;
+  bool _isCompleted = false;
+  bool _isUploading = false; // NEW: Prevent double upload
 
   @override
   void initState() {
@@ -47,7 +54,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _initializePrompts() {
     _prompts = DysgraphiaData.getPrompts(widget.grade, widget.activityType);
     if (_prompts.isEmpty) {
-      _prompts = ['දෝෂයක්'];
+      _prompts = ['දෝෂක්'];
     }
   }
 
@@ -66,21 +73,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   String _getTitle() {
     switch (widget.activityType) {
       case 'letters':
-        return 'අකුරු ඉගෙනීම - ශ්‍රේණිය ${widget.grade}';
+        return 'අකුරු ඉගෙනුම - ශ්‍රේණිය ${widget.grade}';
       case 'words':
         return 'වචන ලිවීම - ශ්‍රේණිය ${widget.grade}';
       case 'sentences':
         return 'වාක්‍ය ලිවීම - ශ්‍රේණිය ${widget.grade}';
       default:
-        return 'ලිවීමේ වැඩහුළුව';
+        return 'ලිවීමේ වහඩහුව';
     }
   }
 
   String _getTip() {
     final prompt = _prompts[_currentIndex];
-    if (_isLetter(prompt)) return 'මෙම අකුර පැහැදිලිව ලියන්න';
+    if (_isLetter(prompt)) return 'මෙම අකුර පහදිලිව ලියන්න';
     if (_isWord(prompt)) return 'අකුරු අතර සමාන පරතරයක් තබන්න';
-    return 'වාක්‍යය පැහැදිලිව හා සුමටව ලියන්න';
+    return 'වාක්‍යයය පහදිලිව හා සුමටව ලියන්න';
   }
 
   void _startPrompt() {
@@ -91,6 +98,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     setState(() {
       _currentStrokes = [];
       _attemptsCompleted = 0;
+      _currentPromptClears = 0; // NEW: Reset clears for new prompt
       _startTime = DateTime.now();
     });
   }
@@ -98,7 +106,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _isDrawing = true;
-      _canScroll = false; // Disable scrolling when drawing starts
+      _canScroll = false;
       _currentStrokes.add([details.localPosition]);
     });
   }
@@ -113,13 +121,14 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _onPanEnd(DragEndDetails details) {
     setState(() {
       _isDrawing = false;
-      _canScroll = true; // Re-enable scrolling when drawing ends
+      _canScroll = true;
     });
   }
 
   void _clearCanvas() {
     setState(() {
       _currentStrokes = [];
+      _currentPromptClears++; // NEW: Increment clear count
     });
   }
 
@@ -138,21 +147,32 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     setState(() {
       _timesTaken.add(timeTaken);
       _allStrokes.add(List.from(_currentStrokes));
+      _clearsPerPrompt.add(_currentPromptClears); // NEW: Save clears for this prompt
       _attemptsCompleted++;
       _currentStrokes = [];
-      _startTime = DateTime.now(); // FIXED: Reset _startTime for next attempt
+      _currentPromptClears = 0; // NEW: Reset for next prompt
+      _startTime = DateTime.now();
 
       if (_attemptsCompleted % _maxAttempts() == 0) {
         _stars++;
         _celebrationController.forward().then((_) => _celebrationController.reset());
         _currentIndex++;
+
+        if (_currentIndex >= _prompts.length) {
+          _isCompleted = true;
+        }
+
         Future.delayed(const Duration(milliseconds: 600), _startPrompt);
       }
     });
   }
 
   Future<void> _uploadAllData() async {
-    if (_allStrokes.isEmpty) return;
+    if (_allStrokes.isEmpty || _isUploading) return;
+
+    setState(() {
+      _isUploading = true;
+    });
 
     showDialog(
       context: context,
@@ -166,7 +186,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('ප්‍රතිඵල සැකසෙමින්...', style: TextStyle(fontSize: 16)),
+                Text('ප්‍රතිඵල සකසෙමින්...', style: TextStyle(fontSize: 16)),
               ],
             ),
           ),
@@ -174,16 +194,14 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       ),
     );
 
-    // FIXED: Loop over actual completed prompts to avoid index out of bounds (RangeError)
     final numCompleted = _allStrokes.length;
     final promptsData = <Map<String, dynamic>>[];
     for (int i = 0; i < numCompleted; i++) {
       promptsData.add({
-        'prompt': _prompts[i], // Assumes _prompts[i] matches the i-th completed
-        // FIXED: Wrap strokes in {'points': [...]} to match backend Stroke model
+        'prompt': _prompts[i],
         'strokes': _allStrokes[i].map((path) => {
           'points': path.map((offset) => {
-            'x': offset.dx.toDouble(), // Ensure double/float
+            'x': offset.dx.toDouble(),
             'y': offset.dy.toDouble(),
           }).toList(),
         }).toList(),
@@ -198,115 +216,68 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     };
 
     try {
-      // Use Config.baseUrl for dynamic backend URL
       final response = await http.post(
         Uri.parse('${Config.baseUrl}/dysgraphia/submit-writing'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
-      print('Status: ${response.statusCode}');  // Add this
-      print('Body: ${response.body}');  // Add this - shows validation errors
-      Navigator.pop(context);
+
+      print('Status: ${response.statusCode}');
+      print('Body: ${response.body}');
+
+      Navigator.pop(context); // Close loading dialog
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         if (responseBody['ok'] == true) {
           _error = null;
-          _showResults();
+          _navigateToResults(); // NEW: Navigate to results page
         } else {
-          setState(() => _error = responseBody['error'] ?? 'උඩුගත කිරීම අසාර්ථකයි');
+          setState(() {
+            _error = responseBody['error'] ?? 'උඩුගත කිරීම අසාර්ථකයි';
+            _isCompleted = false;
+            _isUploading = false;
+          });
         }
       } else {
-        setState(() => _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})');
+        setState(() {
+          _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})';
+          _isCompleted = false;
+          _isUploading = false;
+        });
       }
     } catch (e) {
       Navigator.pop(context);
-      setState(() => _error = 'දෝෂය: $e');
+      setState(() {
+        _error = 'දෝෂය: $e';
+        _isCompleted = false;
+        _isUploading = false;
+      });
     }
   }
 
-  void _showResults() {
-    // FIXED: Guard against empty _timesTaken to avoid divide by zero
-    final totalTime = _timesTaken.fold(0.0, (a, b) => a + b);
-    final avgTime = _timesTaken.isNotEmpty ? (totalTime / _timesTaken.length) : 0.0;
+  void _navigateToResults() {
+    // Calculate total strokes
+    int totalStrokes = 0;
+    for (var promptStrokes in _allStrokes) {
+      totalStrokes += promptStrokes.length;
+    }
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.purple.shade100, Colors.blue.shade100],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
-              const SizedBox(height: 16),
-              const Text(
-                'සුභ පැතුම්! 🎉',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'ඔබ වැඩ ${_prompts.length} ක් සම්පූර්ණ කළා!',
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'ශ්‍රේණිය ${widget.grade} - ${_getActivityName()}',
-                style: TextStyle(fontSize: 16, color: Colors.purple.shade700, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (i) => Icon(
-                        i < _stars ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 32,
-                      )),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'සමස්ත කාලය: ${totalTime.toStringAsFixed(1)} තත්පර',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'සාමාන්‍ය කාලය: ${avgTime.toStringAsFixed(1)} තත්පර',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.check_circle),
-                label: const Text('හරි', style: TextStyle(fontSize: 18)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
+    // Calculate total clears
+    int totalClears = _clearsPerPrompt.fold(0, (sum, clears) => sum + clears);
+
+    // Navigate to results page
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DysgraphiaResultsPage(
+          grade: widget.grade,
+          activityType: widget.activityType,
+          totalPrompts: _prompts.length,
+          completedPrompts: _allStrokes.length,
+          timesTaken: _timesTaken,
+          totalStrokes: totalStrokes,
+          totalClears: totalClears,
         ),
       ),
     );
@@ -315,7 +286,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   String _getActivityName() {
     switch (widget.activityType) {
       case 'letters':
-        return 'අකුරු ඉගෙනීම';
+        return 'අකුරු ඉගෙනුම';
       case 'words':
         return 'වචන ලිවීම';
       case 'sentences':
@@ -336,7 +307,6 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     double canvasWidth;
     double canvasHeight;
 
-    // Increased canvas heights for better writing space
     if (orientation == Orientation.landscape) {
       canvasWidth = screenWidth - 100;
       canvasHeight = isLetter ? 180 : (isSentence ? 450 : 250);
@@ -381,7 +351,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                   Icon(Icons.screen_rotation, color: Colors.orange.shade700, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'තිරය කරකවා වැඩි ඉඩක් ලබා ගන්න',
+                    'තිරය කරකවා වාඩි ඉඩක් ලබා ගන්න',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange.shade900,
@@ -454,7 +424,6 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
             ),
           const SizedBox(height: 20),
 
-          // Drawing Canvas - Now with increased height
           Container(
             width: canvasSize.width,
             height: canvasSize.height,
@@ -505,7 +474,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                     if (_currentStrokes.isEmpty)
                       Center(
                         child: Text(
-                          'මෙහි ලියන්න ✍️',
+                          'මෙහි ලියන්න ✏️',
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.grey.shade400,
@@ -525,7 +494,20 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    // FIXED: Clamp progress to 0.0-1.0 to avoid RangeError in LinearProgressIndicator
+    if (_isCompleted) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.purple.shade50, Colors.blue.shade50],
+            ),
+          ),
+        ),
+      );
+    }
+
     final progress = (_currentIndex / _prompts.length).clamp(0.0, 1.0);
 
     return Scaffold(
@@ -541,7 +523,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -557,37 +539,26 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.purple, size: 20),
                           onPressed: () => Navigator.pop(context),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
                         ),
                         Expanded(
                           child: Text(
                             _getTitle(),
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        Row(
-                          children: List.generate(
-                            5,
-                                (i) => AnimatedScale(
-                              scale: i < _stars ? 1.2 : 1.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Icon(
-                                i < _stars ? Icons.star : Icons.star_border,
-                                color: i < _stars ? Colors.amber : Colors.grey.shade300,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ),
+                        const SizedBox(width: 40),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -597,20 +568,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                               value: progress,
                               backgroundColor: Colors.purple.shade100,
                               valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
-                              minHeight: 12,
+                              minHeight: 8,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.purple.shade100,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '$_currentIndex/${_prompts.length}',
+                            '${_currentIndex}/${_prompts.length}',
                             style: const TextStyle(
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
@@ -622,7 +594,6 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 ),
               ),
 
-              // WRAPPED IN SingleChildScrollView for scrolling
               Expanded(
                 child: SingleChildScrollView(
                   controller: _scrollController,
@@ -659,7 +630,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                _getTip(), // FIXED: Now properly accessible
+                                _getTip(),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -794,7 +765,6 @@ class _BaselinePainter extends CustomPainter {
       final y = canvasSize.height / 2;
       _drawDashedLine(canvas, dashPaint, Offset(0, y), Offset(canvasSize.width, y));
     } else {
-      // More lines for sentences to guide writing
       final spacing = canvasSize.height / 5;
       for (int i = 1; i < 5; i++) {
         _drawDashedLine(
