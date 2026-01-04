@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 // Required for Timers
+import 'dart:async';
 import '/theme.dart';
 import 'task_result.dart';
 
-// Changed to private class to avoid conflicts
 class _QuizQuestion {
   final String question;
   final List<String> answers;
@@ -63,6 +63,15 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     ],
   ];
 
+  // Colors for each task card to match theme
+  final List<List<Color>> _taskGradients = [
+    [Colors.purple.shade400, Colors.blue.shade400],
+    [Colors.blue.shade400, Colors.teal.shade300],
+    [Colors.green.shade400, Colors.teal.shade300],
+    [Colors.orange.shade400, Colors.pink.shade300],
+    [Colors.deepPurple.shade400, Colors.indigo.shade400],
+  ];
+
   int _selectedTaskIndex = -1;
   int _currentQuestionIndex = 0;
   final List<TextEditingController> _controllers = [TextEditingController(), TextEditingController()];
@@ -70,10 +79,8 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
-  // --- NEW METRICS VARIABLES ---
   final Stopwatch _taskStopwatch = Stopwatch();
   final Stopwatch _questionStopwatch = Stopwatch();
-
   int _totalCorrect = 0;
   int _retryCount = 0;
   int _backtrackCount = 0;
@@ -95,18 +102,14 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
-
-      // Reset metrics
       _totalCorrect = 0;
       _retryCount = 0;
       _backtrackCount = 0;
       _skippedCount = 0;
       _responseTimes = [];
       _hesitationTimes = [];
-
       _taskStopwatch.reset();
       _taskStopwatch.start();
-
       _resetQuestion();
     });
   }
@@ -121,7 +124,6 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
-
       _questionStopwatch.reset();
       _questionStopwatch.start();
       _questionLoadTime = DateTime.now();
@@ -160,7 +162,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       } else {
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
-        _retryCount++; // Metric
+        _retryCount++;
       }
     });
   }
@@ -168,12 +170,10 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
   void _recordQuestionMetrics() {
     _questionStopwatch.stop();
     _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
-
     List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     bool allCorrect = true;
     bool isEmpty = true;
-
     for (int i = 0; i < currentQ.answers.length; i++) {
       String text = _controllers[i].text.trim();
       if (text.isNotEmpty) isEmpty = false;
@@ -181,7 +181,6 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
         allCorrect = false;
       }
     }
-
     if (isEmpty) {
       _skippedCount++;
     } else if (allCorrect) {
@@ -191,9 +190,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
 
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
-
     _recordQuestionMetrics();
-
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -205,7 +202,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
   void _prevQuestion() {
     if (_currentQuestionIndex > 0) {
       setState(() {
-        _backtrackCount++; // Metric
+        _backtrackCount++;
         _currentQuestionIndex--;
         _resetQuestion();
       });
@@ -215,10 +212,8 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
   void _finishTask() {
     _recordQuestionMetrics();
     _taskStopwatch.stop();
-
     double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
     double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
-
     double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
     double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
 
@@ -248,25 +243,43 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
       padding: const EdgeInsets.all(20),
       itemCount: _allTasks.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _selectTask(index),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 15),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: AppGradients.mathDetect,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(2, 4))],
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: _taskGradients[index % _taskGradients.length],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.assignment, color: Colors.white, size: 30),
-                const SizedBox(width: 20),
-                Text("පැවරුම 0${index + 1} (Task ${index + 1})", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                const Spacer(),
-                const Icon(Icons.arrow_forward_ios, color: Colors.white),
-              ],
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purple.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.assignment_rounded, color: Colors.white, size: 28),
             ),
+            title: Text(
+              "පැවරුම 0${index + 1}",
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            subtitle: Text(
+              "Task ${index + 1}",
+              style: const TextStyle(fontSize: 13, color: Colors.white70),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+            onTap: () => _selectTask(index),
           ),
         );
       },
@@ -287,7 +300,13 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -328,13 +347,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _finishTask,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          elevation: 5,
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 5),
                         child: const Text("ප්‍රතිඵල බලන්න (View Results)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -343,13 +356,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _backToMenu,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          elevation: 5,
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 5),
                         child: const Text("අවසන් කරන්න (Back to Tasks)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -390,21 +397,52 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
         return true;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF8EC5FC),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () {
-            if (_selectedTaskIndex != -1) {
-              _backToMenu();
-            } else {
-              Navigator.pop(context);
-            }
-          }),
-          title: Text(_selectedTaskIndex == -1 ? 'ශ්‍රේණිය 3 (Grade 3)' : 'පැවරුම 0${_selectedTaskIndex + 1}', style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
-          centerTitle: true,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.purple.shade50, Colors.blue.shade50],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // HEADER
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                        onPressed: () {
+                          if (_selectedTaskIndex != -1) {
+                            _backToMenu();
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                      Expanded(
+                        child: Text(
+                          _selectedTaskIndex == -1 ? 'ශ්‍රේණිය 3 (Grade 3)' : 'පැවරුම 0${_selectedTaskIndex + 1}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.purple),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+                ),
+                Expanded(child: _selectedTaskIndex == -1 ? _buildTaskMenu() : _buildQuizView()),
+              ],
+            ),
+          ),
         ),
-        body: _selectedTaskIndex == -1 ? _buildTaskMenu() : _buildQuizView(),
       ),
     );
   }

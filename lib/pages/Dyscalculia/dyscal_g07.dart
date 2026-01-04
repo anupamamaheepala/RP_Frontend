@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 // Required for Timers
 import '/theme.dart';
 import 'task_result.dart';
@@ -68,6 +69,15 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
     ],
   ];
 
+  // Colors for each task card to match theme
+  final List<List<Color>> _taskGradients = [
+    [Colors.purple.shade400, Colors.blue.shade400],
+    [Colors.blue.shade400, Colors.teal.shade300],
+    [Colors.green.shade400, Colors.teal.shade300],
+    [Colors.orange.shade400, Colors.pink.shade300],
+    [Colors.deepPurple.shade400, Colors.indigo.shade400],
+  ];
+
   int _selectedTaskIndex = -1;
   int _currentQuestionIndex = 0;
   final List<TextEditingController> _controllers = [
@@ -82,10 +92,8 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
-  // --- NEW METRICS VARIABLES ---
   final Stopwatch _taskStopwatch = Stopwatch();
   final Stopwatch _questionStopwatch = Stopwatch();
-
   int _totalCorrect = 0;
   int _retryCount = 0;
   int _backtrackCount = 0;
@@ -107,17 +115,14 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
-
       _totalCorrect = 0;
       _retryCount = 0;
       _backtrackCount = 0;
       _skippedCount = 0;
       _responseTimes = [];
       _hesitationTimes = [];
-
       _taskStopwatch.reset();
       _taskStopwatch.start();
-
       _resetQuestion();
     });
   }
@@ -132,7 +137,6 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
-
       _questionStopwatch.reset();
       _questionStopwatch.start();
       _questionLoadTime = DateTime.now();
@@ -153,20 +157,16 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
 
   void _checkAnswer() {
     if (_selectedTaskIndex == -1) return;
-
     List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     int answerCount = currentQ.answers.length;
-
     bool allCorrect = true;
-
     for (int i = 0; i < answerCount; i++) {
       if (_controllers[i].text.trim() != currentQ.answers[i]) {
         allCorrect = false;
         break;
       }
     }
-
     setState(() {
       _isChecked = true;
       if (allCorrect) {
@@ -183,12 +183,10 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   void _recordQuestionMetrics() {
     _questionStopwatch.stop();
     _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
-
     List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
     bool allCorrect = true;
     bool isEmpty = true;
-
     for (int i = 0; i < currentQ.answers.length; i++) {
       String text = _controllers[i].text.trim();
       if (text.isNotEmpty) isEmpty = false;
@@ -196,7 +194,6 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
         allCorrect = false;
       }
     }
-
     if (isEmpty) {
       _skippedCount++;
     } else if (allCorrect) {
@@ -206,9 +203,7 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
 
   void _nextQuestion() {
     if (_selectedTaskIndex == -1) return;
-
     _recordQuestionMetrics();
-
     if (_currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -230,10 +225,8 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
   void _finishTask() {
     _recordQuestionMetrics();
     _taskStopwatch.stop();
-
     double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
     double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
-
     double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
     double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
 
@@ -263,38 +256,43 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       padding: const EdgeInsets.all(20),
       itemCount: _allTasks.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _selectTask(index),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 15),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: AppGradients.mathDetect,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(2, 4),
-                ),
-              ],
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: _taskGradients[index % _taskGradients.length],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.assignment, color: Colors.white, size: 30),
-                const SizedBox(width: 20),
-                Text(
-                  "පැවරුම 0${index + 1} (Task ${index + 1})",
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                const Icon(Icons.arrow_forward_ios, color: Colors.white),
-              ],
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purple.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.assignment_rounded, color: Colors.white, size: 28),
             ),
+            title: Text(
+              "පැවරුම 0${index + 1}",
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            subtitle: Text(
+              "Task ${index + 1}",
+              style: const TextStyle(fontSize: 13, color: Colors.white70),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+            onTap: () => _selectTask(index),
           ),
         );
       },
@@ -315,29 +313,13 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.purple.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
             ),
             child: Column(
               children: [
-                Text(
-                  "ප්‍රශ්නය ${_currentQuestionIndex + 1} / 5",
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                ),
+                Text("ප්‍රශ්නය ${_currentQuestionIndex + 1} / 5", style: const TextStyle(color: Colors.grey, fontSize: 14)),
                 const SizedBox(height: 10),
-                Text(
-                  question.question,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
+                Text(question.question, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               ],
             ),
           ),
@@ -350,86 +332,28 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
               spacing: 10,
               runSpacing: 10,
               children: List.generate(answerCount, (index) {
-                return SizedBox(
-                  width: 120,
-                  child: _buildSingleInput(index, question.units[index]),
-                );
+                return SizedBox(width: 120, child: _buildSingleInput(index, question.units[index]));
               }),
             ),
           const SizedBox(height: 20),
           if (_isChecked)
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _feedbackColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _feedbackColor),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _feedbackColor == Colors.green ? Icons.check_circle : Icons.error,
-                    color: _feedbackColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _feedbackMessage,
-                    style: TextStyle(
-                      color: _feedbackColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
+              decoration: BoxDecoration(color: _feedbackColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10), border: Border.all(color: _feedbackColor)),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(_feedbackColor == Colors.green ? Icons.check_circle : Icons.error, color: _feedbackColor), const SizedBox(width: 10), Text(_feedbackMessage, style: TextStyle(color: _feedbackColor, fontWeight: FontWeight.bold, fontSize: 16))]),
             ),
           const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton.icon(
-                onPressed: _checkAnswer,
-                icon: const Icon(Icons.check),
-                label: const Text("Check"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: _resetQuestion,
-                icon: const Icon(Icons.refresh),
-                label: const Text("Retry"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-              ),
-            ],
-          ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            ElevatedButton.icon(onPressed: _checkAnswer, icon: const Icon(Icons.check), label: const Text("Check"), style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
+            ElevatedButton.icon(onPressed: _resetQuestion, icon: const Icon(Icons.refresh), label: const Text("Retry"), style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
+          ]),
           const SizedBox(height: 30),
           Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _currentQuestionIndex > 0
-                      ? IconButton(
-                    onPressed: _prevQuestion,
-                    icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.purple),
-                  )
-                      : const SizedBox(width: 30),
-                  _currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1
-                      ? IconButton(
-                    onPressed: _nextQuestion,
-                    icon: const Icon(Icons.arrow_forward_ios, size: 30, color: Colors.purple),
-                  )
-                      : const SizedBox(width: 30),
-                ],
-              ),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                _currentQuestionIndex > 0 ? IconButton(onPressed: _prevQuestion, icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.purple)) : const SizedBox(width: 30),
+                _currentQuestionIndex < _allTasks[_selectedTaskIndex].length - 1 ? IconButton(onPressed: _nextQuestion, icon: const Icon(Icons.arrow_forward_ios, size: 30, color: Colors.purple)) : const SizedBox(width: 30),
+              ]),
               const SizedBox(height: 20),
               if (isLastQuestion)
                 Column(
@@ -438,19 +362,8 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _finishTask,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 5,
-                        ),
-                        child: const Text(
-                          "ප්‍රතිඵල බලන්න (View Results)",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 5),
+                        child: const Text("ප්‍රතිඵල බලන්න (View Results)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -458,19 +371,8 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _backToMenu,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          elevation: 5,
-                        ),
-                        child: const Text(
-                          "Back to Tasks (අවසන් කරන්න)",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 5),
+                        child: const Text("Back to Tasks (අවසන් කරන්න)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -491,18 +393,11 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
       decoration: InputDecoration(
         hintText: "?",
         suffixText: unit.isNotEmpty ? unit : null,
-        suffixStyle: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontWeight: FontWeight.bold
-        ),
+        suffixStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold),
         contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
       ),
     );
   }
@@ -518,27 +413,52 @@ class _DyscalG07PageState extends State<DyscalG07Page> {
         return true;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF8EC5FC),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.purple),
-            onPressed: () {
-              if (_selectedTaskIndex != -1) {
-                _backToMenu();
-              } else {
-                Navigator.pop(context);
-              }
-            },
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.purple.shade50, Colors.blue.shade50],
+            ),
           ),
-          title: Text(
-            _selectedTaskIndex == -1 ? 'ශ්‍රේණිය 7 (Grade 7)' : 'පැවරුම 0${_selectedTaskIndex + 1}',
-            style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // HEADER
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                        onPressed: () {
+                          if (_selectedTaskIndex != -1) {
+                            _backToMenu();
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                      Expanded(
+                        child: Text(
+                          _selectedTaskIndex == -1 ? 'ශ්‍රේණිය 7 (Grade 7)' : 'පැවරුම 0${_selectedTaskIndex + 1}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.purple),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+                ),
+                Expanded(child: _selectedTaskIndex == -1 ? _buildTaskMenu() : _buildQuizView()),
+              ],
+            ),
           ),
-          centerTitle: true,
         ),
-        body: _selectedTaskIndex == -1 ? _buildTaskMenu() : _buildQuizView(),
       ),
     );
   }
