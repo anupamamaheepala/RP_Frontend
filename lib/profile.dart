@@ -1,10 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
-import 'pages/home_page.dart';
+import 'pages/home_page.dart'; // Ensure this exists
 import 'edit_profile.dart'; // Import Edit Profile Page
+import 'login_page.dart';   // Import Login Page
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // State variables
+  String username = "Loading...";
+  int age = 0;
+  int grade = 0;
+  String avatarImage = "plogo1"; // Default image
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // --- Load Data from SharedPreferences ---
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username') ?? "User";
+      age = prefs.getInt('age') ?? 0;
+      grade = prefs.getInt('grade') ?? 0;
+      // Load the saved avatar name, or default to 'plogo1'
+      avatarImage = prefs.getString('avatar_image') ?? "plogo1";
+    });
+  }
+
+  // --- Logout Logic ---
+  Future<void> _handleLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all data
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,25 +79,28 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // --- Avatar Section ---
+                    // --- Avatar Section (UPDATED) ---
                     Container(
-                      padding: const EdgeInsets.all(4), // Border width
+                      padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: AppGradients.avatarBorder,
                       ),
                       child: Container(
-                        padding: const EdgeInsets.all(4), // White gap
+                        padding: const EdgeInsets.all(4),
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white,
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 60,
-                          backgroundColor: Color(0xFFE0E0E0),
-                          // Use an asset image for the boy avatar if available
-                          // backgroundImage: AssetImage('assets/avatar_boy.png'),
-                          child: Icon(Icons.person, size: 80, color: Colors.white),
+                          backgroundColor: const Color(0xFFE0E0E0),
+                          // Display the selected asset image
+                          backgroundImage: AssetImage('assets/$avatarImage.png'),
+                          onBackgroundImageError: (_, __) {
+                            // Fallback if image not found
+                            print("Image not found: assets/$avatarImage.png");
+                          },
                         ),
                       ),
                     ),
@@ -61,33 +108,33 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // --- Username ---
-                    const Text(
-                      'username',
-                      style: TextStyle(
+                    Text(
+                      username,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF2D0050), // Deep purple/black
+                        color: Color(0xFF2D0050),
                       ),
                     ),
 
                     const SizedBox(height: 24),
 
-                    // --- Info Chips (Age & Grade) ---
+                    // --- Info Chips ---
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildInfoChip('Age: 9 🎂'),
+                        _buildInfoChip('Age: $age 🎂'),
                         const SizedBox(width: 16),
-                        _buildInfoChip('Grade: 4 📚'),
+                        _buildInfoChip('Grade: $grade 📚'),
                       ],
                     ),
 
                     const SizedBox(height: 30),
 
-                    // --- Green Action Button (Select Learning Difficulty) ---
+                    // --- Select Learning Difficulty Button ---
                     Container(
                       width: double.infinity,
-                      height: 80, // Taller button
+                      height: 80,
                       decoration: BoxDecoration(
                         gradient: AppGradients.greenAction,
                         borderRadius: BorderRadius.circular(16),
@@ -103,8 +150,7 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
-                            // Navigate to HomePage
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const HomePage()),
                             );
@@ -117,18 +163,11 @@ class ProfilePage extends StatelessWidget {
                               SizedBox(height: 4),
                               Text(
                                 'ඉගෙනුම් දුෂ්කරතා තෝරන්න',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Select Learning Difficulty',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
+                                style: TextStyle(color: Colors.white70, fontSize: 12),
                               ),
                             ],
                           ),
@@ -140,12 +179,13 @@ class ProfilePage extends StatelessWidget {
 
                     // --- Edit Profile Button ---
                     TextButton.icon(
-                      onPressed: () {
-                        // Navigate to EditProfilePage
-                        Navigator.push(
+                      onPressed: () async {
+                        // Wait for Edit Page to close, then reload data
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const EditProfilePage()),
                         );
+                        _loadUserData();
                       },
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFFF0F0F5),
@@ -157,11 +197,17 @@ class ProfilePage extends StatelessWidget {
                       icon: const Icon(Icons.settings, size: 18, color: Colors.black54),
                       label: const Text(
                         'Edit Profile',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
                       ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // --- Logout Button ---
+                    TextButton.icon(
+                      onPressed: _handleLogout,
+                      icon: const Icon(Icons.logout, size: 18, color: Colors.redAccent),
+                      label: const Text('Logout', style: TextStyle(color: Colors.redAccent)),
                     ),
                   ],
                 ),
@@ -179,23 +225,10 @@ class ProfilePage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 5,
-            spreadRadius: 1,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)],
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-        ),
-      ),
+      child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
     );
   }
 }

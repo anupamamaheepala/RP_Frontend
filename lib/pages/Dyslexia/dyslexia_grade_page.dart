@@ -4,36 +4,44 @@ import 'dyslexia_level_page.dart';
 class DyslexiaGradePage extends StatelessWidget {
   const DyslexiaGradePage({super.key});
 
-  // Grade list (3–7)
-  final List<int> grades = const [3, 4, 5, 6, 7];
-
-  // Beautiful gradient card builder
   Widget _buildGradeCard({
     required int grade,
-    required List<Color> colors,
     required BuildContext context,
+    required List<Color> gradientColors,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: colors,
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+            color: Colors.purple.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ListTile(
-        leading: const Icon(Icons.school_rounded, color: Colors.white, size: 35),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.school_rounded,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
         title: Text(
-          "ශ්‍රේණිය $grade",
+          "$grade ශ්‍රේණිය",
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -41,10 +49,17 @@ class DyslexiaGradePage extends StatelessWidget {
           ),
         ),
         subtitle: const Text(
-          "Grade Level",
-          style: TextStyle(color: Colors.white70),
+          "කියවීමේ දුෂ්කරතා පරීක්ෂාව",
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 13,
+          ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
         onTap: () {
           Navigator.push(
             context,
@@ -60,59 +75,123 @@ class DyslexiaGradePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          'කියවීමේ දුෂ්කරතා – Grade Selection',
-          style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
-        centerTitle: true,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Select your grade level",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // HEADER (matches Dysgraphia page)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'කියවීමේ දුෂ්කරතා',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 12),
 
-            // Grade Cards
-            _buildGradeCard(
-              grade: 3,
-              colors: [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
-              context: context,
-            ),
-            _buildGradeCard(
-              grade: 4,
-              colors: [const Color(0xFF43e97b), const Color(0xFF38f9d7)],
-              context: context,
-            ),
-            _buildGradeCard(
-              grade: 5,
-              colors: [const Color(0xFFfa709a), const Color(0xFFfee140)],
-              context: context,
-            ),
-            _buildGradeCard(
-              grade: 6,
-              colors: [const Color(0xFFF68084), const Color(0xFF8EC5FC)],
-              context: context,
-            ),
-            _buildGradeCard(
-              grade: 7,
-              colors: [const Color(0xFFf7971e), const Color(0xFFffd200)],
-              context: context,
-            ),
-          ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  "ඔබගේ ශ්‍රේණිය තෝරන්න",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // GRADE CARDS
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ListView(
+                    children: [
+                      _buildGradeCard(
+                        grade: 3,
+                        context: context,
+                        gradientColors: [
+                          Colors.purple.shade400,
+                          Colors.blue.shade400,
+                        ],
+                      ),
+                      _buildGradeCard(
+                        grade: 4,
+                        context: context,
+                        gradientColors: [
+                          Colors.blue.shade400,
+                          Colors.teal.shade300,
+                        ],
+                      ),
+                      _buildGradeCard(
+                        grade: 5,
+                        context: context,
+                        gradientColors: [
+                          Colors.green.shade400,
+                          Colors.teal.shade300,
+                        ],
+                      ),
+                      _buildGradeCard(
+                        grade: 6,
+                        context: context,
+                        gradientColors: [
+                          Colors.orange.shade400,
+                          Colors.pink.shade300,
+                        ],
+                      ),
+                      _buildGradeCard(
+                        grade: 7,
+                        context: context,
+                        gradientColors: [
+                          Colors.deepPurple.shade400,
+                          Colors.indigo.shade400,
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
