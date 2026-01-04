@@ -133,7 +133,7 @@ class _TaskResultPageState extends State<TaskResultPage> {
                 _buildResultRow("Avg Hesitation", "${widget.avgHesitationTime.toStringAsFixed(1)} sec", Icons.hourglass_empty, Colors.redAccent),
                 _buildResultRow("Retries (නැවත උත්සාහයන්)", "${widget.retries}", Icons.refresh, Colors.green),
                 _buildResultRow("Backtracks (ආපසු යාම්)", "${widget.backtracks}", Icons.undo, Colors.brown),
-                _buildResultRow("Skipped (මඟ හැරිය)", "${widget.skipped}", Icons.skip_next, Colors.grey),
+                _buildResultRow("Skipped (මඟ හැරිම්)", "${widget.skipped}", Icons.skip_next, Colors.grey),
                 _buildResultRow("Total Time", "${widget.totalCompletionTime.toStringAsFixed(1)} sec", Icons.watch_later, Colors.purple),
 
                 const SizedBox(height: 20),
