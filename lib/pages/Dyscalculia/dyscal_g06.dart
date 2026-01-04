@@ -27,7 +27,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   // --- GRADE 6 DATA ---
   final List<List<_QuizQuestion>> _allTasks = [
     [
-      _QuizQuestion(question: "\"හාරලක්ෂ පනස් හයදහස්, හත්සිය අසූ නවය\" යන වචන අංකයක් ලෙස ලියන්න.", answers: ["456790"], units: [""]),
+      _QuizQuestion(question: "\"හාරලක්ෂ පනස් හයදහස්, හත්සිය අසූ නවය\" යන වචන අංකයක් ලෙස ලියන්න.", answers: ["456789"], units: [""]),
       _QuizQuestion(question: "පහත සංඛ්‍යා ආරෝහණ අනුපිළිවෙලට සකසන්න : 5, -3, 0, 2.5, -1.", answers: ["-3", "-1", "0", "2.5", "5"], units: ["", "", "", "", ""]),
       _QuizQuestion(question: "7, 15, -3, සහ 10 හි එකතුව සොයන්න.", answers: ["29"], units: [""]),
       _QuizQuestion(question: "0.75 භාගයකට පරිවර්තනය කරන්න.", answers: ["3/4"], units: [""]),
