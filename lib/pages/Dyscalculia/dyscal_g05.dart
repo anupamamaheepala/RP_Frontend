@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+// Required for Timers
 import '/theme.dart';
 import 'task_result.dart';
 
@@ -80,6 +81,10 @@ class _DyscalG05PageState extends State<DyscalG05Page> {
 
   final Stopwatch _taskStopwatch = Stopwatch();
   final Stopwatch _questionStopwatch = Stopwatch();
+  // --- METRICS VARIABLES ---
+
+
+  // Accumulated stats
   int _totalCorrect = 0;
   int _retryCount = 0;
   int _backtrackCount = 0;
