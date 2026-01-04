@@ -35,7 +35,7 @@ class _DyscalG03PageState extends State<DyscalG03Page> {
     ],
     [
       _QuizQuestion(question: "සෑම පැන්සල් පැකට්ටුවකම පැන්සල් 6 ක් තිබේ නම්, ඇසුරුම් 5 ක පැන්සල් කීයක් තිබේද?", answers: ["30"], units: ["Pencils"]),
-      _QuizQuestion(question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති.\nසෑම පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?", answers: ["8"], units: ["Students"]),
+      _QuizQuestion(question: "පන්ති කාමර 6 ක සිසුන් 48 ක් සිටිති.\nඑක පන්ති කාමරයකම සිසුන් කී දෙනෙක් සිටීද?", answers: ["8"], units: ["Students"]),
       _QuizQuestion(question: "සරල ගුණ කිරීම : 7 × 4 = ______", answers: ["28"]),
       _QuizQuestion(question: "සරල බෙදීම : 36 ÷ 4 = ______", answers: ["9"]),
       _QuizQuestion(question: "ඔබ බෑග් 3 ක් මිල දී ගෙන එක් බෑගයක මිල රුපියල් 12 ක් නම්, බෑග් 3 සඳහා කොපමණ මුදලක් වැය වේද?", answers: ["36"], units: ["Rupees"]),
