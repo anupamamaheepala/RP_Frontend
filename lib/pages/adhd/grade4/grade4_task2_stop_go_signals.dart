@@ -13,17 +13,23 @@ class Grade4Task2StopGoSignals extends StatefulWidget {
 }
 
 class _Grade4Task2StopGoSignalsState extends State<Grade4Task2StopGoSignals> {
-  String currentSignal = 'wait'; // Initial neutral state
+  String currentSignal = 'wait';
   Timer? _signalTimer;
   Timer? _taskTimer;
 
-  int correctTaps = 0;     // Taps on green → good response
-  int falseAlarms = 0;     // Taps on red/yellow → inhibition error (key ADHD marker)
-  int misses = 0;          // Green appeared but no tap
-  bool isActive = false;   // Is a signal currently shown?
+  int correctTaps = 0;
+  int falseAlarms = 0;
+  int misses = 0;
+  bool isActive = false;
 
-  final Duration trialDuration = const Duration(milliseconds: 1200); // Signal stays 1.2s
-  final Duration totalTaskDuration = const Duration(minutes: 1, seconds: 30); // 2:30 total
+  // 60-30-10 වර්ණ පද්ධතිය
+  static const Color colorBG = Color(0xFFF8FAFC);      // 60%
+  static const Color colorFrame = Color(0xFF1E293B);   // 30%
+  static const Color colorAccent = Color(0xFFF59E0B);  // 10%
+
+  // සංකීර්ණතාවය සඳහා කාලය (මිලි තත්පර වලින්)
+  int currentTrialDuration = 1200;
+  final Duration totalTaskDuration = const Duration(minutes: 1, seconds: 0);
 
   @override
   void initState() {
@@ -33,17 +39,15 @@ class _Grade4Task2StopGoSignalsState extends State<Grade4Task2StopGoSignals> {
   }
 
   void _startNextTrial() {
-    // Random delay between trials (1.5–3 seconds) for natural pacing
-    final interTrialDelay = 1500 + Random().nextInt(1500);
+    final interTrialDelay = 1000 + Random().nextInt(2000);
     Timer(Duration(milliseconds: interTrialDelay), () {
       if (!mounted) return;
 
       setState(() {
-        // 70% Go (green), 30% No-Go (red or yellow)
         final rand = Random().nextDouble();
-        if (rand < 0.7) {
+        if (rand < 0.6) {
           currentSignal = 'green';
-        } else if (rand < 0.85) {
+        } else if (rand < 0.8) {
           currentSignal = 'red';
         } else {
           currentSignal = 'yellow';
@@ -51,40 +55,43 @@ class _Grade4Task2StopGoSignalsState extends State<Grade4Task2StopGoSignals> {
         isActive = true;
       });
 
-      // Signal disappears after 1.2 seconds
-      _signalTimer = Timer(trialDuration, () {
+      _signalTimer = Timer(Duration(milliseconds: currentTrialDuration), () {
         if (!mounted) return;
+
+        if (isActive && currentSignal == 'green') {
+          setState(() => misses++);
+        }
+
         setState(() {
           isActive = false;
           currentSignal = 'wait';
         });
 
-        // If green was shown and no tap → miss
-        if (currentSignal == 'green') {
-          misses++;
-        }
-
-        // Start next trial
         _startNextTrial();
       });
     });
   }
 
   void _onTap() {
-    if (!isActive) return; // Ignore taps between trials
+    if (!isActive) return;
 
     setState(() {
-      isActive = false; // Immediate response — clear signal
+      isActive = false;
     });
     _signalTimer?.cancel();
 
     if (currentSignal == 'green') {
       correctTaps++;
+      // සංකීර්ණතාවය වැඩි කිරීම: නිවැරදි වන විට වේගය වැඩි වේ
+      if (currentTrialDuration > 600) {
+        currentTrialDuration -= 40;
+      }
     } else {
-      falseAlarms++; // Key diagnostic metric: poor inhibition
+      falseAlarms++;
+      // වැරදුනහොත් වේගය මඳක් අඩු වේ (දරුවා අධෛර්යමත් වීම වැළැක්වීමට)
+      currentTrialDuration += 20;
     }
 
-    // Go to next trial faster after response
     _startNextTrial();
   }
 
@@ -110,82 +117,117 @@ class _Grade4Task2StopGoSignalsState extends State<Grade4Task2StopGoSignals> {
     super.dispose();
   }
 
-  Color _getSignalColor() {
-    if (!isActive) return Colors.grey.shade300;
-    switch (currentSignal) {
-      case 'green':
-        return Colors.green;
-      case 'red':
-        return Colors.red;
-      case 'yellow':
-        return Colors.yellow;
-      default:
-        return Colors.grey.shade300;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
+      backgroundColor: colorBG,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'Task 2: Stop–Go Signals',
-          style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+          'පියවර 2: රථවාහන සංඥා ක්‍රීඩාව',
+          style: TextStyle(color: colorFrame, fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
       ),
       body: GestureDetector(
         onTap: _onTap,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Tap ONLY when you see GREEN!\nDo NOT tap on red or yellow!',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.purple),
-                  textAlign: TextAlign.center,
-                ),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Text(
+                'කොළ පාට පෙනෙන විට පමණක් ඉක්මනින් තට්ටු කරන්න! රතු හෝ කහ පාටට තට්ටු කරන්න එපා.',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 220,
-                height: 220,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _getSignalColor(),
-                  border: Border.all(color: Colors.white, width: 5),
-                  boxShadow: isActive
-                      ? [const BoxShadow(color: Colors.black26, blurRadius: 20)]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    isActive
-                        ? (currentSignal == 'green' ? 'GO!' : 'STOP!')
-                        : 'Ready...',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+            ),
+            const Spacer(),
+
+            // රථවාහන සංඥා කුටිය (Visualizing the traffic light)
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: colorFrame,
+                borderRadius: BorderRadius.circular(50),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 10))
+                ],
               ),
-              const SizedBox(height: 60),
-              // Live feedback (optional — helps keep kids engaged)
-              Text(
-                'Correct: $correctTaps | Errors: $falseAlarms | Misses: $misses',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              child: Column(
+                children: [
+                  _buildLight(Colors.red, currentSignal == 'red' && isActive),
+                  const SizedBox(height: 15),
+                  _buildLight(Colors.yellow, currentSignal == 'yellow' && isActive),
+                  const SizedBox(height: 15),
+                  _buildLight(Colors.green, currentSignal == 'green' && isActive),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 30),
+            Text(
+              !isActive ? 'සූදානම් වන්න...' : (currentSignal == 'green' ? 'දැන් තට්ටු කරන්න!' : 'නවතින්න!'),
+              style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: currentSignal == 'green' && isActive ? Colors.green : colorFrame
+              ),
+            ),
+
+            const Spacer(),
+
+            // ලකුණු පුවරුව
+            Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: colorFrame.withOpacity(0.1)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _scoreItem('නිවැරදි', correctTaps, Colors.green),
+                  _scoreItem('වැරදි', falseAlarms, Colors.red),
+                  _scoreItem('මඟහැරුණු', misses, Colors.orange),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLight(Color color, bool isOn) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isOn ? color : color.withOpacity(0.1),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 4),
+        boxShadow: isOn ? [BoxShadow(color: color.withOpacity(0.5), blurRadius: 20, spreadRadius: 5)] : [],
+      ),
+    );
+  }
+
+  Widget _scoreItem(String label, int value, Color color) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text(
+          value.toString(),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
+        ),
+      ],
     );
   }
 }

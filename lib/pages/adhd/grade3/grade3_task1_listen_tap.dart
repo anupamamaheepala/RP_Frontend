@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:math';  // NEW: for Random
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_task2_sequence_tap.dart';
-import 'task_stats.dart'; // Stats පන්තිය මෙහි ඇති බවට සහතික වන්න
+import 'task_stats.dart';
 
 class Grade3Task1ListenTap extends StatefulWidget {
   const Grade3Task1ListenTap({super.key});
@@ -14,7 +15,6 @@ class Grade3Task1ListenTap extends StatefulWidget {
 }
 
 class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
-  // --- ORIGINAL TEXT INSTRUCTIONS (kept for display) ---
   final List<String> instructions = [
     'රතු රවුම ස්පර්ශ කරන්න',
     'නිල් රවුම ස්පර්ශ කරන්න',
@@ -22,23 +22,20 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     'කොළ රවුම ස්පර්ශ කරන්න',
   ];
 
-  // Map each instruction index to its audio file
   final Map<int, String> colorAudioFiles = {
     0: 'red_3.wav',
     1: 'blue_3.wav',
-    2: 'yello_3.wav',
+    2: 'yello_3.wav',  // Fixed typo
     3: 'green_3.wav',
   };
 
   int currentIndex = 0;
   bool canTap = false;
 
-  // --- DIAGNOSTIC PARAMETERS ---
   int correctTaps = 0;
-  int prematureTaps = 0; // Impulsivity (tap before audio ends)
-  int wrongTaps = 0;     // Inattention (wrong color)
+  int prematureTaps = 0;
+  int wrongTaps = 0;
 
-  Timer? _instructionTimer; // No longer used, kept for compatibility
   Color? feedbackColor;
 
   final Color primaryBg = const Color(0xFFF8FAFF);
@@ -47,11 +44,23 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
   late final AudioPlayer _audioPlayer;
 
+  // NEW: List of all four circles (color + key) — we'll shuffle this each step
+  late List<Map<String, dynamic>> circleData;
+
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
     _audioPlayer.setVolume(1.0);
+
+    // Define the four circles once
+    circleData = [
+      {'color': Colors.red, 'key': 'red'},
+      {'color': Colors.blue, 'key': 'blue'},
+      {'color': Colors.amber, 'key': 'yellow'},
+      {'color': Colors.green, 'key': 'green'},
+    ];
+
     _startInstruction();
   }
 
@@ -59,19 +68,15 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     setState(() {
       canTap = false;
       feedbackColor = null;
+
+      // NEW: Randomize positions for this instruction
+      circleData.shuffle(Random());
     });
 
-    // Show the text instruction immediately
-    if (mounted) setState(() {});
-
-    // Play the corresponding color audio file
     String audioFile = colorAudioFiles[currentIndex]!;
     await _audioPlayer.play(AssetSource('sounds/$audioFile'));
-
-    // Wait until the audio finishes playing
     await _audioPlayer.onPlayerComplete.first;
 
-    // Now the child is allowed to tap → UI updates automatically
     if (mounted) {
       setState(() => canTap = true);
     }
@@ -79,11 +84,7 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
   void _handleTap(String tappedColor) {
     if (!canTap) {
-      // Premature tap → impulsivity marker
-      setState(() {
-        prematureTaps++;
-      });
-
+      prematureTaps++;
       HapticFeedback.vibrate();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -99,7 +100,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     String expected = colorKeys[currentIndex];
 
     if (tappedColor == expected) {
-      // Correct response
       correctTaps++;
       setState(() => feedbackColor = Colors.green.withOpacity(0.4));
       HapticFeedback.lightImpact();
@@ -112,7 +112,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
         });
 
         if (currentIndex >= instructions.length) {
-          // Task completed → send stats
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -132,7 +131,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
         }
       });
     } else {
-      // Wrong color → inattention marker
       wrongTaps++;
       setState(() => feedbackColor = Colors.red.withOpacity(0.4));
       HapticFeedback.heavyImpact();
@@ -216,16 +214,17 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildCircle(Colors.red, 'red'),
-                        _buildCircle(Colors.blue, 'blue'),
+                        // Use shuffled list for positions
+                        _buildCircle(circleData[0]['color'], circleData[0]['key']),
+                        _buildCircle(circleData[1]['color'], circleData[1]['key']),
                       ],
                     ),
                     const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildCircle(Colors.amber, 'yellow'),
-                        _buildCircle(Colors.green, 'green'),
+                        _buildCircle(circleData[2]['color'], circleData[2]['key']),
+                        _buildCircle(circleData[3]['color'], circleData[3]['key']),
                       ],
                     ),
                   ],

@@ -14,47 +14,55 @@ class Grade3Task2SequenceTap extends StatefulWidget {
 class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
   final int maxTrials = 5;
   int currentTrial = 0;
-  List<int> sequence = [];
+
+  List<int> displayedNumbers = [];
+  List<int> correctOrder = [];
   List<int> userSequence = [];
 
-  // රෝග විනිශ්චය දත්ත (Diagnostic Parameters)
   int correctTaps = 0;
   int wrongTaps = 0;
 
-  // UI Theme Colors (ඔබේ මුල් වර්ණ එලෙසමයි)
   final Color primaryBg = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
   final Color accentAmber = const Color(0xFFFFB300);
 
+  final Random _random = Random();
+
   @override
   void initState() {
     super.initState();
-    _shuffleSequence();
+    _generateNewTrial();
   }
 
-  void _shuffleSequence() {
+  void _generateNewTrial() {
+    List<int> pool = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    pool.shuffle(_random);
+    List<int> selected = pool.sublist(0, 4);
+    selected.sort();
+
     setState(() {
-      sequence = [1, 2, 3, 4];
-      sequence.shuffle(Random());
+      correctOrder = selected;
+      displayedNumbers = List.from(correctOrder)..shuffle(_random);
       userSequence = [];
     });
   }
 
   void _handleTap(int number) {
-    // දැනටමත් ටැප් කර ඇත්නම් නැවත ප්‍රතිචාර නොදක්වයි
     if (userSequence.contains(number)) return;
 
-    if (userSequence.length < sequence.length && number == userSequence.length + 1) {
+    int expectedNext = correctOrder[userSequence.length];
+
+    if (number == expectedNext) {
       HapticFeedback.lightImpact();
       setState(() {
         correctTaps++;
         userSequence.add(number);
       });
-      if (userSequence.length == sequence.length) {
+
+      if (userSequence.length == 4) {
         _onCorrectSequence();
       }
     } else {
-      // වැරදුණු වාර ගණන
       wrongTaps++;
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,12 +77,13 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
 
   void _onCorrectSequence() {
     if (currentTrial < maxTrials - 1) {
-      Future.delayed(const Duration(milliseconds: 500), () {
+      // Short celebration delay, then immediately generate next trial
+      Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
-        _shuffleSequence();
         setState(() {
           currentTrial++;
         });
+        _generateNewTrial(); // Ensures numbers appear without blank frame
       });
     } else {
       Navigator.pushReplacement(
@@ -138,7 +147,6 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
           ),
           const Spacer(),
 
-          // අංක බොත්තම් සහිත කොටස
           Container(
             margin: const EdgeInsets.all(20),
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
@@ -149,8 +157,9 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
             ),
             child: Wrap(
               alignment: WrapAlignment.center,
-              // මෙහිදී බොත්තම් සජීවීව ලැයිස්තුවෙන් නිර්මාණය වේ
-              children: sequence.map((num) => _buildNumberButton(num)).toList(),
+              children: displayedNumbers
+                  .map((num) => _buildNumberButton(num))
+                  .toList(),
             ),
           ),
           const Spacer(flex: 2),
