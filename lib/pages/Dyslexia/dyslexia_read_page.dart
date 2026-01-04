@@ -12,6 +12,8 @@ import '../../config.dart';
 import 'reading_result_page.dart';
 import 'eye_tracking_service.dart';
 import 'eye_tracker_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class DyslexiaReadPage extends StatefulWidget {
   final int grade;
@@ -43,6 +45,31 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   // Eye tracking metrics
   late EyeTrackingMetrics _eyeMetrics;
 
+  String? _username;
+  String? _userId;
+
+  Future<void> _refreshSentence() async {
+    if (_isRecording) {
+      await _stopRecording();
+    }
+
+    setState(() {
+      error = null;
+      sentence = null;
+      _resetState();
+    });
+
+    await fetchSentence();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username');
+      _userId = prefs.getString('user_id');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +77,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     //Initialize eye tracking metrics
     _eyeMetrics = EyeTrackingMetrics();
 
+    _loadUserData();
 
     if (widget.initialSentence != null) {
       sentence = widget.initialSentence;
@@ -132,14 +160,20 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   // ================= UPLOAD =================
   Future<void> _uploadAudio() async {
     _eyeMetrics.finalize();
-    if (_audioPath == null || sentence == null) return;
-
+   // if (_audioPath == null || sentence == null) return;
+    if (_audioPath == null || sentence == null || _username == null) {
+      setState(() {
+        error = "පරිශීලකයා ඇතුල් වී නොමැත (User not logged in)";
+      });
+      return;
+    }
     try {
       final request = http.MultipartRequest(
         "POST",
         Uri.parse("${Config.baseUrl}/dyslexia/submit-audio"),
       )
-
+        ..fields["username"] = _username!
+        ..fields["user_id"] = _userId ?? ""
         ..fields["reference_text"] = sentence!
         ..fields["duration"] = _seconds.toString()
         ..fields["grade"] = widget.grade.toString()
@@ -242,10 +276,25 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+
+          // 🔄 Refresh Button (ABOVE level)
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.purple, size: 30),
+              tooltip: "නව වාක්‍යයක් ලබාගන්න",
+              onPressed: _isRecording ? null : _refreshSentence,
+            ),
+          ),
+
           Text(
             "📘 මට්ටම ${widget.level}",
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+
           const SizedBox(height: 16),
           _sentenceCard(),
           const SizedBox(height: 40),
