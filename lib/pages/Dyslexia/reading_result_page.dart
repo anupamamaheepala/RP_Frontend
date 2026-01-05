@@ -22,6 +22,92 @@ class ReadingResultPage extends StatelessWidget {
     return double.tryParse(v.toString()) ?? 0.0;
   }
 
+  Color _riskColor(String level) {
+    switch (level) {
+      case "LOW":
+        return Colors.green;
+      case "MEDIUM":
+        return Colors.blue;   // 🔵 FIXED
+      case "HIGH":
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _riskMessageSinhala(String level) {
+    switch (level) {
+      case "LOW":
+        return "අවදානම අඩුයි";
+      case "MEDIUM":
+        return "මධ්‍යම අවදානමක් ඇත";
+      case "HIGH":
+        return "ඉහළ අවදානමක් ඇත";
+      default:
+        return "විශ්ලේෂණය කරමින්";
+    }
+  }
+
+  Widget _riskBanner(String riskLevel, double confidence) {
+    final color = _riskColor(riskLevel);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.psychology, color: color, size: 30),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "කියවීමේ අවදානම් මට්ටම",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  _riskMessageSinhala(riskLevel),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              Text(
+                "${(confidence * 100).toStringAsFixed(0)}%",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const Text(
+                "විශ්වාසය",
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String transcript = metrics["transcript"]?.toString() ?? "";
@@ -29,6 +115,10 @@ class ReadingResultPage extends StatelessWidget {
     final double correctWords = _toDouble(metrics["correct_words"]);
     final double wer = _toDouble(metrics["wer"]);
     final double speed = _toDouble(metrics["words_per_second"]);
+    final String riskLevel =
+        metrics["dyslexia_assessment"]?["risk_level"]?.toString() ?? "UNKNOWN";
+
+    final double confidence = _toDouble(metrics["dyslexia_assessment"]?["confidence"]);
 
     return Scaffold(
       body: Container(
@@ -81,6 +171,9 @@ class ReadingResultPage extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: 12),
+              _riskBanner(riskLevel, confidence),
+              const SizedBox(height: 16),
               const SizedBox(height: 16),
 
               // ================= BODY =================
