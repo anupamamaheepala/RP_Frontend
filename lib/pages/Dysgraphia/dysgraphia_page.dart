@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'dysgraphia_data.dart';
 import 'package:rp_frontend/config.dart';
-import 'dysgraphia_results_page.dart'; // NEW IMPORT
+import 'dysgraphia_results_page.dart';
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType;
@@ -29,8 +29,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   List<List<Offset>> _currentStrokes = [];
   List<List<List<Offset>>> _allStrokes = [];
   List<double> _timesTaken = [];
-  List<int> _clearsPerPrompt = []; // NEW: Track clears per prompt
-  int _currentPromptClears = 0; // NEW: Clears for current prompt
+  List<int> _clearsPerPrompt = [];
+  int _currentPromptClears = 0;
   DateTime? _startTime;
   String? _error;
   int _stars = 0;
@@ -38,7 +38,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   final ScrollController _scrollController = ScrollController();
   bool _canScroll = true;
   bool _isCompleted = false;
-  bool _isUploading = false; // NEW: Prevent double upload
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -73,21 +73,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   String _getTitle() {
     switch (widget.activityType) {
       case 'letters':
-        return 'අකුරු ඉගෙනුම - ශ්‍රේණිය ${widget.grade}';
+        return 'අකුරු ඉගෙනීම - ශ්‍රේණිය ${widget.grade}';
       case 'words':
         return 'වචන ලිවීම - ශ්‍රේණිය ${widget.grade}';
       case 'sentences':
         return 'වාක්‍ය ලිවීම - ශ්‍රේණිය ${widget.grade}';
       default:
-        return 'ලිවීමේ වහඩහුව';
+        return 'ලිවීමේ වැඩහුවැ';
     }
   }
 
   String _getTip() {
     final prompt = _prompts[_currentIndex];
-    if (_isLetter(prompt)) return 'මෙම අකුර පහදිලිව ලියන්න';
+    if (_isLetter(prompt)) return 'මෙම අකුර පැහැදිලිව ලියන්න';
     if (_isWord(prompt)) return 'අකුරු අතර සමාන පරතරයක් තබන්න';
-    return 'වාක්‍යයය පහදිලිව හා සුමටව ලියන්න';
+    return 'වාක්‍යයය පැහැදිලිව හා සුමටව ලියන්න';
   }
 
   void _startPrompt() {
@@ -98,7 +98,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     setState(() {
       _currentStrokes = [];
       _attemptsCompleted = 0;
-      _currentPromptClears = 0; // NEW: Reset clears for new prompt
+      _currentPromptClears = 0;
       _startTime = DateTime.now();
     });
   }
@@ -128,7 +128,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _clearCanvas() {
     setState(() {
       _currentStrokes = [];
-      _currentPromptClears++; // NEW: Increment clear count
+      _currentPromptClears++;
     });
   }
 
@@ -147,10 +147,10 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     setState(() {
       _timesTaken.add(timeTaken);
       _allStrokes.add(List.from(_currentStrokes));
-      _clearsPerPrompt.add(_currentPromptClears); // NEW: Save clears for this prompt
+      _clearsPerPrompt.add(_currentPromptClears);
       _attemptsCompleted++;
       _currentStrokes = [];
-      _currentPromptClears = 0; // NEW: Reset for next prompt
+      _currentPromptClears = 0;
       _startTime = DateTime.now();
 
       if (_attemptsCompleted % _maxAttempts() == 0) {
@@ -206,6 +206,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
           }).toList(),
         }).toList(),
         'time_taken': _timesTaken[i],
+        'clears': _clearsPerPrompt[i],  // FIXED: Added clears to upload
       });
     }
 
@@ -231,17 +232,17 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
         final responseBody = jsonDecode(response.body);
         if (responseBody['ok'] == true) {
           _error = null;
-          _navigateToResults(); // NEW: Navigate to results page
+          _navigateToResults(responseBody);  // FIXED: Pass response with risk data
         } else {
           setState(() {
-            _error = responseBody['error'] ?? 'උඩුගත කිරීම අසාර්ථකයි';
+            _error = responseBody['error'] ?? 'ඇතුළත් කිරීම අසාර්ථකයි';
             _isCompleted = false;
             _isUploading = false;
           });
         }
       } else {
         setState(() {
-          _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})';
+          _error = 'ඇතුළත් කිරීම අසාර්ථකයි (${response.statusCode})';
           _isCompleted = false;
           _isUploading = false;
         });
@@ -256,7 +257,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     }
   }
 
-  void _navigateToResults() {
+  void _navigateToResults(Map<String, dynamic> responseBody) {
     // Calculate total strokes
     int totalStrokes = 0;
     for (var promptStrokes in _allStrokes) {
@@ -265,6 +266,10 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
 
     // Calculate total clears
     int totalClears = _clearsPerPrompt.fold(0, (sum, clears) => sum + clears);
+
+    // Extract risk data from backend response
+    final riskLevel = responseBody['risk_level'] ?? 'none';
+    final riskScore = (responseBody['risk_score'] ?? 0.0).toDouble();
 
     // Navigate to results page
     Navigator.pushReplacement(
@@ -278,6 +283,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
           timesTaken: _timesTaken,
           totalStrokes: totalStrokes,
           totalClears: totalClears,
+          riskLevel: riskLevel,     // FIXED: Pass risk level from backend
+          riskScore: riskScore,     // FIXED: Pass risk score from backend
         ),
       ),
     );
@@ -286,7 +293,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   String _getActivityName() {
     switch (widget.activityType) {
       case 'letters':
-        return 'අකුරු ඉගෙනුම';
+        return 'අකුරු ඉගෙනීම';
       case 'words':
         return 'වචන ලිවීම';
       case 'sentences':
@@ -351,7 +358,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                   Icon(Icons.screen_rotation, color: Colors.orange.shade700, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'තිරය කරකවා වාඩි ඉඩක් ලබා ගන්න',
+                    'තිරය කරකවා වඩි ඉඩක් ලබා ගන්න',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange.shade900,
@@ -474,7 +481,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                     if (_currentStrokes.isEmpty)
                       Center(
                         child: Text(
-                          'මෙහි ලියන්න ✏️',
+                          'මෙහි ලියන්න ✍️',
                           style: TextStyle(
                             fontSize: 20,
                             color: Colors.grey.shade400,

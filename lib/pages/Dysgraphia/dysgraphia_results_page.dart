@@ -9,6 +9,8 @@ class DysgraphiaResultsPage extends StatefulWidget {
   final List<double> timesTaken;
   final int totalStrokes;
   final int totalClears;
+  final String riskLevel;
+  final double riskScore;
 
   const DysgraphiaResultsPage({
     super.key,
@@ -19,6 +21,8 @@ class DysgraphiaResultsPage extends StatefulWidget {
     required this.timesTaken,
     required this.totalStrokes,
     required this.totalClears,
+    required this.riskLevel,
+    required this.riskScore,
   });
 
   @override
@@ -57,7 +61,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
   String _getActivityName() {
     switch (widget.activityType) {
       case 'letters':
-        return 'අකුරු ඉගෙනුම';
+        return 'අකුරු ඉගෙනීම';
       case 'words':
         return 'වචන ලිවීම';
       case 'sentences':
@@ -76,16 +80,115 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
     return _calculateTotalTime() / widget.timesTaken.length;
   }
 
-  int _calculateAccuracy() {
-    // Hard-coded accuracy based on clears (fewer clears = higher accuracy)
-    if (widget.totalClears == 0) {
-      return 95 + math.Random().nextInt(6); // 95-100%
-    } else if (widget.totalClears <= 2) {
-      return 90 + math.Random().nextInt(5); // 90-94%
-    } else if (widget.totalClears <= 5) {
-      return 85 + math.Random().nextInt(5); // 85-89%
-    } else {
-      return 80 + math.Random().nextInt(5); // 80-84%
+  // Get risk level color
+  Color _getRiskColor() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return Colors.green;
+      case 'low':
+        return Colors.blue;
+      case 'medium':
+        return Colors.orange;
+      case 'high':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Get lighter shade for risk color background (FIXED)
+  Color _getRiskColorLight() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return Colors.green.shade50;
+      case 'low':
+        return Colors.blue.shade50;
+      case 'medium':
+        return Colors.orange.shade50;
+      case 'high':
+        return Colors.red.shade50;
+      default:
+        return Colors.grey.shade200;
+    }
+  }
+
+  // Get medium shade for risk color background (FIXED)
+  Color _getRiskColorMedium() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return Colors.green.shade100;
+      case 'low':
+        return Colors.blue.shade100;
+      case 'medium':
+        return Colors.orange.shade100;
+      case 'high':
+        return Colors.red.shade100;
+      default:
+        return Colors.grey.shade300;
+    }
+  }
+
+  // Get border color (FIXED)
+  Color _getRiskColorBorder() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return Colors.green.shade300;
+      case 'low':
+        return Colors.blue.shade300;
+      case 'medium':
+        return Colors.orange.shade300;
+      case 'high':
+        return Colors.red.shade300;
+      default:
+        return Colors.grey.shade400;
+    }
+  }
+
+  // Get risk level display text in Sinhala
+  String _getRiskDisplayText() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return 'අවදානමක් නැත';
+      case 'low':
+        return 'අඩු අවදානම';
+      case 'medium':
+        return 'මධ්‍යම අවදානම';
+      case 'high':
+        return 'ඉහළ අවදානම';
+      default:
+        return 'නොදනී';
+    }
+  }
+
+  // Get risk level icon
+  IconData _getRiskIcon() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return Icons.check_circle;
+      case 'low':
+        return Icons.info;
+      case 'medium':
+        return Icons.warning;
+      case 'high':
+        return Icons.error;
+      default:
+        return Icons.help;
+    }
+  }
+
+  // Get recommendation based on risk level
+  String _getRecommendation() {
+    switch (widget.riskLevel.toLowerCase()) {
+      case 'none':
+        return 'ඔබගේ ලිවීමේ කුසලතා සාමාන්‍ය සීමාව තුළයි. දිගටම අභ්‍යාස කරන්න!';
+      case 'low':
+        return 'සුළු ප්‍රශ්න දක්නට ලැබේ. නිතිපතා අභ්‍යාස කිරීමෙන් දියුණු කර ගත හැක.';
+      case 'medium':
+        return 'මධ්‍යම මට්ටමේ අභියෝග හමුවේ. ගුරුවරයා හෝ විශේෂඥයකුගෙන් උපකාර ලබා ගැනීම වැදගත්.';
+      case 'high':
+        return 'වැදගත්: ලිවීමේ දුෂ්කරතා පවතී. කරුණාකර වහාම විශේෂඥ උපකාර ලබා ගන්න.';
+      default:
+        return 'තවත් අභ්‍යාස අවශ්‍යයි.';
     }
   }
 
@@ -129,9 +232,9 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade700,
+                      color: Colors.black54,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -157,7 +260,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
   Widget build(BuildContext context) {
     final totalTime = _calculateTotalTime();
     final avgTime = _calculateAverageTime();
-    final accuracy = _calculateAccuracy();
+    final riskColor = _getRiskColor();
 
     return Scaffold(
       body: Container(
@@ -193,7 +296,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                     IconButton(
                       icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
                       onPressed: () {
-                        Navigator.pop(context); // Go back to activity selection
+                        Navigator.pop(context);
                       },
                     ),
                     const Expanded(
@@ -262,11 +365,11 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(
+                              const Text(
                                 'ඔබගේ අධ්‍යාපනය සඳහා සාර්ථකව වාර්තාව',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: Colors.grey.shade700,
+                                  color: Colors.black54,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -323,7 +426,108 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
 
                       const SizedBox(height: 24),
 
-                      // Metrics
+                      // RISK ASSESSMENT CARD - MOST IMPORTANT (FIXED COLORS)
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _getRiskColorLight(),
+                                _getRiskColorMedium(),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _getRiskColorBorder(),
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: riskColor.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                _getRiskIcon(),
+                                size: 64,
+                                color: riskColor,
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'ඩිස්ග්‍රැෆියා අවදානම් මට්ටම',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _getRiskDisplayText(),
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: riskColor,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  'ලකුණු: ${widget.riskScore.toStringAsFixed(1)}/100',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: riskColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.lightbulb_outline,
+                                      color: riskColor,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        _getRecommendation(),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Performance Metrics
                       _buildMetricCard(
                         icon: Icons.check_circle_outline,
                         iconColor: Colors.green,
@@ -349,19 +553,19 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                       ),
 
                       _buildMetricCard(
-                        icon: Icons.refresh,
+                        icon: Icons.edit,
                         iconColor: Colors.purple,
-                        label: 'නැවත උත්සාහයන්',
-                        value: '${widget.totalClears} වාර',
+                        label: 'මුළු ස්ට්‍රෝක්',
+                        value: '${widget.totalStrokes}',
                         backgroundColor: Colors.purple.shade50,
                       ),
 
                       _buildMetricCard(
-                        icon: Icons.star,
-                        iconColor: Colors.amber,
-                        label: 'නිරවද්‍යතාව (Accuracy)',
-                        value: '$accuracy%',
-                        backgroundColor: Colors.amber.shade50,
+                        icon: Icons.refresh,
+                        iconColor: Colors.red,
+                        label: 'නැවත උත්සාහයන්',
+                        value: '${widget.totalClears} වාර',
+                        backgroundColor: Colors.red.shade50,
                       ),
 
                       const SizedBox(height: 32),
@@ -373,7 +577,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              // Go back to activity selection
                               Navigator.pop(context);
                             },
                             icon: const Icon(Icons.arrow_back, size: 24),
@@ -399,7 +602,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
 
                       const SizedBox(height: 16),
 
-                      // Motivational Message
+                      // Info Note
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: Container(
@@ -408,23 +611,23 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.purple.shade200,
+                              color: Colors.blue.shade200,
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.lightbulb_outline,
-                                color: Colors.amber,
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.blue.shade700,
                                 size: 28,
                               ),
                               const SizedBox(width: 12),
-                              Expanded(
+                              const Expanded(
                                 child: Text(
-                                  'දිගටම අභ්‍යාස කරන්න! ඔබේ ලිවීමේ කුසලතා දියුණු වේ.',
+                                  'මෙම ප්‍රතිඵල ස්වයංක්‍රීයව විශ්ලේෂණය කර ඇති අතර, වෛද්‍ය හෝ අධ්‍යාපනික විශේෂඥයකුගෙන් නිවැරදි රෝග විනිශ්චය ලබා ගන්න.',
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade700,
+                                    fontSize: 12,
+                                    color: Colors.black54,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
