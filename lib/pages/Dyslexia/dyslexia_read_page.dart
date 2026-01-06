@@ -143,8 +143,8 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
     );
 
     setState(() {
-        _isRecording = true;
-        _eyeMetrics = EyeTrackingMetrics();
+      _isRecording = true;
+      _eyeMetrics = EyeTrackingMetrics();
     });
     startTimer();
   }
@@ -160,7 +160,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
   // ================= UPLOAD =================
   Future<void> _uploadAudio() async {
     _eyeMetrics.finalize();
-   // if (_audioPath == null || sentence == null) return;
+    // if (_audioPath == null || sentence == null) return;
     if (_audioPath == null || sentence == null || _username == null) {
       setState(() {
         error = "පරිශීලකයා ඇතුල් වී නොමැත (User not logged in)";
@@ -179,8 +179,8 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
         ..fields["grade"] = widget.grade.toString()
         ..fields["level"] = widget.level.toString()
         ..fields["eye_metrics"] =
-    jsonEncode(_eyeMetrics.toJson(_seconds.toDouble()))
-    ..files.add(await http.MultipartFile.fromPath(
+        jsonEncode(_eyeMetrics.toJson(_seconds.toDouble()))
+        ..files.add(await http.MultipartFile.fromPath(
           "file",
           _audioPath!,
           contentType: MediaType("audio", "wav"),
@@ -189,6 +189,11 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       final response = await request.send();
       final body = await response.stream.bytesToString();
       final data = jsonDecode(body);
+      final Map<String, dynamic> combinedMetrics = {
+        ...data["metrics"],
+        "dyslexia_assessment": data["dyslexia_assessment"],
+      };
+
 
       if (data["ok"] == true) {
         Navigator.push(
@@ -197,18 +202,24 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
             builder: (_) => ReadingResultPage(
               displayedSentence: sentence!,
               durationSeconds: _seconds,
-              metrics: data["metrics"],
+              metrics: combinedMetrics,
               grade: widget.grade,
               level: widget.level,
             ),
           ),
         );
-      } else {
+      }else {
         setState(() => error = data["error"]);
       }
     } catch (e) {
-      setState(() => error = "උඩුගත කිරීම අසාර්ථකයි");
+      print("UPLOAD ERROR: $e");
+      setState(() => error = e.toString());
     }
+
+
+    // catch (e) {
+    //   setState(() => error = "උඩුගත කිරීම අසාර්ථකයි");
+    // }
   }
 
   // ================= UI =================
@@ -354,7 +365,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
             label: const Text("ආරම්භ කරන්න"),
             style:
             ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+              backgroundColor: Colors.green,
               foregroundColor: Colors.white,),
           ),
         ),
@@ -365,7 +376,7 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
             icon: const Icon(Icons.stop),
             label: const Text("නවත්වන්න"),
             style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,),
           ),
         ),
