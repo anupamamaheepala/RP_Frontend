@@ -2,96 +2,171 @@
 import 'package:flutter/material.dart';
 
 class Grade7ResultsPage extends StatelessWidget {
-  final String taskNumber; // ← Add this
+  final String taskNumber;
 
   const Grade7ResultsPage({
     super.key,
-    required this.taskNumber, // ← Make it required
+    required this.taskNumber,
   });
 
-  // Dummy values – replace with real data later
+  // Placeholder data - replace these with real calculated values from all tasks later
   final int totalTasks = 6;
   final double overallAccuracy = 78.5;
   final int prematureActions = 4;
   final int missedResponses = 3;
   final int falseAlarms = 7;
-  final String attentionLevel = "Moderate Attention Challenges";
+  final String attentionLevel = "මධ්‍යම මට්ටමේ අවධානයක්";
+
+  // 60-30-10 Color Theme
+  final Color color60BG = const Color(0xFFF8FAFF);
+  final Color color30Secondary = const Color(0xFF6741D9);
+  final Color color10Accent = const Color(0xFFFFB300);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
+      backgroundColor: color60BG,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.purple),
+          icon: Icon(Icons.close_rounded, color: color30Secondary),
           onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
         ),
         title: Text(
-          'අධිමානසික නෝයීන්තා – ශ්‍රේණිය 7 ප්‍රතිඵල (Task $taskNumber)',
-          style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+          'අවධානය සහ හැසිරීම් වාර්තාව',
+          style: TextStyle(color: color30Secondary, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const Icon(Icons.emoji_events_rounded, size: 120, color: Colors.yellow),
-            const SizedBox(height: 20),
-            const Text(
-              'ඔබ හොඳින් කළා!',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.purple),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'ඔබේ අවධානය සහ හැසිරීම බැලූ විට:',
-              style: TextStyle(fontSize: 20, color: Colors.black87),
-            ),
-            const SizedBox(height: 20),
-
-            Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildResultRow(icon: Icons.check_circle, label: 'සම්පූර්ණ කළ ක්‍රියාකාරකම්', value: '$totalTasks / $totalTasks', color: Colors.green),
-                    const Divider(height: 30),
-                    _buildResultRow(icon: Icons.speed, label: 'සමස්ත නිවැරදිතාව', value: '${overallAccuracy.toStringAsFixed(1)}%', color: overallAccuracy >= 80 ? Colors.green : Colors.orange),
-                    const Divider(height: 30),
-                    _buildResultRow(icon: Icons.warning_amber_rounded, label: 'අනවශ්‍ය ක්‍රියා (Impulsivity)', value: '$prematureActions', color: prematureActions > 3 ? Colors.red : Colors.orange),
-                    const Divider(height: 30),
-                    _buildResultRow(icon: Icons.remove_red_eye, label: 'අවධානය නොමැති වීම', value: '$missedResponses', color: missedResponses > 2 ? Colors.red : Colors.orange),
-                    const Divider(height: 30),
-                    _buildResultRow(icon: Icons.block, label: 'බාධකවලට ප්‍රතිචාර (False Alarms)', value: '$falseAlarms', color: falseAlarms > 5 ? Colors.red : Colors.orange),
-                    const Divider(height: 30),
-                    _buildResultRow(icon: Icons.psychology, label: 'අවධානය මට්ටම', value: attentionLevel, color: Colors.orange, isBold: true),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+          child: Column(
+            children: [
+              // Trophy Icon
+              Container(
+                padding: const EdgeInsets.all(25),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: color10Accent.withOpacity(0.2), blurRadius: 20, spreadRadius: 5)
                   ],
                 ),
+                child: Icon(Icons.emoji_events_rounded, size: 100, color: color10Accent),
               ),
-            ),
+              const SizedBox(height: 25),
 
-            const SizedBox(height: 40),
-            const Text(
-              'ඔබේ ප්‍රතිඵල අනුව, අපි ඔබට ගැලපෙන විශේෂ ඉගෙනුම් සැලැස්මක් සකස් කරන්නෙමු!',
-              style: TextStyle(fontSize: 18, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFf7971e),
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              Text(
+                'ඔබ ඉතා හොඳින් කළා!',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color30Secondary),
               ),
-              child: const Text('මුල් පිටුවට ආපසු', style: TextStyle(fontSize: 20, color: Colors.white)),
-            ),
-          ],
+              const SizedBox(height: 10),
+              const Text(
+                'ඔබේ අවධානය සහ ක්‍රියාකාරීත්වය පිළිබඳ සාරාංශය මෙන්න:',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+
+              // Results Card
+              Card(
+                elevation: 0,
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  side: BorderSide(color: color30Secondary.withOpacity(0.1), width: 2),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(25.0),
+                  child: Column(
+                    children: [
+                      _buildResultRow(
+                        icon: Icons.assignment_turned_in,
+                        label: 'සම්පූර්ණ කළ පියවර',
+                        value: '$taskNumber / $totalTasks',
+                        color: color30Secondary,
+                      ),
+                      const Divider(height: 35),
+                      _buildResultRow(
+                        icon: Icons.speed_rounded,
+                        label: 'සමස්ත නිවැරදිතාව',
+                        value: '${overallAccuracy.toStringAsFixed(1)}%',
+                        color: overallAccuracy >= 80 ? Colors.green : color10Accent,
+                      ),
+                      const Divider(height: 35),
+                      _buildResultRow(
+                        icon: Icons.bolt_rounded,
+                        label: 'හදිසි ක්‍රියාකාරීත්වය',
+                        value: '$prematureActions',
+                        color: prematureActions > 3 ? Colors.redAccent : color10Accent,
+                      ),
+                      const Divider(height: 35),
+                      _buildResultRow(
+                        icon: Icons.visibility_off_rounded,
+                        label: 'අවධානය ගිලිහීම',
+                        value: '$missedResponses',
+                        color: missedResponses > 2 ? Colors.redAccent : color10Accent,
+                      ),
+                      const Divider(height: 35),
+                      _buildResultRow(
+                        icon: Icons.error_outline_rounded,
+                        label: 'වැරදි ප්‍රතිචාර',
+                        value: '$falseAlarms',
+                        color: falseAlarms > 5 ? Colors.redAccent : color10Accent,
+                      ),
+                      const Divider(height: 35),
+                      _buildResultRow(
+                        icon: Icons.psychology_rounded,
+                        label: 'අවධානය මට්ටම',
+                        value: attentionLevel,
+                        color: color30Secondary,
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              const Text(
+                'ඔබේ ප්‍රතිඵල අනුව, අපි ඔබට ගැළපෙන විශේෂ පුහුණු සැලැස්මක් සකස් කරන්නෙමු!',
+                style: TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 40),
+
+              // Home Button
+              SizedBox(
+                width: double.infinity,
+                height: 65,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color10Accent,
+                    foregroundColor: Colors.white,
+                    elevation: 5,
+                    shadowColor: color10Accent.withOpacity(0.4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.home_rounded),
+                      SizedBox(width: 12),
+                      Text('මුල් පිටුවට යමු', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 50), // Ensures no overflow even on small screens
+            ],
+          ),
         ),
       ),
     );
@@ -106,12 +181,25 @@ class Grade7ResultsPage extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 30),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: color, size: 24),
+        ),
         const SizedBox(width: 15),
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 18, color: Colors.black87))),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
+          ),
+        ),
         Text(
           value,
-          style: TextStyle(fontSize: 20, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, color: color),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w700,
+            color: color,
+          ),
         ),
       ],
     );
