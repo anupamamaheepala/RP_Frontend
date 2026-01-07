@@ -48,10 +48,10 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       _QuizQuestion(question: "15.876 අංකය දශම ස්ථාන දෙකකට වට කරන්න.", answers: ["15.88"], units: [""]),
     ],
     [
-      _QuizQuestion(question: "සවස 4:45 පැය 24 ඔරලෝසු ආකෘතියට පරිවර්තනය කරන්න.", answers: ["16:45"], units: [""]),
+      _QuizQuestion(question: "සවස 4:45 පැය 24 ඔරලෝසු ආකෘතියට පරිවර්තනය කරන්න.", answers: ["16.45"], units: [""]),
       _QuizQuestion(question: "සිදත් කිලෝග්‍රෑමයකට රු. 50 කට සහල් කිලෝග්‍රෑම් 10 ක්, කිලෝග්‍රෑමයකට රු. 60 කට සීනි කිලෝග්‍රෑම් 5 ක් සහ කිලෝග්‍රෑම් 150 කට තේ දළු කිලෝග්‍රෑම් 3 ක් මිලදී ගනී.\nමුළු පිරිවැය සොයන්න.", answers: ["1250"], units: ["rupees"]),
       _QuizQuestion(question: "කමිසයක මිල ඩොලර් 15 කි.\nඇමරිකානු ඩොලර් 1 = රු. 112.50 නම්, කමිසයේ පිරිවැය ශ්‍රී ලංකා රුපියල්වලින් ගණනය කරන්න.", answers: ["1687.50"], units: ["rupees"]),
-      _QuizQuestion(question: "ප.ව. 4:45 සිට පැය 2 යි මිනිත්තු 30 ක් අඩු කරන්න.", answers: ["2:15"], units: ["PM"]),
+      _QuizQuestion(question: "ප.ව. 4:45 සිට පැය 2 යි මිනිත්තු 30 ක් අඩු කරන්න.", answers: ["2.15"], units: ["PM"]),
       _QuizQuestion(question: "පළතුරු කූඩයක බර කිලෝග්‍රෑම් 3.75 කි.\nඑයින් අඩක් පිටතට ගත්තොත් එහි බර කොපමණ වේද?", answers: ["1.875"], units: ["kg"]),
     ],
     [
