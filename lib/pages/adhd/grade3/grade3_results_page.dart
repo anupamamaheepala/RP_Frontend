@@ -1,11 +1,10 @@
-// lib/pages/ADHD/grade3/grade3_results_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'task_stats.dart';           // Same folder
-import '../../../config.dart';      // Correct path: up 3 levels to lib/config.dart
+import 'task_stats.dart';
+import 'diagnostic_metrics.dart';
+import '../../../config.dart';
 
 class Grade3ResultsPage extends StatefulWidget {
   const Grade3ResultsPage({super.key});
@@ -18,26 +17,17 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
   bool _isSaving = true;
   String _saveMessage = "ප්‍රතිඵල සුරකිමින්...";
 
+  final DiagnosticMetrics _metrics = DiagnosticMetrics();
+
+  double? riskScore; // nullable to avoid late error
+
   int get totalActions => TaskStats.totalCorrect + TaskStats.totalWrong + TaskStats.totalPremature;
-
-  double get overallAccuracy {
-    if (totalActions == 0) return 100.0;
-    return (TaskStats.totalCorrect / totalActions * 100).clamp(0.0, 100.0);
-  }
-
-  String get attentionLevel {
-    if (TaskStats.totalPremature >= 8 || TaskStats.totalWrong >= 10) {
-      return "අවධානය වැඩිදියුණු කිරීම අවශ්‍යයි";
-    } else if (TaskStats.totalPremature >= 5 || TaskStats.totalWrong >= 6) {
-      return "මධ්‍යම අවධානය";
-    } else {
-      return "ඉතා හොඳ අවධානය!";
-    }
-  }
 
   @override
   void initState() {
     super.initState();
+    _metrics.calculateStats();
+    riskScore = _metrics.getRiskScore();
     _submitResultsToBackend();
   }
 
@@ -49,7 +39,7 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
       "total_correct": TaskStats.totalCorrect,
       "total_premature": TaskStats.totalPremature,
       "total_wrong": TaskStats.totalWrong,
-      "overall_accuracy": overallAccuracy,
+      "overall_accuracy": totalActions == 0 ? 100.0 : (TaskStats.totalCorrect / totalActions * 100),
       "timestamp": DateTime.now().toIso8601String(),
     };
 
@@ -60,18 +50,13 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
         body: jsonEncode(payload),
       );
 
-      if (response.statusCode == 200) {
-        setState(() {
-          _isSaving = false;
-          _saveMessage = "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!";
-        });
-        TaskStats.reset();
-      } else {
-        setState(() {
-          _isSaving = false;
-          _saveMessage = "සේවාදායක දෝෂයක් (Status: ${response.statusCode})";
-        });
-      }
+      setState(() {
+        _isSaving = false;
+        _saveMessage = response.statusCode == 200
+            ? "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!"
+            : "සේවාදායක දෝෂයක් (Status: ${response.statusCode})";
+      });
+      TaskStats.reset();
     } catch (e) {
       setState(() {
         _isSaving = false;
@@ -80,7 +65,6 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
     }
   }
 
-  // UI Colors
   final Color primaryBg = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
   final Color accentAmber = const Color(0xFFFFB300);
@@ -109,8 +93,6 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
             child: Text(
               label,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
             ),
           ),
           Text(
@@ -127,6 +109,17 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
   }
 
   Widget _buildDivider() => Divider(height: 32, thickness: 1, color: Colors.grey[100]);
+
+  String _getPlanMessage() {
+    if (riskScore == null) return "ගණනය වෙමින්...";
+    if (riskScore! < 0.3) {
+      return "ඉතා හොඳ අවධානය! සාමාන්‍ය ඉගෙනුම් සැලැස්ම භාවිතා කරන්න.";
+    } else if (riskScore! < 0.6) {
+      return "මධ්‍යම අවධානය — කෙටි විවේක, දෘශ්‍ය ආධාරක, කොටස්වලට බෙදූ උපදෙස් එකතු කරන්න.";
+    } else {
+      return "ඉහළ අවධානය අවශ්‍යතා — පූර්ණ පුද්ගලික සැලැස්ම: ඉක්මන් ප්‍රතිචාර පාලන ක්‍රීඩා, අංක රේඛා මෙවලම්, වර්ණ කේතකරණය, කෙටි සැසි.";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,8 +139,6 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
         child: Column(
           children: [
-            // Header, Results Card, Encouragement — same as before
-            // (Keep your existing build code here — it's excellent)
             Column(
               children: [
                 Stack(
@@ -173,16 +164,28 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildResultRow(icon: Icons.task_alt_rounded, label: 'සම්පූර්ණ කළ ක්‍රියාකාරකම්', value: '3 / 3', color: Colors.blue),
+                    Text("විස්තරාත්මක ප්‍රතිඵල", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: secondaryPurple)),
+                    const SizedBox(height: 15),
+
+                    _buildResultRow(icon: Icons.timer, label: 'ක්ෂණික ප්‍රතිචාර (Impulsivity)', value: '${_metrics.task1Premature}', color: _metrics.task1Premature > 10 ? Colors.red : Colors.orange),
+                    _buildResultRow(icon: Icons.speed, label: 'ප්‍රතිචාර වේගය (Mean RT)', value: '${_metrics.task1MeanRT.toStringAsFixed(2)}s', color: Colors.blue),
+                    _buildResultRow(icon: Icons.waves, label: 'අවධානයේ වෙනස්වීම (SdRT)', value: '${_metrics.task1SdRT.toStringAsFixed(2)}', color: _metrics.task1SdRT > 0.5 ? Colors.red : Colors.green),
+                    _buildResultRow(icon: Icons.swap_horiz, label: 'අනුපිළිවෙල වැරදි', value: '${_metrics.task2Wrong}', color: _metrics.task2Wrong > 10 ? Colors.red : Colors.orange),
+                    _buildResultRow(icon: Icons.timer_outlined, label: 'අනුපිළිවෙල කාලය (Mean)', value: '${_metrics.task2MeanTrialTime.toStringAsFixed(1)}s', color: Colors.blue),
+                    _buildResultRow(icon: Icons.category, label: 'කාණ්ඩගත කිරීමේ වැරදි', value: '${_metrics.task3Wrong}', color: _metrics.task3Wrong > 3 ? Colors.red : Colors.orange),
+                    _buildResultRow(icon: Icons.touch_app, label: 'ඇදීමේ කාලය (Mean)', value: '${_metrics.task3MeanDragTime.toStringAsFixed(1)}s', color: Colors.blue),
+
                     _buildDivider(),
-                    _buildResultRow(icon: Icons.speed_rounded, label: 'සමස්ත නිවැරදිතාව', value: '${overallAccuracy.toStringAsFixed(0)}%', color: overallAccuracy >= 80 ? Colors.green : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(icon: Icons.bolt_rounded, label: 'ක්ෂණික ප්‍රතිචාර (Impulsivity)', value: '${TaskStats.totalPremature}', color: TaskStats.totalPremature > 5 ? Colors.red : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(icon: Icons.visibility_off_rounded, label: 'අවධානය ගිලිහී යාම් (Inattention)', value: '${TaskStats.totalWrong}', color: TaskStats.totalWrong > 6 ? Colors.red : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(icon: Icons.psychology_rounded, label: 'අවධානය මට්ටම', value: attentionLevel, color: secondaryPurple, isBold: true),
+
+                    _buildResultRow(
+                      icon: Icons.psychology_rounded,
+                      label: 'සමස්ත අවධානය මට්ටම',
+                      value: riskScore == null ? 'ගණනය වෙමින්...' : '${(riskScore! * 100).toStringAsFixed(0)}%',
+                      color: secondaryPurple,
+                      isBold: true,
+                    ),
                   ],
                 ),
               ),
@@ -194,9 +197,9 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: accentAmber.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
               child: Text(
-                'ඔබේ ප්‍රතිඵල අනුව, අපි ඔබට ගැලපෙන විශේෂ ඉගෙනුම් සැලැස්මක් සකස් කරන්නෙමු!',
+                _getPlanMessage(),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: secondaryPurple, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 17, color: secondaryPurple, fontWeight: FontWeight.w600),
               ),
             ),
 

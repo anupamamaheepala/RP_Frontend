@@ -1,8 +1,8 @@
-// lib/pages/ADHD/grade3/grade3_task3_match_drag.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Haptic feedback සඳහා
+import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_results_page.dart';
+import 'diagnostic_metrics.dart';
 
 class Grade3Task3MatchDrag extends StatefulWidget {
   const Grade3Task3MatchDrag({super.key});
@@ -12,7 +12,6 @@ class Grade3Task3MatchDrag extends StatefulWidget {
 }
 
 class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
-  // --- මුල් දත්ත ලැයිස්තුව සිංහලෙන් ---
   final List<Map<String, dynamic>> items = [
     {'name': 'ඇපල්', 'type': 'fruit', 'image': Icons.apple},
     {'name': 'කෙසෙල්', 'type': 'fruit', 'image': Icons.breakfast_dining},
@@ -22,7 +21,6 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
     {'name': 'පූසා', 'type': 'animal', 'image': Icons.pets},
   ];
 
-  // --- කාණ්ඩ සිංහලෙන් ---
   Map<String, List<String>> categories = {
     'පලතුරු': [],
     'සතුන්': [],
@@ -30,27 +28,34 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
   };
 
   int correctDrops = 0;
-  int wrongDrops = 0; // ← මෙයට අලුතින් එක් කළ පරාමිතිය (Stats Tracking)
+  int wrongDrops = 0;
 
-  // --- UI වර්ණ තේමාව (60-30-10 Rule) ---
-  final Color primaryBg = const Color(0xFFF8FAFF); // 60%
-  final Color secondaryPurple = const Color(0xFF6741D9); // 30%
-  final Color accentAmber = const Color(0xFFFFB300); // 10%
+  final Color primaryBg = const Color(0xFFF8FAFF);
+  final Color secondaryPurple = const Color(0xFF6741D9);
+  final Color accentAmber = const Color(0xFFFFB300);
 
-  // --- මුල් ශ්‍රිත නාමය (Logic වෙනස් කර නැත) ---
+  DateTime? _dragStartTime;
+
+  final DiagnosticMetrics _metrics = DiagnosticMetrics();
+
   void _onAccept(String itemName, String category) {
     final item = items.firstWhere((i) => i['name'] == itemName, orElse: () => {});
 
     if (item.isEmpty) return;
 
-    // සිංහල කාණ්ඩ නාමය internal type එක සමඟ සසඳන ආකාරය
     String expectedType = "";
     if (category == 'පලතුරු') expectedType = 'fruit';
     if (category == 'සතුන්') expectedType = 'animal';
     if (category == 'වාහන') expectedType = 'vehicle';
 
+    // Record drag time for every attempt
+    if (_dragStartTime != null) {
+      double dragTime = DateTime.now().difference(_dragStartTime!).inMilliseconds / 1000.0;
+      _metrics.task3DragTimes.add(dragTime);
+    }
+
     if (item['type'] == expectedType) {
-      HapticFeedback.lightImpact(); // නිවැරදි වූ විට දරුවාට දැනෙන සුළු වෙව්ලීමක්
+      HapticFeedback.lightImpact();
       setState(() {
         items.removeWhere((i) => i['name'] == itemName);
         categories[category]!.add(itemName);
@@ -58,16 +63,14 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
       });
 
       if (items.isEmpty) {
-        // --- NAVIGATION WITH STATS ---
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => Grade3SuccessPage(
               taskNumber: '3',
-              // ගණනය කළ දත්ත Success Page එකට ලබා දීම
               stats: {
                 'correct': correctDrops,
-                'premature': 0, // මෙම Task එකෙහි premature taps නොමැත
+                'premature': 0,
                 'wrong': wrongDrops,
               },
               nextPage: const Grade3ResultsPage(),
@@ -76,10 +79,10 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
         );
       }
     } else {
-      // රෝග විනිශ්චය සඳහා වැරදුණු වාර ගණන එකතු කිරීම
       wrongDrops++;
+      _metrics.task3Wrong++;
 
-      HapticFeedback.vibrate(); // වැරදුණු විට දරුවාට දැනෙන තද වෙව්ලීමක්
+      HapticFeedback.vibrate();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.redAccent,
@@ -126,7 +129,6 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
           Expanded(
             child: Row(
               children: [
-                // --- වම් පස: ඇදගෙන යා යුතු වස්තූන් ලැයිස්තුව ---
                 Expanded(
                   flex: 1,
                   child: Container(
@@ -135,10 +137,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
-                        BoxShadow(
-                          color: secondaryPurple.withOpacity(0.05),
-                          blurRadius: 15,
-                        )
+                        BoxShadow(color: secondaryPurple.withOpacity(0.05), blurRadius: 15),
                       ],
                     ),
                     child: ListView.builder(
@@ -151,10 +150,10 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                           child: Draggable<String>(
                             data: item['name'] as String,
                             feedback: _buildItemCard(item, isDragging: true),
-                            childWhenDragging: Opacity(
-                              opacity: 0.3,
-                              child: _buildItemCard(item),
-                            ),
+                            childWhenDragging: Opacity(opacity: 0.3, child: _buildItemCard(item)),
+                            onDragStarted: () {
+                              _dragStartTime = DateTime.now();
+                            },
                             child: _buildItemCard(item),
                           ),
                         );
@@ -163,7 +162,6 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                   ),
                 ),
 
-                // --- දකුණු පස: ඉලක්ක පෙට්ටි (Drop Targets) ---
                 Expanded(
                   flex: 2,
                   child: ListView(
@@ -180,24 +178,14 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                             decoration: BoxDecoration(
                               color: isHovering ? accentAmber.withOpacity(0.1) : Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isHovering ? accentAmber : Colors.grey.shade200,
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                if (isHovering)
-                                  BoxShadow(color: accentAmber.withOpacity(0.2), blurRadius: 10)
-                              ],
+                              border: Border.all(color: isHovering ? accentAmber : Colors.grey.shade200, width: 3),
+                              boxShadow: [if (isHovering) BoxShadow(color: accentAmber.withOpacity(0.2), blurRadius: 10)],
                             ),
                             child: Column(
                               children: [
                                 Text(
                                   category,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: secondaryPurple,
-                                  ),
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: secondaryPurple),
                                 ),
                                 const Divider(height: 20),
                                 Wrap(
@@ -212,11 +200,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                                   }).toList(),
                                 ),
                                 if (categories[category]!.isEmpty)
-                                  Icon(
-                                    _getCategoryIcon(category),
-                                    color: Colors.black12,
-                                    size: 40,
-                                  ),
+                                  Icon(_getCategoryIcon(category), color: Colors.black12, size: 40),
                               ],
                             ),
                           );
@@ -233,7 +217,6 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
     );
   }
 
-  // අයිතමයේ පෙනුම නිර්මාණය කිරීම
   Widget _buildItemCard(Map<String, dynamic> item, {bool isDragging = false}) {
     return Material(
       color: Colors.transparent,
@@ -275,7 +258,6 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
     );
   }
 
-  // පෙට්ටි සඳහා අයිකන ලබා ගැනීම
   IconData _getCategoryIcon(String category) {
     if (category == 'පලතුරු') return Icons.shopping_basket_outlined;
     if (category == 'සතුන්') return Icons.pets_outlined;

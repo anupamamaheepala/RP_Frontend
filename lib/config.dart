@@ -1,8 +1,8 @@
 
 // DEV
-class Config {
- static const baseUrl = "https://rp-backend-production-a809.up.railway.app";
-}
+// class Config {
+//  static const baseUrl = "https://rp-backend-production-a809.up.railway.app";
+// }
 
 // //ANUPAMA
 // class Config {
@@ -20,9 +20,9 @@ class Config {
 // }
 
 //HIMANSA
-//  class Config {
-// static const baseUrl = "https://rp-backend-production-2448.up.railway.app";
-//
-//  //static const baseUrl = "http://192.168.8.153:8000";
-//  }
+ class Config {
+ static const baseUrl = "https://rp-backend-production-2448.up.railway.app";
+
+ // static const baseUrl = "http://192.168.8.153:8000";
+ }
 

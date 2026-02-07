@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:math';  // NEW: for Random
+import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_task2_sequence_tap.dart';
-import 'task_stats.dart';
+import 'diagnostic_metrics.dart';
 
 class Grade3Task1ListenTap extends StatefulWidget {
   const Grade3Task1ListenTap({super.key});
@@ -25,7 +25,7 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
   final Map<int, String> colorAudioFiles = {
     0: 'red_3.wav',
     1: 'blue_3.wav',
-    2: 'yello_3.wav',  // Fixed typo
+    2: 'yello_3.wav',
     3: 'green_3.wav',
   };
 
@@ -44,8 +44,11 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
   late final AudioPlayer _audioPlayer;
 
-  // NEW: List of all four circles (color + key) — we'll shuffle this each step
   late List<Map<String, dynamic>> circleData;
+
+  DateTime? _instructionEndTime;
+
+  final DiagnosticMetrics _metrics = DiagnosticMetrics();
 
   @override
   void initState() {
@@ -53,7 +56,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     _audioPlayer = AudioPlayer();
     _audioPlayer.setVolume(1.0);
 
-    // Define the four circles once
     circleData = [
       {'color': Colors.red, 'key': 'red'},
       {'color': Colors.blue, 'key': 'blue'},
@@ -68,8 +70,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     setState(() {
       canTap = false;
       feedbackColor = null;
-
-      // NEW: Randomize positions for this instruction
       circleData.shuffle(Random());
     });
 
@@ -78,13 +78,17 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
     await _audioPlayer.onPlayerComplete.first;
 
     if (mounted) {
-      setState(() => canTap = true);
+      setState(() {
+        canTap = true;
+        _instructionEndTime = DateTime.now();
+      });
     }
   }
 
   void _handleTap(String tappedColor) {
     if (!canTap) {
       prematureTaps++;
+      _metrics.task1Premature++;
       HapticFeedback.vibrate();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -101,6 +105,13 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
     if (tappedColor == expected) {
       correctTaps++;
+      _metrics.task1Correct++;
+
+      if (_instructionEndTime != null) {
+        double rt = DateTime.now().difference(_instructionEndTime!).inMilliseconds / 1000.0;
+        _metrics.task1ResponseTimes.add(rt);
+      }
+
       setState(() => feedbackColor = Colors.green.withOpacity(0.4));
       HapticFeedback.lightImpact();
 
@@ -132,6 +143,8 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
       });
     } else {
       wrongTaps++;
+      _metrics.task1Wrong++;
+
       setState(() => feedbackColor = Colors.red.withOpacity(0.4));
       HapticFeedback.heavyImpact();
 
@@ -149,6 +162,7 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
   @override
   Widget build(BuildContext context) {
+    // UI unchanged — same as your original
     return Scaffold(
       backgroundColor: primaryBg,
       appBar: AppBar(
@@ -174,7 +188,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
                 minHeight: 6,
               ),
               const SizedBox(height: 40),
-
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(24),
@@ -191,22 +204,14 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
                         size: 40, color: canTap ? Colors.green : Colors.grey),
                     const SizedBox(height: 15),
                     Text(
-                      currentIndex < instructions.length
-                          ? instructions[currentIndex]
-                          : 'නිමයි!',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: secondaryPurple,
-                      ),
+                      currentIndex < instructions.length ? instructions[currentIndex] : 'නිමයි!',
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: secondaryPurple),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-
               const Spacer(),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
@@ -214,7 +219,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        // Use shuffled list for positions
                         _buildCircle(circleData[0]['color'], circleData[0]['key']),
                         _buildCircle(circleData[1]['color'], circleData[1]['key']),
                       ],
@@ -233,7 +237,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
               const Spacer(flex: 2),
             ],
           ),
-
           if (feedbackColor != null)
             IgnorePointer(
               child: AnimatedOpacity(

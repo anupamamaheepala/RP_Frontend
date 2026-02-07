@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_task3_match_drag.dart';
+import 'diagnostic_metrics.dart';
 
 class Grade3Task2SequenceTap extends StatefulWidget {
   const Grade3Task2SequenceTap({super.key});
@@ -28,6 +29,10 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
 
   final Random _random = Random();
 
+  DateTime? _trialStartTime;
+
+  final DiagnosticMetrics _metrics = DiagnosticMetrics();
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,7 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
       correctOrder = selected;
       displayedNumbers = List.from(correctOrder)..shuffle(_random);
       userSequence = [];
+      _trialStartTime = DateTime.now();
     });
   }
 
@@ -64,6 +70,8 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
       }
     } else {
       wrongTaps++;
+      _metrics.task2Wrong++;
+
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -76,14 +84,18 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
   }
 
   void _onCorrectSequence() {
+    if (_trialStartTime != null) {
+      double trialTime = DateTime.now().difference(_trialStartTime!).inMilliseconds / 1000.0;
+      _metrics.task2TrialTimes.add(trialTime);
+    }
+
     if (currentTrial < maxTrials - 1) {
-      // Short celebration delay, then immediately generate next trial
       Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
         setState(() {
           currentTrial++;
         });
-        _generateNewTrial(); // Ensures numbers appear without blank frame
+        _generateNewTrial();
       });
     } else {
       Navigator.pushReplacement(
@@ -105,6 +117,7 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
 
   @override
   Widget build(BuildContext context) {
+    // UI unchanged — same as original
     return Scaffold(
       backgroundColor: primaryBg,
       appBar: AppBar(
