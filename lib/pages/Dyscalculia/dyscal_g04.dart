@@ -44,7 +44,7 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
       _QuizQuestion(question: "ගුණ කිරීම : 8 × 7 = ______", answers: ["56"], units: [""]),
       _QuizQuestion(question: "පැන්සලක මිල රුපියල් 15 ක් නම්, පැන්සල් 12 ක් කොපමණ වේද?", answers: ["180"], units: ["rupees"]),
       _QuizQuestion(question: "බෙදීම : 72 ÷ 8 = ______", answers: ["9"], units: [""]),
-      _QuizQuestion(question: "ඔබට රුපියල් 45 ක් ඇති අතර ඔබට ස්ටිකර් පැකට් 5 ක් මිලදී ගනී.\nඑක් පැකට්ටුවක මිල කොපමණද?", answers: ["9"], units: ["rupees"]),
+      _QuizQuestion(question: "ඔබට රුපියල් 45 ක් ඇති අතර ඔබට ස්ටිකර් පැකට් 5 ක් මිලදී ගැනීමට අවශ්‍ය වේ.\nඑක් පැකට්ටුවක මිල කොපමණද?", answers: ["9"], units: ["rupees"]),
       _QuizQuestion(question: "ඉතිරිය සහිත බෙදීම : 37 ÷ 5 = ______ ඉතිරිය ______", answers: ["7", "2"], units: ["", "remainder"]),
     ],
     [
@@ -52,10 +52,10 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
       _QuizQuestion(question: "ඔබට රුපියල් 250 ක් තිබේ.\nඔබ සෙල්ලම් බඩු 3 ක් මිලට ගන්නේ නම්, එකක් රු. 60 බැගින්, ඔබට කොපමණ මුදලක් ඉතිරි වේද?", answers: ["70"], units: ["rupees"]),
       _QuizQuestion(question: "ඔබේ පාසල පෙ.ව. 8:00 ට ආරම්භ වී ප.ව. 2:30 ට අවසන් වන්නේ නම්, ඔබ පාසලේ පැය සහ මිනිත්තු කීයක් සිටිනවාද?", answers: ["6", "30"], units: ["hours", "minutes"]),
       _QuizQuestion(question: "බෑගයක මිල රු. 1500 කි. ඔබ සතුව රු. 5000 ක් තිබේ නම්, ඔබට බෑග් කීයක් මිලදී ගත හැකිද?", answers: ["3"], units: [""]),
-      _QuizQuestion(question: "පැය 3 යි මිනිත්තු 20 කට මිනිත්තු කීයක් තිබේද?", answers: ["200"], units: ["minutes"]),
+      _QuizQuestion(question: "පැය 3 යි මිනිත්තු 20 කින් මිනිත්තු කීයක් තිබේද?", answers: ["200"], units: ["minutes"]),
     ],
     [
-      _QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["6"], units: [""]),
+      _QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["4"], units: [""]),
       _QuizQuestion(question: "චතුරස්‍රයක සමමිතික රේඛා කීයක් තිබේද?", answers: ["2"], units: [""]),
       _QuizQuestion(question: "6 cm, 8 cm සහ 10 cm දිග පැති සහිත ත්‍රිකෝණයක පරිමිතිය සොයා ගන්න.", answers: ["24"], units: ["cm"]),
       _QuizQuestion(question: "ඔබ සතුව ඇපල් ගෙඩි 12 ක් ඇති අතර ඉන් 4 ක් කොළ පාට නම්, ඇපල් ගෙඩිවලින් කොළ පාට කොටස කුමක්ද?", answers: ["1/3"], units: [""]),

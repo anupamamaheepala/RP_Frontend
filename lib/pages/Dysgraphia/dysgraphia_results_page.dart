@@ -80,7 +80,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
     return _calculateTotalTime() / widget.timesTaken.length;
   }
 
-  /* COMMENTED OUT - RISK ASSESSMENT HELPER METHODS
   // Get risk level color
   Color _getRiskColor() {
     switch (widget.riskLevel.toLowerCase()) {
@@ -97,7 +96,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
     }
   }
 
-  // Get lighter shade for risk color background
+  // Get lighter shade for risk color background (FIXED)
   Color _getRiskColorLight() {
     switch (widget.riskLevel.toLowerCase()) {
       case 'none':
@@ -113,7 +112,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
     }
   }
 
-  // Get medium shade for risk color background
+  // Get medium shade for risk color background (FIXED)
   Color _getRiskColorMedium() {
     switch (widget.riskLevel.toLowerCase()) {
       case 'none':
@@ -129,7 +128,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
     }
   }
 
-  // Get border color
+  // Get border color (FIXED)
   Color _getRiskColorBorder() {
     switch (widget.riskLevel.toLowerCase()) {
       case 'none':
@@ -192,7 +191,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
         return 'තවත් අභ්‍යාස අවශ්‍යයි.';
     }
   }
-  END OF COMMENTED SECTION */
 
   Widget _buildMetricCard({
     required IconData icon,
@@ -262,7 +260,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
   Widget build(BuildContext context) {
     final totalTime = _calculateTotalTime();
     final avgTime = _calculateAverageTime();
-    // final riskColor = _getRiskColor(); // COMMENTED OUT
+    final riskColor = _getRiskColor();
 
     return Scaffold(
       body: Container(
@@ -428,8 +426,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
 
                       const SizedBox(height: 24),
 
-                      /* COMMENTED OUT - RISK ASSESSMENT CARD
-                      // RISK ASSESSMENT CARD - MOST IMPORTANT
+                      // RISK ASSESSMENT CARD - MOST IMPORTANT (FIXED COLORS)
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: Container(
@@ -529,7 +526,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                       ),
 
                       const SizedBox(height: 24),
-                      END OF COMMENTED RISK ASSESSMENT CARD */
 
                       // Performance Metrics
                       _buildMetricCard(
@@ -606,7 +602,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
 
                       const SizedBox(height: 16),
 
-                      // Motivational Message (replaces the info note)
+                      // Info Note
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: Container(
@@ -615,22 +611,22 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage> with Sing
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.purple.shade200,
+                              color: Colors.blue.shade200,
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.lightbulb_outline,
-                                color: Colors.amber,
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.blue.shade700,
                                 size: 28,
                               ),
                               const SizedBox(width: 12),
                               const Expanded(
                                 child: Text(
-                                  'දිගටම අභ්‍යාස කරන්න! ඔබේ ලිවීමේ කුසලතා දියුණු වේ.',
+                                  'මෙම ප්‍රතිඵල ස්වයංක්‍රීයව විශ්ලේෂණය කර ඇති අතර, වෛද්‍ය හෝ අධ්‍යාපනික විශේෂඥයකුගෙන් නිවැරදි රෝග විනිශ්චය ලබා ගන්න.',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 12,
                                     color: Colors.black54,
                                     fontWeight: FontWeight.w500,
                                   ),
