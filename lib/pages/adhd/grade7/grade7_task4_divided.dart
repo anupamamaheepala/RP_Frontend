@@ -25,46 +25,26 @@ class _Grade7Task4DividedState extends State<Grade7Task4Divided> {
   Timer? _visualTimer;
   Timer? _audioTimer;
   Timer? _targetTimeout;
-  Timer? _gameTimer;
-
-  int _secondsRemaining = 60; // තත්පර 60 ක අභියෝගය (ඔබේ කේතයේ ඇති පරිදි)
-
-  // 60-30-10 වර්ණ තේමාව
-  final Color color60BG = const Color(0xFFF8FAFF);
-  final Color color30Secondary = const Color(0xFF6741D9);
-  final Color color10Accent = const Color(0xFFFFB300);
 
   @override
   void initState() {
     super.initState();
     _startVisualTask();
     _startAudioTask();
-    _startGameTimer();
-  }
-
-  void _startGameTimer() {
-    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsRemaining > 0) {
-        setState(() => _secondsRemaining--);
-      } else {
-        timer.cancel();
-        _endTask();
-      }
-    });
+    Future.delayed(const Duration(minutes: 1), _endTask);//task duration ==> ideal 4 mins
   }
 
   void _startVisualTask() {
     _visualTimer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
-      if (Random().nextDouble() < 0.25) {
-        if (mounted) {
-          setState(() {
-            isTargetActive = true;
-            visualTargetsShown++;
-          });
-        }
+      if (Random().nextDouble() < 0.25) { // ~1 target every 8 seconds on average
+        setState(() {
+          isTargetActive = true;
+          visualTargetsShown++;
+        });
 
+        // Target disappears after 1.5 seconds if not tapped (miss)
         _targetTimeout?.cancel();
-        _targetTimeout = Timer(const Duration(milliseconds: 600), () {
+        _targetTimeout = Timer(const Duration(milliseconds: 600), () {//duration ==> ideal 1500
           if (mounted && isTargetActive) {
             setState(() => isTargetActive = false);
           }
@@ -75,23 +55,24 @@ class _Grade7Task4DividedState extends State<Grade7Task4Divided> {
 
   void _startAudioTask() {
     _audioTimer = Timer.periodic(const Duration(seconds: 7), (timer) async {
-      if (mounted) {
-        setState(() {
-          beepCount++;
-        });
-        await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
-      }
+      setState(() {
+        beepCount++;
+      });
+      // Play the real beep sound
+      await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
     });
   }
 
   void _onTap() {
     if (isTargetActive) {
+      // Correct hit
       setState(() {
         visualHits++;
         isTargetActive = false;
       });
       _targetTimeout?.cancel();
     } else {
+      // False alarm (tapped when no target)
       setState(() => visualFalseAlarms++);
     }
   }
@@ -100,7 +81,6 @@ class _Grade7Task4DividedState extends State<Grade7Task4Divided> {
     _visualTimer?.cancel();
     _audioTimer?.cancel();
     _targetTimeout?.cancel();
-    _gameTimer?.cancel();
     _audioPlayer.dispose();
 
     Navigator.pushReplacement(
@@ -119,7 +99,6 @@ class _Grade7Task4DividedState extends State<Grade7Task4Divided> {
     _visualTimer?.cancel();
     _audioTimer?.cancel();
     _targetTimeout?.cancel();
-    _gameTimer?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -127,138 +106,60 @@ class _Grade7Task4DividedState extends State<Grade7Task4Divided> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: color60BG,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'පියවර 4: අවධාන බෙදීම',
-          style: TextStyle(color: color30Secondary, fontWeight: FontWeight.bold),
-        ),
-      ),
+      backgroundColor: const Color(0xFF8EC5FC),
+      appBar: AppBar(title: const Text('Task 4: Divided Attention')),
       body: GestureDetector(
-        onTap: _onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SafeArea(
+        onTap: _onTap, // Tap anywhere to respond to visual target
+        child: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 10),
-              // කාලය ගණනය කරන ප්‍රගති තීරුව (30% Element)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: _secondsRemaining / 60,
-                        backgroundColor: color30Secondary.withOpacity(0.1),
-                        valueColor: AlwaysStoppedAnimation<Color>(color30Secondary),
-                        minHeight: 10,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text('ඉතිරි කාලය: $_secondsRemaining තත්පර',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: color30Secondary)),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 30),
+                padding: EdgeInsets.all(16.0),
                 child: Text(
-                  'රතු රවුම දුටු සැණින් තට්ටු කරන්න!\nඒ අතරතුර ඇසෙන බීප් (Beep) ශබ්ද ගණන මතක තබා ගන්න.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+                  'Tap when you see the RED circle!\nAlso count the beeps in your head!',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ),
-
-              const Spacer(),
-
-
-
-              // මධ්‍ය උත්තේජක ප්‍රදේශය (10% Focus)
+              const SizedBox(height: 40),
               AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
                 width: 220,
                 height: 220,
                 decoration: BoxDecoration(
-                  color: isTargetActive ? Colors.redAccent : Colors.white,
+                  color: isTargetActive ? Colors.red : Colors.blue,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isTargetActive ? Colors.white : color30Secondary.withOpacity(0.2),
-                    width: 6,
+                    color: isTargetActive ? Colors.white : Colors.transparent,
+                    width: 4,
                   ),
-                  boxShadow: isTargetActive
-                      ? [BoxShadow(color: Colors.redAccent.withOpacity(0.4), blurRadius: 30, spreadRadius: 5)]
-                      : [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
                 ),
                 child: Center(
                   child: Text(
-                    isTargetActive ? 'දැන් තට්ටු කරන්න!' : 'බලා සිටින්න...',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isTargetActive ? Colors.white : Colors.grey,
-                      fontSize: 18,
+                    isTargetActive ? 'TAP NOW!' : 'Watch here',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-
-              const Spacer(),
-
-              // සංඛ්‍යාලේඛන පුවරුව (10% Accent Background)
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: color30Secondary.withOpacity(0.1)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.volume_up_rounded, color: color10Accent),
-                        const SizedBox(width: 10),
-                        Text(
-                          'ශබ්ද ඇසුණු වාර ගණන: $beepCount',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: color10Accent),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 30),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _statItem('දිස්වූ වාර', visualTargetsShown),
-                        _statItem('නිවැරදි', visualHits),
-                        _statItem('වැරදි', visualFalseAlarms),
-                      ],
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 40),
+              Text(
+                'Beeps heard: $beepCount',
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
+              Text(
+                'Targets shown: $visualTargetsShown | Hits: $visualHits | Errors: $visualFalseAlarms',
+                style: const TextStyle(fontSize: 18),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _statItem(String label, int value) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Colors.black54)),
-        const SizedBox(height: 5),
-        Text(value.toString(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color30Secondary)),
-      ],
     );
   }
 }
