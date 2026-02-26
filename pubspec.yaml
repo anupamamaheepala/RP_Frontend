@@ -44,7 +44,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   openai_dart: ^0.6.0
   audioplayers: ^6.1.0
-
+  flutter_tts: ^3.8.5
   http_parser: any
   camera: ^0.11.0
   google_mlkit_face_detection: ^0.10.0
