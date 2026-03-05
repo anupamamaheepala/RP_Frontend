@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class DysgraphiaResultsPage extends StatefulWidget {
   final int grade;
@@ -11,7 +10,7 @@ class DysgraphiaResultsPage extends StatefulWidget {
   final int totalClears;
   final String riskLevel;
   final double riskScore;
-  final double formationAccuracy; // NEW: 0.0 to 1.0 from ML Kit
+  final double formationAccuracy;
 
   const DysgraphiaResultsPage({
     super.key,
@@ -57,10 +56,10 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
 
   String _getActivityName() {
     switch (widget.activityType) {
-      case 'letters':  return 'අකුරු ඉගෙනීම';
-      case 'words':    return 'වචන ලිවීම';
-      case 'sentences':return 'වාක්‍ය ලිවීම';
-      default:         return 'ලිවීම';
+      case 'letters':   return 'අකුරු ඉගෙනීම';
+      case 'words':     return 'වචන ලිවීම';
+      case 'sentences': return 'වාක්‍ය ලිවීම';
+      default:          return 'ලිවීම';
     }
   }
 
@@ -71,7 +70,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
     return _calculateTotalTime() / widget.timesTaken.length;
   }
 
-  // ── Risk helpers ──────────────────────────────────────────────────────────
   Color _getRiskColor() {
     switch (widget.riskLevel.toLowerCase()) {
       case 'none':   return Colors.green;
@@ -134,37 +132,32 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
 
   String _getRecommendation() {
     switch (widget.riskLevel.toLowerCase()) {
-      case 'none':
-        return 'ඔබගේ ලිවීමේ කුසලතා සාමාන්‍ය සීමාව තුළයි. දිගටම අභ්‍යාස කරන්න!';
-      case 'low':
-        return 'සුළු ප්‍රශ්න දක්නට ලැබේ. නිතිපතා අභ්‍යාස කිරීමෙන් දියුණු කර ගත හැක.';
-      case 'medium':
-        return 'මධ්‍යම මට්ටමේ අභියෝග හමුවේ. ගුරුවරයා හෝ විශේෂඥයකුගෙන් උපකාර ලබා ගැනීම වැදගත්.';
-      case 'high':
-        return 'වැදගත්: ලිවීමේ දුෂ්කරතා පවතී. කරුණාකර වහාම විශේෂඥ උපකාර ලබා ගන්න.';
-      default:
-        return 'තවත් අභ්‍යාස අවශ්‍යයි.';
+      case 'none':   return 'ඔබගේ ලිවීමේ කුසලතා සාමාන්‍ය සීමාව තුළයි. දිගටම අභ්‍යාස කරන්න!';
+      case 'low':    return 'සුළු ප්‍රශ්න දක්නට ලැබේ. නිතිපතා අභ්‍යාස කිරීමෙන් දියුණු කර ගත හැක.';
+      case 'medium': return 'මධ්‍යම මට්ටමේ අභියෝග හමුවේ. ගුරුවරයා හෝ විශේෂඥයකුගෙන් උපකාර ලබා ගැනීම වැදගත්.';
+      case 'high':   return 'වැදගත්: ලිවීමේ දුෂ්කරතා පවතී. කරුණාකර වහාම විශේෂඥ උපකාර ලබා ගන්න.';
+      default:       return 'තවත් අභ්‍යාස අවශ්‍යයි.';
     }
   }
 
-  // ── Formation accuracy helpers ────────────────────────────────────────────
   String _getFormationLabel() {
     final p = widget.formationAccuracy;
-    if (p >= 0.8) return 'විශිෂ්ට';       // Excellent
-    if (p >= 0.6) return 'හොඳ';            // Good
-    if (p >= 0.4) return 'සාමාන්‍ය';      // Average
-    return 'දුෂ්කරතා ඇත';                 // Difficulty
+    if (p < 0)    return 'දත්ත නොමැත';
+    if (p >= 0.8) return 'විශිෂ්ට';
+    if (p >= 0.6) return 'හොඳ';
+    if (p >= 0.4) return 'සාමාන්‍ය';
+    return 'දුෂ්කරතා ඇත';
   }
 
   Color _getFormationColor() {
     final p = widget.formationAccuracy;
+    if (p < 0)    return Colors.grey;
     if (p >= 0.8) return Colors.green;
     if (p >= 0.6) return Colors.blue;
     if (p >= 0.4) return Colors.orange;
     return Colors.red;
   }
 
-  // ── Reusable metric card ─────────────────────────────────────────────────
   Widget _buildMetricCard({
     required IconData icon,
     required Color iconColor,
@@ -186,7 +179,10 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Icon(icon, color: iconColor, size: 28),
             ),
             const SizedBox(width: 16),
@@ -206,14 +202,13 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
     );
   }
 
-  // ── Formation accuracy card with progress bar ─────────────────────────────
   Widget _buildFormationCard() {
-    // Sentences are skipped by ML Kit so don't show this card for them
     if (widget.activityType == 'sentences') return const SizedBox.shrink();
+    if (widget.formationAccuracy < 0) return const SizedBox.shrink();
 
     final color = _getFormationColor();
     final label = _getFormationLabel();
-    final pct = widget.formationAccuracy;
+    final pct   = widget.formationAccuracy;
 
     return FadeTransition(
       opacity: _fadeAnimation,
@@ -233,7 +228,10 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Icon(Icons.gesture, color: color, size: 28),
                 ),
                 const SizedBox(width: 16),
@@ -241,7 +239,8 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('අකුරු හැඩගැස්ම', style: TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500)),
+                      const Text('අකුරු හැඩගැස්ම',
+                          style: TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 4),
                       Text(label, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
                     ],
@@ -272,7 +271,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
   @override
   Widget build(BuildContext context) {
     final totalTime = _calculateTotalTime();
-    final avgTime = _calculateAverageTime();
+    final avgTime   = _calculateAverageTime();
     final riskColor = _getRiskColor();
 
     return Scaffold(
@@ -335,9 +334,12 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                                 child: const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
                               ),
                               const SizedBox(height: 16),
-                              const Text('ඔබ හොඳින් කළා!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87)),
+                              const Text('ඔබ හොඳින් කළා!',
+                                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87)),
                               const SizedBox(height: 8),
-                              const Text('ඔබගේ අධ්‍යාපනය සඳහා සාර්ථකව වාර්තාව', style: TextStyle(fontSize: 15, color: Colors.black54), textAlign: TextAlign.center),
+                              const Text('ඔබගේ අධ්‍යාපනය සඳහා සාර්ථකව වාර්තාව',
+                                  style: TextStyle(fontSize: 15, color: Colors.black54),
+                                  textAlign: TextAlign.center),
                             ],
                           ),
                         ),
@@ -360,8 +362,10 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                             children: [
                               const Icon(Icons.assessment, color: Colors.purple, size: 28),
                               const SizedBox(width: 12),
-                              Text('ශ්‍රේණිය ${widget.grade} - ${_getActivityName()}',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple)),
+                              Text(
+                                'ශ්‍රේණිය ${widget.grade} - ${_getActivityName()}',
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.purple),
+                              ),
                             ],
                           ),
                         ),
@@ -392,20 +396,30 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                               const SizedBox(height: 4),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(20)),
-                                child: Text('ලකුණු: ${widget.riskScore.toStringAsFixed(1)}/100',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: riskColor)),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  'ලකුණු: ${widget.riskScore.toStringAsFixed(1)}/100',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: riskColor),
+                                ),
                               ),
                               const SizedBox(height: 16),
                               Container(
                                 padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(12)),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 child: Row(
                                   children: [
                                     Icon(Icons.lightbulb_outline, color: riskColor, size: 24),
                                     const SizedBox(width: 12),
-                                    Expanded(child: Text(_getRecommendation(),
-                                        style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500))),
+                                    Expanded(
+                                      child: Text(_getRecommendation(),
+                                          style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500)),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -416,7 +430,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
 
                       const SizedBox(height: 16),
 
-                      // Formation Accuracy Card (NEW - only for letters & words)
+                      // Formation Accuracy Card
                       _buildFormationCard(),
 
                       const SizedBox(height: 8),
@@ -463,7 +477,8 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                           child: ElevatedButton.icon(
                             onPressed: () => Navigator.pop(context),
                             icon: const Icon(Icons.arrow_back, size: 24),
-                            label: const Text('ආපසු යන්න', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            label: const Text('ආපසු යන්න',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.purple,
                               foregroundColor: Colors.white,
@@ -477,6 +492,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
 
                       const SizedBox(height: 16),
 
+                      // Disclaimer note
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: Container(
@@ -484,22 +500,24 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.purple.shade200),
+                            border: Border.all(color: Colors.blue.shade200),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.lightbulb_outline, color: Colors.amber, size: 28),
-                              SizedBox(width: 12),
-                              Expanded(
+                              Icon(Icons.info_outline, color: Colors.blue.shade700, size: 28),
+                              const SizedBox(width: 12),
+                              const Expanded(
                                 child: Text(
-                                  'දිගටම අභ්‍යාස කරන්න! ඔබේ ලිවීමේ කුසලතා දියුණු වේ.',
-                                  style: TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500),
+                                  'මෙම ප්‍රතිඵල ස්වයංක්‍රීයව විශ්ලේෂණය කර ඇති අතර, වෛද්‍ය හෝ අධ්‍යාපනික විශේෂඥයකුගෙන් නිවැරදි රෝග විනිශ්චය ලබා ගන්න.',
+                                  style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w500),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
