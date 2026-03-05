@@ -5,6 +5,7 @@ import '/profile.dart'; // Ensure this exists
 import '/config.dart';  // Ensure this exists for Config.baseUrl
 
 class TaskResultPage extends StatefulWidget {
+  final String? userId; // <-- New variable to identify the student
   final int grade;
   final int taskNumber;
   final int accuracy;
@@ -17,6 +18,7 @@ class TaskResultPage extends StatefulWidget {
 
   const TaskResultPage({
     super.key,
+    this.userId, // <-- Added to constructor
     required this.grade,
     required this.taskNumber,
     required this.accuracy,
@@ -50,6 +52,7 @@ class _TaskResultPageState extends State<TaskResultPage> {
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
+          "user_id": widget.userId, // <-- Sending the ID to FastAPI
           "grade": widget.grade,
           "task_number": widget.taskNumber,
           "accuracy": widget.accuracy,
@@ -171,7 +174,7 @@ class _TaskResultPageState extends State<TaskResultPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40), // Balance the back button
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
