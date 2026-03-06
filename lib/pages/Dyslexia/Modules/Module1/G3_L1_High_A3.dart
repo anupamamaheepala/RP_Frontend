@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class G3_L1_High_A3_MissingLetter extends StatefulWidget {
   const G3_L1_High_A3_MissingLetter({super.key});
@@ -10,217 +11,608 @@ class G3_L1_High_A3_MissingLetter extends StatefulWidget {
 
 class _G3_L1_High_A3_MissingLetterState
     extends State<G3_L1_High_A3_MissingLetter> {
+  final FlutterTts _flutterTts = FlutterTts();
+
   int _taskIndex = 0;
   bool _isCorrectAnswerSelected = false;
   bool _isWrongAnswerSelected = false;
   String _selectedAnswer = '';
-  String _status = 'Please choose the missing letter!';
 
   final List<Map<String, dynamic>> _tasks = [
     {
-      'word': '_ලියා', // Missing letter represented as "_"
-      'emoji': '🐘', // Emoji related to the word
-      'meaning': 'Elephant', // Meaning of the word
-      'correctAnswer': 'අ', // Correct letter
-      'options': ['අ', 'ඉ', 'ආ'], // Options for this word
+      'word': '_ලියා',
+      'emoji': '🐘',
+      'meaning': 'Elephant',
+      'correctAnswer': 'අ',
+      'options': ['අ', 'ඉ', 'ආ'],
+      'optionEmojis': ['', '', ''],
     },
     {
-      'word': 'සිංහයා',
+      'word': 'සිං_යා',
       'emoji': '🦁',
       'meaning': 'Lion',
       'correctAnswer': 'හ',
-      'options': ['හ', 'ඞ', 'ග'], // Options for this word
+      'options': ['හ', 'ඞ', 'ග'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ආ_තය',
       'emoji': '🐅',
       'meaning': 'Tiger',
       'correctAnswer': 'ආ',
-      'options': ['ආ', 'ඇ', 'අ'], // Options for this word
+      'options': ['ආ', 'ඇ', 'අ'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ඇ_ත',
       'emoji': '🐵',
       'meaning': 'Monkey',
       'correctAnswer': 'ඇ',
-      'options': ['ඇ', 'ඉ', 'ඔ'], // Options for this word
+      'options': ['ඇ', 'ඉ', 'ඔ'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ම_යා',
       'emoji': '🦉',
       'meaning': 'Owl',
       'correctAnswer': 'ය',
-      'options': ['ය', 'ර', 'ක'], // Options for this word
+      'options': ['ය', 'ර', 'ක'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ප_ක',
       'emoji': '🐦',
       'meaning': 'Bird',
       'correctAnswer': 'ත',
-      'options': ['ත', 'න', 'ච'], // Options for this word
+      'options': ['ත', 'න', 'ච'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': '_ගහ',
       'emoji': '🌳',
       'meaning': 'Tree',
       'correctAnswer': 'ක',
-      'options': ['ක', 'ම', 'න'], // Options for this word
+      'options': ['ක', 'ම', 'න'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ස_ය',
       'emoji': '🐢',
       'meaning': 'Turtle',
       'correctAnswer': 'ි',
-      'options': ['ි', 'ු', '්'], // Options for this word
+      'options': ['ි', 'ු', '්'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': '_පටය',
       'emoji': '🦓',
       'meaning': 'Zebra',
       'correctAnswer': 'ස',
-      'options': ['ස', 'ම', 'අ'], // Options for this word
+      'options': ['ස', 'ම', 'අ'],
+      'optionEmojis': ['', '', ''],
     },
     {
       'word': 'ප_ල',
       'emoji': '🐶',
       'meaning': 'Dog',
       'correctAnswer': 'ෙ',
-      'options': ['ෙ', 'ැ', 'ි'], // Options for this word
+      'options': ['ෙ', 'ැ', 'ි'],
+      'optionEmojis': ['', '', ''],
     },
   ];
 
-  // Check if the selected answer is correct
+  @override
+  void initState() {
+    super.initState();
+    _flutterTts.setLanguage("si-LK");
+    _flutterTts.setSpeechRate(0.35);
+    _flutterTts.setVolume(1.0);
+    _flutterTts.setPitch(1.0);
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
+  }
+
+  Future<void> _speakWord() async {
+    final word = _tasks[_taskIndex]['word'] as String;
+    await _flutterTts.speak(word.replaceAll('_', ''));
+  }
+
   void _checkAnswer(String selectedLetter) {
+    if (_isCorrectAnswerSelected) return;
     setState(() {
       _selectedAnswer = selectedLetter;
       if (selectedLetter == _tasks[_taskIndex]['correctAnswer']) {
         _isCorrectAnswerSelected = true;
         _isWrongAnswerSelected = false;
-        _status = 'Correct! The word is "${_tasks[_taskIndex]["word"].replaceAll('_', selectedLetter)}"';
       } else {
         _isCorrectAnswerSelected = false;
         _isWrongAnswerSelected = true;
-        _status = 'Incorrect! Please try again.';
       }
     });
   }
 
-  // Function to move to the next task
   void _nextTask() {
     setState(() {
       if (_taskIndex < _tasks.length - 1) {
         _taskIndex++;
         _isCorrectAnswerSelected = false;
         _isWrongAnswerSelected = false;
-        _status = 'Please choose the missing letter!';
+        _selectedAnswer = '';
       } else {
-        Navigator.pop(context, true); // Move to next activity after the last task
+        Navigator.pop(context, true);
       }
     });
+  }
+
+  /// Splits the word into segments around '_' for tile rendering
+  List<String> _getWordParts(String word) {
+    // Split into individual characters, replacing '_' with a special marker
+    return word.split('');
   }
 
   @override
   Widget build(BuildContext context) {
     final currentTask = _tasks[_taskIndex];
+    final String word = currentTask['word'] as String;
+    final double progress = (_taskIndex + 1) / _tasks.length;
+    final List<String> chars = word.split('');
+    final String correctAnswer = currentTask['correctAnswer'] as String;
+    final List<String> options = List<String>.from(currentTask['options']);
+
+    // Build completed word for success banner
+    final String completedWord = word.replaceAll('_',
+        _isCorrectAnswerSelected ? correctAnswer : '?');
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
-        title: const Text("Activity 3: Missing Letter"),
-        backgroundColor: Colors.purple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Header text
-            Text(
-              "Which letter is missing in the word?",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-
-            // Emoji and meaning
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Row(
               children: [
-                Text(
-                  currentTask['emoji'], // Show Emoji
-                  style: const TextStyle(fontSize: 50),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  currentTask['meaning'], // Meaning of the word
-                  style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
-                ),
+                _buildBadge("High Risk", const Color(0xFFFF6B6B), Colors.white),
+                const SizedBox(width: 6),
+                _buildBadge("Grade 3 · Level 1", const Color(0xFF4A90D9), Colors.white),
+                const SizedBox(width: 6),
+                _buildBadge("Module 1", const Color(0xFF7B61FF), Colors.white),
               ],
             ),
-            const SizedBox(height: 30),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              const Text(
+                "Module 1 — Letter & Sound Recognition",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1A1A2E),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 14),
 
-            // Word with missing letter
-            Text(
-              currentTask['word'],
-              style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-
-            // Options for the missing letter
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: currentTask['options'].map<Widget>((letter) {
-                Color backgroundColor;
-                if (_isCorrectAnswerSelected && letter == currentTask['correctAnswer']) {
-                  backgroundColor = Colors.green; // Correct answer turns green
-                } else if (_isWrongAnswerSelected && letter == _selectedAnswer) {
-                  backgroundColor = Colors.red; // Incorrect answer turns red
-                } else {
-                  backgroundColor = Colors.blue.shade50; // Default color
-                }
-
-                return GestureDetector(
-                  onTap: () => _checkAnswer(letter),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      letter,
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              // Progress bar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Word ${_taskIndex + 1} of ${_tasks.length}",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Status text
-            Text(
-              _status,
-              style: TextStyle(fontSize: 16, color: _isWrongAnswerSelected ? Colors.red : Colors.green),
-            ),
-
-            const SizedBox(height: 30),
-
-            // Next button
-            ElevatedButton(
-              onPressed: _isCorrectAnswerSelected ? _nextTask : null,
-              child: const Text("Next"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  Text(
+                    "${(progress * 100).round()}%",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF7B61FF),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: const Color(0xFFE5E7EB),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7B61FF)),
+                  minHeight: 8,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Instruction
+              Row(
+                children: const [
+                  Text(
+                    "Which letter is missing?",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  SizedBox(width: 6),
+                  Text("🔍", style: TextStyle(fontSize: 18)),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Main card
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+                  child: Column(
+                    children: [
+                      // Emoji + meaning
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            currentTask['emoji'] as String,
+                            style: const TextStyle(fontSize: 36),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            currentTask['meaning'] as String,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4B5563),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Word tiles row
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: chars.map((ch) {
+                          final bool isMissing = ch == '_';
+
+                          if (isMissing) {
+                            // Missing letter tile — dashed red border with "?"
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: _isCorrectAnswerSelected
+                                    ? const Color(0xFFF0FDF4)
+                                    : const Color(0xFFFFF5F5),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: _isCorrectAnswerSelected
+                                      ? const Color(0xFF22C55E)
+                                      : const Color(0xFFEF4444),
+                                  width: 2,
+                                  // Dashed border via CustomPainter is complex;
+                                  // using solid with red for missing, green when filled
+                                ),
+                              ),
+                              child: Center(
+                                child: _isCorrectAnswerSelected
+                                    ? Text(
+                                  correctAnswer,
+                                  style: const TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF16A34A),
+                                  ),
+                                )
+                                    : const Text(
+                                  "?",
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFFEF4444),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          // Normal letter tile
+                          return Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFF93C5FD),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                ch,
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1D4ED8),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Hear word button
+                      GestureDetector(
+                        onTap: _speakWord,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0EDFF),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                                color: const Color(0xFF7B61FF), width: 1.5),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Text("🔊", style: TextStyle(fontSize: 15)),
+                              SizedBox(width: 6),
+                              Text(
+                                "Hear word",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF7B61FF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Answer option tiles
+              Row(
+                children: List.generate(options.length, (i) {
+                  final letter = options[i];
+                  final bool isCorrect =
+                      _isCorrectAnswerSelected && letter == correctAnswer;
+                  final bool isWrong =
+                      _isWrongAnswerSelected && letter == _selectedAnswer;
+
+                  Color bgColor = Colors.white;
+                  Color borderColor = const Color(0xFFBAE6FD);
+                  Color textColor = const Color(0xFF0369A1);
+
+                  if (isCorrect) {
+                    bgColor = const Color(0xFFF0FDF4);
+                    borderColor = const Color(0xFF22C55E);
+                    textColor = const Color(0xFF16A34A);
+                  } else if (isWrong) {
+                    bgColor = const Color(0xFFFFF1F1);
+                    borderColor = const Color(0xFFEF4444);
+                    textColor = const Color(0xFFDC2626);
+                  }
+
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => _checkAnswer(letter),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: EdgeInsets.only(
+                          left: i == 0 ? 0 : 8,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: borderColor, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              letter,
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w800,
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            // Small visual hint dot
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: borderColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+
+              // Feedback banner
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _isCorrectAnswerSelected
+                    ? Container(
+                  key: const ValueKey('correct'),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFF86EFAC), width: 1.5),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text("🎉", style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Correct! The word is "$completedWord"',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF16A34A),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : _isWrongAnswerSelected
+                    ? Container(
+                  key: const ValueKey('wrong'),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFFFCA5A5), width: 1.5),
+                  ),
+                  child: Row(
+                    children: const [
+                      Text("❌", style: TextStyle(fontSize: 18)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Not quite — try again!",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : const SizedBox.shrink(key: ValueKey('none')),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Next button
+              SizedBox(
+                width: double.infinity,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: _isCorrectAnswerSelected ? 1.0 : 0.45,
+                  child: ElevatedButton(
+                    onPressed: _isCorrectAnswerSelected ? _nextTask : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4A90D9),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFF9CA3AF),
+                      disabledForegroundColor: Colors.white70,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: _isCorrectAnswerSelected ? 4 : 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _taskIndex < _tasks.length - 1
+                              ? "Next"
+                              : "Next Activity",
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String label, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: fg,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
         ),
       ),
     );

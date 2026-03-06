@@ -12,6 +12,7 @@ import 'Modules/Module1/G3_L1_High_A2.dart';
 import 'Modules/Module1/G3_L1_High_A3.dart';
 import 'Modules/Module1/G3_L1_High_A4.dart';
 import 'Modules/Module1/G3_L1_High_A5.dart';
+import 'Modules/Module1/G3_L1_High_A6.dart';
 import 'Modules/Module1/G3_L1_Low_A1.dart';
 import 'Modules/Module1/G3_L1_Low_A2.dart';
 import 'Modules/Module1/G3_L1_Medium_A1.dart';
@@ -141,11 +142,17 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           break;
         case 5:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => LearningProgressSessionPage(
-              grade: grade, level: level, moduleNumber: widget.moduleNumber,
-            ),
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
           ));
           break;
+        // case 5:
+        //   result = await Navigator.push(context, MaterialPageRoute(
+        //     builder: (_) => LearningProgressSessionPage(
+        //       grade: grade, level: level, moduleNumber: widget.moduleNumber,
+        //     ),
+        //   ));
+        //   break;
+
       }
     } else if (grade == 3 && level == 1 && risk == "MEDIUM") {
       switch (activityIndex) {

@@ -3,6 +3,7 @@ import '../Modules/Module1/G3_L1_High_A2.dart';
 import '../Modules/Module1/G3_L1_High_A3.dart';
 import '../Modules/Module1/G3_L1_High_A4.dart';
 import '../Modules/Module1/G3_L1_High_A5.dart';
+import '../Modules/Module1/G3_L1_High_A6.dart';
 import '../Modules/Module1/G3_L1_Low_A1.dart';
 import '../Modules/Module1/G3_L1_Low_A2.dart';
 import '../Modules/Module1/G3_L1_Medium_A1.dart';
@@ -46,6 +47,9 @@ class ActivityFactory {
 
       case "3_1_HIGH_A5":
         return const G3_L1_SyllableBlending_A5();
+
+      case "3_1_HIGH_A6":
+        return const G3_L1_ShortPhraseReading_A6();
 
       case "3_1_MEDIUM_A1":
         return const G3_L1_Medium_A1(sentences: [],);
