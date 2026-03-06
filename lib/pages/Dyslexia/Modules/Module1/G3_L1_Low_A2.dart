@@ -1,69 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-import 'G3_L1_Low_A3.dart';  // For Text-to-Speech functionality
+class G3_L1_Low_A2 extends StatefulWidget {
+  final List<String> sentences;
 
-class Activity2 extends StatefulWidget {
-  final String text;  // Text to be read out loud
-
-  const Activity2({super.key, required this.text});
+  const G3_L1_Low_A2({super.key, required this.sentences});
 
   @override
-  _Activity2State createState() => _Activity2State();
+  State<G3_L1_Low_A2> createState() => _Activity2State();
 }
 
-class _Activity2State extends State<Activity2> {
-  late FlutterTts _flutterTts;
+class _Activity2State extends State<G3_L1_Low_A2> {
+  final FlutterTts _flutterTts = FlutterTts();
+
+  int _currentRound = 0;
+
+  late List<String> _words;
 
   @override
   void initState() {
     super.initState();
-    _flutterTts = FlutterTts();
+
+    _flutterTts.setLanguage("si-LK");
+    _flutterTts.setSpeechRate(0.5);
+
+    _loadSentence();
   }
 
-  // Function to start TTS on word tap
-  Future<void> _startTts(String word) async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.speak(word);  // Speak the tapped word
+  void _loadSentence() {
+    String sentence = widget.sentences[_currentRound];
+    _words = sentence.split(" ");
+    setState(() {});
+  }
+
+  Future<void> _speakWord(String word) async {
+    await _flutterTts.speak(word);
+  }
+
+  void _nextRound() {
+    if (_currentRound < 4) {
+      setState(() {
+        _currentRound++;
+      });
+      _loadSentence();
+    } else {
+      // Finished 5 rounds
+      Navigator.pop(context, true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Split the text into words
-    List<String> words = widget.text.split(" ");
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity 2 - TTS on Word Tap'),
+        title: const Text("Activity 2 - Word Tap Practice"),
         backgroundColor: Colors.purple,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Display each word as a tappable button
+            Text(
+              "Round ${_currentRound + 1} / 5",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+
             Wrap(
-              children: words.map((word) {
+              children: _words.map((word) {
                 return GestureDetector(
-                  onTap: () => _startTts(word),  // Play TTS for tapped word
-                  child: Chip(label: Text(word)),  // Display the word in a Chip widget
+                  onTap: () => _speakWord(word),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Chip(label: Text(word)),
+                  ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 20),
-            // Next button to go to the next activity
+
+            const SizedBox(height: 30),
+
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Activity3(text: widget.text),  // Navigate to next activity
-                  ),
-                );
-              },
-              child: const Text("Next Activity"),
+              onPressed: _nextRound,
+              child: const Text("Next Round"),
             ),
           ],
         ),

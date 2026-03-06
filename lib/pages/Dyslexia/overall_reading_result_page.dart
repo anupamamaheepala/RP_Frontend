@@ -6,7 +6,7 @@ class OverallReadingResultPage extends StatelessWidget {
   final int level;
   final Map<String, dynamic> sessionPayload; // what you sent
   final Map<String, dynamic> backendResponse; // what backend replied
-  final String tier;
+  final String risklevel;
 
   const OverallReadingResultPage({
     super.key,
@@ -14,7 +14,7 @@ class OverallReadingResultPage extends StatelessWidget {
     required this.level,
     required this.sessionPayload,
     required this.backendResponse,
-    required this.tier,
+    required this.risklevel,
   });
 
   double _toDouble(dynamic v) {
@@ -159,6 +159,8 @@ class OverallReadingResultPage extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Add the "Go to Learning Plans" button
+                      // In OverallReadingResultPage.dart
+
                       ElevatedButton.icon(
                         onPressed: () {
                           // Navigate to the LearningPathsPage
@@ -166,9 +168,9 @@ class OverallReadingResultPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => LearningPathsPage(
-                                tier: riskLevel,  // Pass the risk level as tier
                                 grade: grade,  // Pass the grade here
                                 level: level,  // Pass the level here
+                                risklevel: risklevel,  // Pass the risk level here
                                 sessionPayload: sessionPayload,  // Pass sessionPayload here
                               ),
                             ),

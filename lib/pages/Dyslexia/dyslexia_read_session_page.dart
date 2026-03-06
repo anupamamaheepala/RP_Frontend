@@ -368,11 +368,11 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
     final wps = payload["avg_words_per_second"] ?? 0.0;
 
     if (acc < 60 || regression > 12) {
-      return "High Risk";
+      return "HIGH";
     } else if (acc < 75 || std > 15) {
-      return "Moderate Risk";
+      return "MEDIUM";
     } else {
-      return "Low Risk";
+      return "LOW";
     }
   }
 
@@ -384,14 +384,14 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
     final benchmark = 1.0; // you can adjust per grade later
 
     if (acc >= 80 && wer <= 0.15 && wps >= benchmark) {
-      return "Tier 1";
+      return "LOW";
     }
 
     if (acc < 55 || wer > 0.35) {
-      return "Tier 3";
+      return "HIGH";
     }
 
-    return "Tier 2";
+    return "MEDIUM";
   }
 
   // ============ UI ACTIONS ============
@@ -455,7 +455,7 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
                       level: widget.level,
                       sessionPayload: payload,
                       backendResponse: backendResp,
-                      tier: tier,
+                      risklevel: tier,
                     ),
                   ),
                 );

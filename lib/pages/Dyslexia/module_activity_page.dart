@@ -1,8 +1,23 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'Modules/Module1/G3_L1_Low_A1.dart';  // Import the activity pages
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../config.dart';
+import 'Data/sentence_repository.dart';
+
+// LOW Risk Activities
+import 'Modules/Module1/G3_L1_High_A1.dart';
+import 'Modules/Module1/G3_L1_High_A2.dart';
+import 'Modules/Module1/G3_L1_High_A3.dart';
+import 'Modules/Module1/G3_L1_High_A4.dart';
+import 'Modules/Module1/G3_L1_High_A5.dart';
+import 'Modules/Module1/G3_L1_Low_A1.dart';
 import 'Modules/Module1/G3_L1_Low_A2.dart';
-import 'Modules/Module1/G3_L1_Low_A3.dart';
-import 'Modules/Module1/G3_L1_Low_A4.dart';
+import 'Modules/Module1/G3_L1_Medium_A1.dart';
+import 'Modules/Module1/G3_L1_Medium_A2.dart';
+import 'Modules/Module1/G3_L1_Medium_A3.dart';
+import 'Modules/learning_progress_session_page.dart';
 
 class ModuleActivityPage extends StatefulWidget {
   final int moduleNumber;
@@ -20,126 +35,378 @@ class ModuleActivityPage extends StatefulWidget {
 
 class _ModuleActivityPageState extends State<ModuleActivityPage> {
   late List<bool> _activityCompletionStatus;
+  late int _activityCount;
+
+  // Gradients matching the image style
+  final List<List<Color>> _activityGradients = const [
+    [Color(0xFF9B7FD4), Color(0xFF7BB8E8)], // purple → blue
+    [Color(0xFF4BC8B8), Color(0xFF6ED97A)], // teal → green
+    [Color(0xFF56C46A), Color(0xFF82E09A)], // green
+    [Color(0xFFF5A855), Color(0xFFEF6B8E)], // orange → pink
+    [Color(0xFF7B6FD4), Color(0xFF9B6FC4)], // purple → indigo
+  ];
+
+  List<Color> _gradientForIndex(int index) {
+    return _activityGradients[index % _activityGradients.length];
+  }
 
   @override
   void initState() {
     super.initState();
-    // Initialize activity completion status (4 activities per module)
-    _activityCompletionStatus = List.generate(4, (index) {
-      // Check if the activity is already completed (based on session data)
-      return widget.sessionPayload['M${widget.moduleNumber}_Activity${index + 1}_completed'] ?? false;
-    });
+
+    final risk = widget.sessionPayload["riskLevel"];
+    print("Received Risk Level: $risk");
+
+    if (risk == "MEDIUM") {
+      _activityCount = 3;
+    } else {
+      _activityCount = 6;
+    }
+
+    _activityCompletionStatus =
+        List.generate(_activityCount, (index) => false);
+
+    _loadProgressFromBackend();
   }
 
-  // Function to mark an activity as completed
+  bool _isActivityUnlocked(int index) {
+    if (index == 0) return true;
+    return _activityCompletionStatus[index - 1];
+  }
+
   void _markActivityAsCompleted(int activityIndex) {
     setState(() {
       _activityCompletionStatus[activityIndex] = true;
     });
-    // Save the progress to the session payload
-    widget.sessionPayload['M${widget.moduleNumber}_Activity${activityIndex + 1}_completed'] = true;
   }
 
-  // Function to navigate to the respective activity page
-  void _navigateToActivity(int activityIndex) {
-    // Navigate to the correct activity page
-    switch (activityIndex) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Activity1(text: "අද හිරු එළිය තිබේ"),  // Example text
-          ),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Activity2(text: "අද හිරු එළිය තිබේ"),  // Example text
-          ),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Activity3(text: "අද හිරු එළිය තිබේ"),  // Example text
-          ),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Activity4(text: "අද හිරු එළිය තිබේ"),  // Example text
-          ),
-        );
-        break;
-      default:
-        break;
+  Future<void> _navigateToActivity(int activityIndex) async {
+    bool? result;
+
+    final grade = widget.sessionPayload["grade"];
+    final level = widget.sessionPayload["level"];
+    final risk = widget.sessionPayload["riskLevel"];
+
+    if (grade == 3 && level == 1 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          final sentences = SentenceRepository.getSentences(
+            grade: grade, level: level, risk: risk, activity: 1,
+          );
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => G3_L1_Low_A1(sentences: sentences),
+          ));
+          break;
+        case 1:
+          final sentences = SentenceRepository.getSentences(
+            grade: grade, level: level, risk: risk, activity: 2,
+          );
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => G3_L1_Low_A2(sentences: sentences),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => LearningProgressSessionPage(
+              grade: grade, level: level, moduleNumber: widget.moduleNumber,
+            ),
+          ));
+          break;
+      }
+    } else if (grade == 3 && level == 1 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => LearningProgressSessionPage(
+              grade: grade, level: level, moduleNumber: widget.moduleNumber,
+            ),
+          ));
+          break;
+      }
+    } else if (grade == 3 && level == 1 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_Medium_A1(sentences: []),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_Medium_A2(sentences: []),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_Medium_A3(sentences: []),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => LearningProgressSessionPage(
+              grade: grade, level: level, moduleNumber: widget.moduleNumber,
+            ),
+          ));
+          break;
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Learning path not implemented yet."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    if (result == true) {
+      _markActivityAsCompleted(activityIndex);
     }
   }
 
+  Future<void> _loadProgressFromBackend() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+    if (userId == null) return;
+
+    final url = Uri.parse(
+        "${Config.baseUrl}/learning/get-module-progress"
+            "?user_id=$userId"
+            "&grade=${widget.sessionPayload['grade']}"
+            "&level=${widget.sessionPayload['level']}"
+            "&module_number=${widget.moduleNumber}");
+
+    final res = await http.get(url);
+    final data = jsonDecode(res.body);
+
+    if (data["ok"] == true) {
+      final progress = data["progress"] ?? {};
+      setState(() {
+        for (int i = 0; i < _activityCount; i++) {
+          _activityCompletionStatus[i] = progress["Activity${i + 1}"] ?? false;
+        }
+      });
+    }
+  }
+  String _getRiskLabel(String? risk) {
+    switch ((risk ?? '').toUpperCase()) {
+      case 'LOW': return 'අඩු අවදානම';
+      case 'HIGH': return 'ඉහළ අවදානමක';
+      case 'MEDIUM': return 'මධ්‍යම අවදානම';
+      default: return risk ?? '';
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF0EFF8),
       appBar: AppBar(
-        title: Text('Module M${widget.moduleNumber} Activities'),
-        backgroundColor: Colors.purple,
+        backgroundColor: const Color(0xFFF0EFF8),
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(Icons.arrow_back_ios, color: Color(0xFF7B6FA0)),
+        ),
+        title: Text(
+          "${widget.sessionPayload["grade"]} ශ්‍රේණිය -"
+              "${widget.sessionPayload["level"]} මට්ටම - "
+              "${_getRiskLabel(widget.sessionPayload["riskLevel"])}",
+          style: TextStyle(
+            color: Color(0xFF9C7EC4),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              'Complete the activities in this module to unlock the next module.',
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 16),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFECEAF8), Color(0xFFE8EEF8)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                'පැවරුම් පිළිවෙලට කරන්න',
+                style: TextStyle(
+                  color: Color(0xFF7B6FA0),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
 
-            // Display activities
-            Expanded(
-              child: ListView.builder(
-                itemCount: 4,  // 4 activities per module
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text('Activity ${index + 1}'),
-                    trailing: Icon(
-                      _activityCompletionStatus[index]
-                          ? Icons.check_circle
-                          : Icons.circle_outlined,
-                      color: _activityCompletionStatus[index] ? Colors.green : Colors.grey,
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  itemCount: _activityCount,
+                  itemBuilder: (context, index) {
+                    final isCompleted = _activityCompletionStatus[index];
+                    final isUnlocked = _isActivityUnlocked(index);
+                    final colors = _gradientForIndex(index);
+
+                    return GestureDetector(
+                      onTap: () async {
+                        if (isUnlocked || isCompleted) {
+                          await _navigateToActivity(index);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("කරුණාකර කාර්යය $index පළමුව සම්පූර්ණ කරන්න"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: isUnlocked || isCompleted
+                                ? colors
+                                : [
+                              const Color(0xFFBBB5CC),
+                              const Color(0xFFCCC8D8)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.10),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon circle
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isCompleted
+                                    ? Icons.check_circle_rounded
+                                    : (isUnlocked
+                                    ? Icons.school_rounded
+                                    : Icons.lock_rounded),
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            // Text
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'පැවරුම ${index + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isCompleted
+                                        ? 'සම්පූර්ණ කරන ලදී'
+                                        : (isUnlocked
+                                        ? 'Activity ${index + 1}'
+                                        : 'අගුළු දමා ඇත'),
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.85),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Finish Module Button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF9B7FD4), Color(0xFF7BB8E8)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purple.withOpacity(0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    onTap: _activityCompletionStatus[index]
-                        ? () {
-                      // Allow the user to go back to a completed activity
-                      _navigateToActivity(index);  // Navigate to the selected activity
-                    }
-                        : () {
-                      // Mark activity as completed and navigate to it
-                      _navigateToActivity(index);  // Navigate to the selected activity
-                      _markActivityAsCompleted(index); // Mark activity as completed
-                    },
-                  );
-                },
+                    child: const Center(
+                      child: Text(
+                        'මොඩියුලය අවසන් කරන්න',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-
-            // Button to save the progress and possibly unlock next module
-            ElevatedButton(
-              onPressed: () {
-                // Save the progress in sessionPayload
-                widget.sessionPayload['M${widget.moduleNumber}_completed'] = true;
-                Navigator.pop(context); // Go back after completing all activities
-              },
-              child: const Text('Finish Module'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

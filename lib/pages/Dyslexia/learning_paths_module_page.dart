@@ -1,18 +1,21 @@
+// In LearningPathsPage.dart
 import 'package:flutter/material.dart';
 
 import 'module_activity_page.dart';
 
+
 class LearningPathsPage extends StatelessWidget {
-  final String tier;
+    // This will be passed from OverallReadingResultPage
   final int grade;
   final int level;
+  final String risklevel;
   final Map<String, dynamic> sessionPayload;
 
   const LearningPathsPage({
     super.key,
-    required this.tier,
     required this.grade,
     required this.level,
+    required this.risklevel,
     required this.sessionPayload,
   });
 
@@ -29,7 +32,7 @@ class LearningPathsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Grade $grade - Level $level',
+              'Grade $grade - Level $level Risk Level $risklevel',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -89,7 +92,10 @@ class LearningPathsPage extends StatelessWidget {
             MaterialPageRoute(
               builder: (_) => ModuleActivityPage(
                 moduleNumber: moduleNumber,
-                sessionPayload: sessionPayload,
+                sessionPayload: {
+                  ...sessionPayload,
+                  "riskLevel": risklevel,  // Pass the correct risklevel here
+                },
               ),
             ),
           );

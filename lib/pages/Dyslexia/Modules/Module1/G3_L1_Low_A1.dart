@@ -1,91 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'G3_L1_Low_A2.dart'; // For Text-to-Speech functionality
 
-class Activity1 extends StatefulWidget {
-  final String text; // Sinhala text to be read out loud
+class G3_L1_Low_A1 extends StatefulWidget {
+  final List<String> sentences;
 
-  const Activity1({super.key, required this.text});
+  const G3_L1_Low_A1({super.key, required this.sentences});
 
   @override
-  _Activity1State createState() => _Activity1State();
+  State<G3_L1_Low_A1> createState() => _Activity1State();
 }
 
-class _Activity1State extends State<Activity1> {
-  late FlutterTts _flutterTts;
-  bool _isTtsPlaying = false;
-  int _round = 1; // Track the current round
-  List<String> _words = [];
-  List<bool> _highlightedWords = []; // Track highlighted words
+class _Activity1State extends State<G3_L1_Low_A1> {
+  final FlutterTts _flutterTts = FlutterTts();
+
+  int _currentRound = 0; // 0–4
+  bool _roundCompleted = false;
+
+  late List<String> _words;
+  late List<bool> _highlightedWords;
 
   @override
   void initState() {
     super.initState();
-    _flutterTts = FlutterTts();
 
-    // Split Sinhala text into words and initialize highlight tracking
-    _words = widget.text.split(' ');
-    _highlightedWords = List.generate(_words.length, (index) => false);
-
-    // Setting up TTS for Sinhala
-    _flutterTts.setLanguage("si-LK");  // Set language to Sinhala (Sri Lanka)
+    _flutterTts.setLanguage("si-LK");
     _flutterTts.setSpeechRate(0.5);
     _flutterTts.setVolume(1.0);
+
+    _loadSentence();
   }
 
-  // Start TTS for the whole text
-  Future<void> _startTts() async {
-    if (!_isTtsPlaying) {
-      await _flutterTts.speak(widget.text);  // Speak the Sinhala text
-      setState(() {
-        _isTtsPlaying = true;
-      });
-    } else {
-      await _flutterTts.stop();
-      setState(() {
-        _isTtsPlaying = false;
-      });
-    }
+  void _loadSentence() {
+    String sentence = widget.sentences[_currentRound];
+    _words = sentence.split(" ");
+    _highlightedWords = List.generate(_words.length, (_) => false);
+    _roundCompleted = false;
+    setState(() {});
   }
 
-  // Function to reset highlighting when a new round starts
-  void _resetHighlighting() {
-    setState(() {
-      _highlightedWords = List.generate(_words.length, (index) => false); // Reset all words
-    });
+  Future<void> _playSentence() async {
+    await _flutterTts.speak(widget.sentences[_currentRound]);
   }
 
-  // Build the UI for word-by-word highlighting
-  Widget _buildTextWithHighlighting() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: _words.map((word) {
-        int index = _words.indexOf(word);
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: Text(
-            word,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: _highlightedWords[index] ? Colors.blue : Colors.black, // Highlight color
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  // Handle TTS events to highlight words
   Future<void> _highlightWords() async {
     for (int i = 0; i < _words.length; i++) {
       await _flutterTts.speak(_words[i]);
+
       setState(() {
-        _highlightedWords[i] = true; // Highlight this word
+        _highlightedWords[i] = true;
       });
 
-      // Wait for the word to finish before highlighting the next one
-      await Future.delayed(Duration(milliseconds: 500));  // Adjust this delay to match word length and speech speed
+      await Future.delayed(const Duration(milliseconds: 400));
+    }
+
+    setState(() {
+      _roundCompleted = true;
+    });
+  }
+
+  void _nextRound() {
+    if (_currentRound < 4) {
+      setState(() {
+        _currentRound++;
+      });
+      _loadSentence();
+    } else {
+      // Finished all 5 rounds
+      Navigator.pop(context, true);
     }
   }
 
@@ -93,53 +74,57 @@ class _Activity1State extends State<Activity1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity 1 - Full TTS'),
+        title: const Text("Activity 1 - Highlight Practice"),
         backgroundColor: Colors.purple,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Display current round
             Text(
-              'Round $_round',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              "Round ${_currentRound + 1} / 5",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
 
-            // Display the text with highlighting
-            _buildTextWithHighlighting(),
-
-            const SizedBox(height: 20),
-
-            // Button to play or stop TTS
-            ElevatedButton(
-              onPressed: _startTts,
-              child: Text(_isTtsPlaying ? "Stop TTS" : "Play TTS"),
-            ),
-            const SizedBox(height: 20),
-
-            // Button to start word highlighting
-            ElevatedButton(
-              onPressed: () {
-                _highlightWords(); // Start highlighting words one by one
-              },
-              child: const Text("Start Highlighting"),
-            ),
-            const SizedBox(height: 20),
-
-            // Next button to go to the next activity
-            ElevatedButton(
-              onPressed: () {
-                _resetHighlighting(); // Reset highlighting before moving to next activity
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Activity2(text: widget.text), // Navigate to Activity2
+            Wrap(
+              alignment: WrapAlignment.center,
+              children: List.generate(_words.length, (index) {
+                return Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Text(
+                    _words[index],
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: _highlightedWords[index]
+                          ? Colors.blue
+                          : Colors.black,
+                    ),
                   ),
                 );
-              },
-              child: const Text("Next Activity"),
+              }),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: _playSentence,
+              child: const Text("Play Sentence"),
+            ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: _highlightWords,
+              child: const Text("Start Highlighting"),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: _roundCompleted ? _nextRound : null,
+              child: const Text("Next Round"),
             ),
           ],
         ),

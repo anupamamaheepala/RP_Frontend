@@ -216,10 +216,6 @@ class _DyslexiaReadPageState extends State<DyslexiaReadPage> {
       setState(() => error = e.toString());
     }
 
-
-    // catch (e) {
-    //   setState(() => error = "උඩුගත කිරීම අසාර්ථකයි");
-    // }
   }
 
   // ================= UI =================

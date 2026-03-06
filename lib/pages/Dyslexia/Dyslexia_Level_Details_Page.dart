@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dyslexia_read_session_page.dart';  // Existing task page
-import 'learning_paths_page.dart';  // New learning paths page
+import 'dyslexia_read_session_page.dart';
+import 'learning_paths_page.dart';
 
 class DyslexiaLevelDetailsPage extends StatelessWidget {
   final int grade;
   final int level;
-  final String tier;  // Pass tier here
-  final Map<String, dynamic> sessionPayload;  // Pass sessionPayload here
+  final String tier;
+  final Map<String, dynamic> sessionPayload;
 
   const DyslexiaLevelDetailsPage({
     super.key,
@@ -19,82 +19,205 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF0EFF8),
       appBar: AppBar(
-        title: Text('ශ්‍රේණිය $grade - මට්ටම $level'),
-        backgroundColor: Colors.purple,  // Same theme color as your other pages
+        backgroundColor: const Color(0xFFFFFFF8),
+        elevation: 0,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(
+            Icons.arrow_back_ios,
+            color: Color(0xFF7B6FA0),
+          ),
+        ),
+        title: Text(
+          'ශ්‍රේණිය $grade – මට්ටම $level',
+          style: TextStyle(
+            color: Color(0xFF9C7EC4),
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.purple.shade50,
-              Colors.blue.shade50,
+              Color(0xFFECEAF8),
+              Color(0xFFE8EEF8),
             ],
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),  // Same padding as other pages
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 80.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Two buttons for navigation (Tasks and Learning Paths)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigate to the Tasks page (DyslexiaReadSessionPage)
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DyslexiaReadSessionPage(
-                              grade: grade,
-                              level: level,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text('Tasks'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,  // Same color as in DyslexiaLevelPage
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigate to the Learning Paths page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => LearningPathsPage(
-                              tier: tier,  // Pass the tier here
-                              grade: grade,  // Pass the grade here
-                              level: level,  // Pass the level here
-                              sessionPayload: sessionPayload,  // Pass sessionPayload here
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text('Learning Paths'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,  // Same color as in DyslexiaLevelPage
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
 
-                // Instructions or any other content you want to display
                 const Text(
-                  "Select an option to proceed:",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  'එක් විකල්පයක් තෝරන්න',
+                  style: TextStyle(
+                    color: Color(0xFF7B6FA0),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const Text(
+                  'Select one option',
+                  style: TextStyle(
+                    color: Color(0xFFADA3C8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                // Tasks Card - Purple to Blue gradient
+                Center(
+                  child: _OptionCard(
+                    sinhalaText: 'කියවීමේ දුෂ්කරතා හඳුනාගැනීම',
+                    englishText: 'Detect Dyslexia',
+                    icon: Icons.task_alt_rounded,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF9B7FD4),
+                        Color(0xFF7B9FE8),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DyslexiaReadSessionPage(
+                            grade: grade,
+                            level: level,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Learning Paths Card - Orange to Red gradient
+                Center(
+                  child: _OptionCard(
+                    sinhalaText: 'කියවීමේ හැකියාවන් දියුණු කිරීම',
+                    englishText: 'Improve Reading Skills',
+                    icon: Icons.trending_up_rounded,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFF5A855),
+                        Color(0xFFEF6B6B),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LearningPathsPage(
+                            grade: grade,
+                            level: level,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionCard extends StatelessWidget {
+  final String sinhalaText;
+  final String englishText;
+  final IconData icon;
+  final Gradient gradient;
+  final VoidCallback onTap;
+
+  const _OptionCard({
+    required this.sinhalaText,
+    required this.englishText,
+    required this.icon,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 220,
+        height: 220,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // White circular icon background
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Sinhala text
+            Text(
+              sinhalaText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            // English subtitle
+            Text(
+              englishText,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

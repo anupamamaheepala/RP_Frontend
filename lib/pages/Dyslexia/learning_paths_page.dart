@@ -1,150 +1,127 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../config.dart';
+import 'Core/module_resolver.dart';
+import 'module_activity_page.dart';
 
-class LearningPathsPage extends StatelessWidget {
-  final String tier;  // The risk assessment tier (e.g., "Low", "Medium", "High")
-  final int grade;  // The grade of the student
-  final int level;  // The level of the reading task (1-4)
-  final Map<String, dynamic> sessionPayload;  // The session data containing metrics
+class LearningPathsPage extends StatefulWidget {
+  final int grade;
+  final int level;
 
   const LearningPathsPage({
     super.key,
-    required this.tier,
     required this.grade,
     required this.level,
-    required this.sessionPayload,
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Example of personalized learning paths based on tier
-    String learningPath = _getLearningPathBasedOnTier(tier);
+  State<LearningPathsPage> createState() => _LearningPathsPageState();
+}
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Learning Paths'),
-        backgroundColor: Colors.purple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Text(
-              'Personalized Learning Path for Grade $grade, Level $level',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+class _LearningPathsPageState extends State<LearningPathsPage> {
 
-            // Risk level
-            Text(
-              'Risk Level: $tier',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _getRiskColor(tier),
-              ),
-            ),
-            const SizedBox(height: 24),
+  bool _loading = true;
+  bool _eligible = false;
+  String? _riskLevel;
 
-            // Display the learning path based on the risk tier
-            Text(
-              'Recommended Path:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              learningPath,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 24),
+  @override
+  void initState() {
+    super.initState();
+    _fetchAssignedLearningPath();
+  }
 
-            // Additional resources or tips can go here
-            const Text(
-              'Tips to improve your reading:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _getReadingTips(tier),
-          ],
-        ),
-      ),
+  Future<void> _fetchAssignedLearningPath() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+
+    if (userId == null) {
+      setState(() => _loading = false);
+      return;
+    }
+
+    final url = Uri.parse(
+        "${Config.baseUrl}/learning/get-assigned-learning-path"
+            "?user_id=$userId"
+            "&grade=${widget.grade}"
+            "&level=${widget.level}"
     );
-  }
 
-  // Function to get the learning path based on the dyslexia risk tier
-  String _getLearningPathBasedOnTier(String tier) {
-    switch (tier) {
-      case "Low":
-        return "Continue practicing with more complex sentences. Focus on fluency and speed.";
-      case "Medium":
-        return "Practice simple to moderately complex sentences. Focus on word accuracy and pacing.";
-      case "High":
-        return "Work on simpler sentences and improve accuracy. Focus on word recognition and pacing.";
-      default:
-        return "No specific learning path available.";
+    final res = await http.get(url);
+    final data = jsonDecode(res.body);
+
+    if (data["ok"] == true && data["eligible"] == true) {
+      setState(() {
+        _eligible = true;
+        _riskLevel = data["risk_level"];
+        _loading = false;
+      });
+    } else {
+      setState(() {
+        _eligible = false;
+        _loading = false;
+      });
     }
   }
 
-  // Function to get color for the risk level
-  Color _getRiskColor(String level) {
-    switch (level) {
-      case "Low":
-        return Colors.green;
-      case "Medium":
-        return Colors.orange;
-      case "High":
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  String _normalizeRisk(String raw) {
+    final r = raw.toUpperCase();
+    if (r.contains("HIGH")) return "HIGH";
+    if (r.contains("MODERATE") || r.contains("MEDIUM")) return "MEDIUM";
+    if (r.contains("LOW")) return "LOW";
+    return "LOW";
   }
 
-  // Function to get the relevant reading tips based on the risk level
-  Widget _getReadingTips(String tier) {
-    switch (tier) {
-      case "Low":
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("- Practice reading longer sentences with focus on fluency."),
-            Text("- Work on increasing reading speed while maintaining accuracy."),
-            Text("- Use advanced reading materials to further challenge the student."),
-          ],
-        );
-      case "Medium":
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("- Focus on reading simpler sentences and increase accuracy."),
-            Text("- Start practicing with compound sentences for better flow."),
-            Text("- Spend more time on improving reading speed with basic texts."),
-          ],
-        );
-      case "High":
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("- Practice reading simple and short sentences."),
-            Text("- Focus on recognition of words and reading slowly for accuracy."),
-            Text("- Use visuals or phonics tools to aid recognition of words."),
-          ],
-        );
-      default:
-        return const Text("No specific tips available.");
+  @override
+  Widget build(BuildContext context) {
+
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
+    if (!_eligible) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Learning Paths"),
+          backgroundColor: Colors.purple,
+        ),
+        body: const Center(
+          child: Text(
+            "Complete reading assessment first\nfor this grade & level.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    }
+
+    final normalizedRisk = _normalizeRisk(_riskLevel!);
+
+    final module = ModuleResolver.resolveModule(
+      grade: widget.grade,
+      level: widget.level,
+      risk: normalizedRisk,
+    );
+
+    if (module == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Learning Paths"),
+          backgroundColor: Colors.purple,
+        ),
+        body: const Center(
+          child: Text(
+            "Learning Path for this grade, level and risk\nis not implemented yet.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    }
+
+    return module;
   }
 }
