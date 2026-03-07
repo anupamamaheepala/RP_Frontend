@@ -135,8 +135,8 @@ class Grade3HighRiskPage extends StatelessWidget {
                       _buildActivityCard(
                         context: context,
                         emoji: '🔢',
-                        title: 'ලප සම්බන්ධ කරමු',
-                        subtitle: 'අංක අනුව ලප එකට සම්බන්ධ කරන්න',
+                        title: 'අකුරු හඳුනාගමු',
+                        subtitle: 'ලප ස්පර්ශ කර අකුර සාදන්න',
                         color: Colors.blue,
                         onTap: () => Navigator.push(
                           context,
@@ -283,6 +283,9 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   List<List<Offset>> _strokes = [];
   bool _isDrawing = false;
   bool _showCelebration = false;
+  bool _showOutOfBoundsWarning = false;
+  final GlobalKey _canvasKey = GlobalKey();
+  static const double _boundaryPadding = 18.0;
   late AnimationController _celebrationController;
   late Animation<double> _celebrationScale;
 
@@ -308,15 +311,47 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   String get _currentLetter =>
       _currentIndex < widget.letters.length ? widget.letters[_currentIndex] : '';
 
+  bool _isInsideCanvas(Offset pos) {
+    final box = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return true;
+    final size = box.size;
+    return pos.dx >= _boundaryPadding &&
+        pos.dy >= _boundaryPadding &&
+        pos.dx <= size.width - _boundaryPadding &&
+        pos.dy <= size.height - _boundaryPadding;
+  }
+
+  void _triggerOutOfBoundsWarning() {
+    setState(() => _showOutOfBoundsWarning = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _showOutOfBoundsWarning = false);
+    });
+  }
+
   void _onPanStart(DragStartDetails d) {
+    if (!_isInsideCanvas(d.localPosition)) {
+      _triggerOutOfBoundsWarning();
+      return;
+    }
     setState(() {
       _isDrawing = true;
+      _showOutOfBoundsWarning = false;
       _strokes.add([d.localPosition]);
     });
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
     if (!_isDrawing) return;
+    if (!_isInsideCanvas(d.localPosition)) {
+      setState(() {
+        _isDrawing = false;
+        _showOutOfBoundsWarning = true;
+      });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showOutOfBoundsWarning = false);
+      });
+      return;
+    }
     setState(() => _strokes.last.add(d.localPosition));
   }
 
@@ -367,7 +402,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
             ),
             const SizedBox(height: 8),
             Text(
-              'ඉතා හොඳින් කළා! 🌟',
+              'ඉතා හොඳයි! 🌟',
               style: TextStyle(fontSize: 16, color: Colors.amber.shade700),
               textAlign: TextAlign.center,
             ),
@@ -528,7 +563,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                                 Text('🎉', style: TextStyle(fontSize: 72)),
                                 SizedBox(height: 12),
                                 Text(
-                                  'ඉතා හොඳ!',
+                                  'ඉතා හොඳයි!',
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
@@ -543,7 +578,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                       // Drawing canvas with ghost letter
                         Container(
                           width: double.infinity,
-                          height: 280,
+                          height: 320,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
@@ -560,6 +595,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(17),
                             child: Listener(
+                              key: _canvasKey,
                               onPointerDown: (e) => _onPanStart(
                                   DragStartDetails(
                                       localPosition: e.localPosition,
@@ -572,14 +608,29 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                               onPointerUp: (_) => _onPanEnd(DragEndDetails()),
                               child: Stack(
                                 children: [
-                                  // Ghost letter background
+                                  // Ghost letter — bigger
                                   Center(
                                     child: Text(
                                       _currentLetter,
                                       style: TextStyle(
-                                        fontSize: 160,
+                                        fontSize: 210,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.purple.withOpacity(0.12),
+                                        color: Colors.purple.withOpacity(0.13),
+                                      ),
+                                    ),
+                                  ),
+                                  // Boundary guide line
+                                  IgnorePointer(
+                                    child: Positioned.fill(
+                                      child: Container(
+                                        margin: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: Colors.purple.withOpacity(0.18),
+                                            width: 2,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -588,22 +639,44 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                                     size: Size.infinite,
                                     painter: _GhostStrokePainter(_strokes),
                                   ),
-                                  // Hint text when empty
-                                  if (_strokes.isEmpty)
-                                    Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                        children: [
-                                          const SizedBox(height: 200),
-                                          Text(
-                                            'ඇඟිල්ල ගෙන යන්න ✍️',
+                                  // Out-of-bounds warning
+                                  if (_showOutOfBoundsWarning)
+                                    Positioned(
+                                      bottom: 12,
+                                      left: 0,
+                                      right: 0,
+                                      child: Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade400,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Text(
+                                            '⚠️ රේඛාව ඇතුළත ලියන්න!',
                                             style: TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.grey.shade400,
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ],
+                                        ),
+                                      ),
+                                    ),
+                                  // Hint text when empty
+                                  if (_strokes.isEmpty && !_showOutOfBoundsWarning)
+                                    Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(bottom: 14),
+                                        child: Text(
+                                          'ඇඟිල්ල ගෙන යන්න ✍️',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.grey.shade400,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                 ],
@@ -737,33 +810,74 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
 
   // Pre-defined dot positions for each vowel (normalized 0.0–1.0, scaled to canvas)
   // Each letter has key points that roughly form its shape
+  // Dot positions carefully mapped to each Sinhala vowel's stroke shape.
+  // Coordinates are normalized (0.0–1.0) and scaled to 280×280 canvas.
   static const Map<String, List<Offset>> _dotPositions = {
+    // අ — top arc curving right, then tail curves down-left
     'අ': [
-      Offset(0.5, 0.15), Offset(0.7, 0.3), Offset(0.6, 0.5),
-      Offset(0.4, 0.5),  Offset(0.3, 0.65), Offset(0.5, 0.8),
-      Offset(0.7, 0.65),
+      Offset(0.45, 0.18), // 1: top of head
+      Offset(0.65, 0.22), // 2: right of head
+      Offset(0.72, 0.40), // 3: right curve down
+      Offset(0.58, 0.55), // 4: middle body
+      Offset(0.40, 0.55), // 5: left of body
+      Offset(0.30, 0.70), // 6: tail start
+      Offset(0.45, 0.82), // 7: tail bottom
+      Offset(0.62, 0.72), // 8: tail right finish
     ],
+    // ඇ — like අ but with extra hook on right
     'ඇ': [
-      Offset(0.5, 0.15), Offset(0.7, 0.3), Offset(0.6, 0.5),
-      Offset(0.4, 0.5),  Offset(0.3, 0.65), Offset(0.5, 0.8),
-      Offset(0.7, 0.65), Offset(0.75, 0.45),
+      Offset(0.40, 0.18), // 1: top
+      Offset(0.58, 0.22), // 2: right of head
+      Offset(0.65, 0.38), // 3: curve down
+      Offset(0.52, 0.52), // 4: body
+      Offset(0.36, 0.52), // 5: left body
+      Offset(0.28, 0.67), // 6: tail
+      Offset(0.42, 0.80), // 7: tail bottom
+      Offset(0.58, 0.70), // 8: tail right
+      Offset(0.72, 0.45), // 9: extra hook right
+      Offset(0.72, 0.28), // 10: hook top
     ],
+    // ඉ — vertical stroke, then small loop at bottom
     'ඉ': [
-      Offset(0.5, 0.15), Offset(0.5, 0.4),
-      Offset(0.35, 0.6), Offset(0.5, 0.75), Offset(0.65, 0.6),
+      Offset(0.50, 0.15), // 1: top
+      Offset(0.50, 0.35), // 2: upper mid
+      Offset(0.50, 0.55), // 3: mid
+      Offset(0.38, 0.68), // 4: bottom left curve
+      Offset(0.50, 0.78), // 5: bottom
+      Offset(0.62, 0.68), // 6: bottom right curve
+      Offset(0.55, 0.55), // 7: back up slightly
     ],
+    // උ — two vertical strokes connected at bottom
     'උ': [
-      Offset(0.35, 0.2), Offset(0.35, 0.55),
-      Offset(0.5, 0.75), Offset(0.65, 0.55), Offset(0.65, 0.3),
+      Offset(0.33, 0.18), // 1: left top
+      Offset(0.33, 0.45), // 2: left mid
+      Offset(0.33, 0.65), // 3: left bottom
+      Offset(0.50, 0.78), // 4: base
+      Offset(0.67, 0.65), // 5: right bottom
+      Offset(0.67, 0.45), // 6: right mid
+      Offset(0.67, 0.25), // 7: right top
     ],
+    // එ — starts top-right, sweeps left and down
     'එ': [
-      Offset(0.65, 0.2), Offset(0.4, 0.2),
-      Offset(0.35, 0.5), Offset(0.5, 0.7), Offset(0.7, 0.55),
+      Offset(0.68, 0.20), // 1: top right
+      Offset(0.50, 0.18), // 2: top mid
+      Offset(0.32, 0.25), // 3: top left
+      Offset(0.28, 0.45), // 4: left mid
+      Offset(0.38, 0.62), // 5: bottom left
+      Offset(0.55, 0.70), // 6: bottom
+      Offset(0.70, 0.58), // 7: bottom right
     ],
+    // ඔ — oval shape with a small inner hook
     'ඔ': [
-      Offset(0.5, 0.15), Offset(0.7, 0.35), Offset(0.7, 0.6),
-      Offset(0.5, 0.8),  Offset(0.3, 0.6),  Offset(0.3, 0.35),
-      Offset(0.5, 0.15),
+      Offset(0.50, 0.15), // 1: top
+      Offset(0.68, 0.28), // 2: top right
+      Offset(0.73, 0.50), // 3: right mid
+      Offset(0.65, 0.70), // 4: bottom right
+      Offset(0.50, 0.80), // 5: bottom
+      Offset(0.35, 0.70), // 6: bottom left
+      Offset(0.27, 0.50), // 7: left mid
+      Offset(0.32, 0.28), // 8: top left
+      Offset(0.50, 0.15), // 9: back to top (closes oval)
     ],
   };
 
@@ -824,7 +938,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
             const Text('🌈', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 12),
             const Text(
-              'ලස්සනයි! සියලු අකුරු ලියා ඉවර!',
+              'ඉතා හොඳයි! සියලු අකුරු ලියා ඉවර!',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -878,7 +992,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                         ),
                         const Expanded(
                           child: Text(
-                            'ලප සම්බන්ධ කරමු 🔢',
+                            'අකුරු හඳුනාගමු 🔢',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -988,7 +1102,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                             Text('🎉',
                                 style: TextStyle(fontSize: 72)),
                             Text(
-                              'ලස්සනයි!',
+                              'ඉතා හොඳයි!',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -1236,7 +1350,7 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
             const SizedBox(height: 8),
             Text(
               _score >= widget.letters.length * 0.7
-                  ? 'ඉතා හොඳ! ඔබ දිනාගත්තා!'
+                  ? 'ඉතා හොඳයි! ඔබ දිනාගත්තා!'
                   : 'නැවත උත්සාහ කරමු!',
               style: TextStyle(
                 fontSize: 15,
@@ -1357,13 +1471,8 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
                     children: [
                       const SizedBox(height: 12),
                       // Question
-                      const Text(
-                        'හරි "_currentLetter_" අකුර කොයිද?',
-                        style: TextStyle(fontSize: 16, color: Colors.black54),
-                      ),
-                      const SizedBox(height: 4),
                       Text(
-                        '"$_currentLetter" — කොයි අකුරද හරි?',
+                        'මේ අකුරු අතරෙන් "$_currentLetter" කොයිද?',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -1372,7 +1481,7 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
                         textAlign: TextAlign.center,
                       ),
 
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 32),
 
                       // Three option cards
                       Row(
@@ -1791,7 +1900,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
                               child: ElevatedButton.icon(
                                 onPressed: _switchToDrawing,
                                 icon: const Icon(Icons.edit),
-                                label: const Text('ලිව්වාට සූදානම්!',
+                                label: const Text('ලිවීමට සුදානම්',
                                     style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
@@ -1844,7 +1953,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
                               Text('⭐',
                                   style: TextStyle(fontSize: 72)),
                               Text(
-                                'ඉතා හොඳ!',
+                                'ඉතා හොඳයි!',
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
