@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '/theme.dart'; // Ensure theme.dart is imported
-import 'Dyscalculia/dyscal_grade.dart'; // Import for Detect page
-import 'Dyscalculia/dyscal_improve.dart'; // Import for Improve page
+import 'dyscal_grade.dart'; // Import for Detect page
+import 'dyscal_improve.dart'; // Import for Improve page
 
 class DyscalculiaPage extends StatelessWidget {
   const DyscalculiaPage({super.key});

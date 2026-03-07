@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Dyslexia/dyslexia_grade_page.dart';
 import 'Dysgraphia/dysgraphia_grade_selection.dart';
-import 'dyscalculia_page.dart';
+import 'Dyscalculia/dyscalculia_page.dart';
 
 import '/profile.dart'; // Import your Profile Page here
 
