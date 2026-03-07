@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class G3_L1_High_A1_Animate extends StatefulWidget {
   const G3_L1_High_A1_Animate({super.key});
@@ -76,6 +77,7 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
     );
 
     _playLetterSound();
+    _loadActivityProgress();
   }
 
   @override
@@ -83,6 +85,21 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
     _bounceController.dispose();
     _flutterTts.stop();
     super.dispose();
+  }
+
+  // Function to store the progress when the activity is completed
+  void _saveActivityProgress(int activityIndex) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('lastCompletedActivity', activityIndex); // Save the activity index
+  }
+
+  // Function to load activity progress from SharedPreferences
+  Future<void> _loadActivityProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    int lastCompletedActivity = prefs.getInt('lastCompletedActivity') ?? 0;
+    setState(() {
+      _taskIndex = lastCompletedActivity; // Set the current task based on saved progress
+    });
   }
 
   Future<void> _playLetterSound() async {
@@ -118,6 +135,7 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
         _playLetterSound();
       } else {
         Navigator.pop(context, true);
+        _saveActivityProgress(_taskIndex + 1); // Save the current activity as completed
       }
     });
   }
@@ -146,8 +164,6 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
                 _buildBadge("ඉහළ අවදානම", const Color(0xFFFF6B6B), Colors.white),
                 const SizedBox(width: 6),
                 _buildBadge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFF4A90D9), Colors.white),
-                // const SizedBox(width: 6),
-                // _buildBadge("Module 1", const Color(0xFF7B61FF), Colors.white),
               ],
             ),
           ),
@@ -481,19 +497,6 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
             ],
           ),
           const SizedBox(height: 8),
-          // Row(
-          //   children: [
-          //     const Text("🌟", style: TextStyle(fontSize: 14)),
-          //     const SizedBox(width: 6),
-          //     // Text(
-          //     //   "Example word: ${currentTask['exampleWord']}",
-          //     //   style: const TextStyle(
-          //     //     fontSize: 13,
-          //     //     color: Color(0xFF4B5563),
-          //     //   ),
-          //     // ),
-          //   ],
-          // ),
           const SizedBox(height: 10),
           GestureDetector(
             onTap: () => _flutterTts.speak(currentTask["exampleWord"]),

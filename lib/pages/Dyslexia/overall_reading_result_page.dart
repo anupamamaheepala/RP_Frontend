@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'learning_paths_module_page.dart';  // Import Learning Paths Page
+import 'learning_paths_page.dart';  // Import Learning Paths Page
 
 class OverallReadingResultPage extends StatelessWidget {
   final int grade;
@@ -159,8 +159,6 @@ class OverallReadingResultPage extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Add the "Go to Learning Plans" button
-                      // In OverallReadingResultPage.dart
-
                       ElevatedButton.icon(
                         onPressed: () {
                           // Navigate to the LearningPathsPage
@@ -168,10 +166,8 @@ class OverallReadingResultPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => LearningPathsPage(
-                                grade: grade,  // Pass the grade here
-                                level: level,  // Pass the level here
-                                risklevel: risklevel,  // Pass the risk level here
-                                sessionPayload: sessionPayload,  // Pass sessionPayload here
+                                grade: grade,
+                                level: level,
                               ),
                             ),
                           );

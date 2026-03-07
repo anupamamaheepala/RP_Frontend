@@ -21,6 +21,7 @@ class _G3_L1_High_A3_MissingLetterState
   final List<Map<String, dynamic>> _tasks = [
     {
       'word': '_ලියා',
+      'realword':'අලියා',
       'emoji': '🐘',
       'meaning': 'Elephant',
       'correctAnswer': 'අ',
@@ -29,6 +30,7 @@ class _G3_L1_High_A3_MissingLetterState
     },
     {
       'word': 'සිං_යා',
+      'realword':'සිංහයා',
       'emoji': '🦁',
       'meaning': 'Lion',
       'correctAnswer': 'හ',
@@ -36,67 +38,75 @@ class _G3_L1_High_A3_MissingLetterState
       'optionEmojis': ['', '', ''],
     },
     {
-      'word': 'ආ_තය',
+      'word': '_ටියා',
+      'realword': 'කොටියා',
       'emoji': '🐅',
       'meaning': 'Tiger',
-      'correctAnswer': 'ආ',
-      'options': ['ආ', 'ඇ', 'අ'],
+      'correctAnswer': 'කො',
+      'options': ['කෙ', 'කැ', 'කො'],
       'optionEmojis': ['', '', ''],
     },
     {
-      'word': 'ඇ_ත',
-      'emoji': '🐵',
-      'meaning': 'Monkey',
-      'correctAnswer': 'ඇ',
-      'options': ['ඇ', 'ඉ', 'ඔ'],
-      'optionEmojis': ['', '', ''],
-    },
-    {
-      'word': 'ම_යා',
-      'emoji': '🦉',
-      'meaning': 'Owl',
-      'correctAnswer': 'ය',
-      'options': ['ය', 'ර', 'ක'],
-      'optionEmojis': ['', '', ''],
-    },
-    {
-      'word': 'ප_ක',
-      'emoji': '🐦',
-      'meaning': 'Bird',
-      'correctAnswer': 'ත',
-      'options': ['ත', 'න', 'ච'],
-      'optionEmojis': ['', '', ''],
-    },
-    {
-      'word': '_ගහ',
+      'word': '_ලය',
+      'realword': 'කැලය',
       'emoji': '🌳',
-      'meaning': 'Tree',
-      'correctAnswer': 'ක',
-      'options': ['ක', 'ම', 'න'],
+      'meaning': 'Jungle',
+      'correctAnswer': 'කැ',
+      'options': ['ක', 'කැ', 'කෑ'],
       'optionEmojis': ['', '', ''],
     },
     {
-      'word': 'ස_ය',
-      'emoji': '🐢',
-      'meaning': 'Turtle',
-      'correctAnswer': 'ි',
-      'options': ['ි', 'ු', '්'],
+      'word': 'අන්_',
+      'realword': 'අන්ධ',
+      'emoji': '👨‍🦯',
+      'meaning': 'Blind',
+      'correctAnswer': 'ධ',
+      'options': ['ත', 'ද', 'ධ'],
       'optionEmojis': ['', '', ''],
     },
     {
-      'word': '_පටය',
-      'emoji': '🦓',
+      'word': '_ඩය',
+      'realword': 'කුඩය',
+      'emoji': '☂️',
+      'meaning': 'Umbrella',
+      'correctAnswer': 'කු',
+      'options': ['කු', 'ක', 'කූ'],
+      'optionEmojis': ['', '', ''],
+    },
+    {
+      'word': '_ලය',
+      'realword': 'මාලය',
+      'emoji': '📿',
+      'meaning': 'necklace',
+      'correctAnswer': 'මා',
+      'options': ['මා', 'ම', 'මු'],
+      'optionEmojis': ['', '', ''],
+    },
+    {
+      'word': '_යා',
+      'realword': 'සීයා',
+      'emoji': '👴🏻',
+      'meaning': 'Grand Father',
+      'correctAnswer': 'සී',
+      'options': ['සි' , 'සු' , 'සී' ],
+      'optionEmojis': ['', '', ''],
+    },
+    {
+      'word': '_ළය',
+      'realword': 'කොළය',
+      'emoji': '🍃',
       'meaning': 'Zebra',
-      'correctAnswer': 'ස',
-      'options': ['ස', 'ම', 'අ'],
+      'correctAnswer': 'කො',
+      'options': ['කෙ', 'කො', 'කෝ'],
       'optionEmojis': ['', '', ''],
     },
     {
-      'word': 'ප_ල',
-      'emoji': '🐶',
-      'meaning': 'Dog',
-      'correctAnswer': 'ෙ',
-      'options': ['ෙ', 'ැ', 'ි'],
+      'word': '_ඩය',
+      'realword': 'කූඩය',
+      'emoji': '🧺',
+      'meaning': 'basket',
+      'correctAnswer': 'කූ',
+      'options': ['කු', 'ක', 'කූ'],
       'optionEmojis': ['', '', ''],
     },
   ];
@@ -117,7 +127,7 @@ class _G3_L1_High_A3_MissingLetterState
   }
 
   Future<void> _speakWord() async {
-    final word = _tasks[_taskIndex]['word'] as String;
+    final word = _tasks[_taskIndex]['realword'] as String;
     await _flutterTts.speak(word.replaceAll('_', ''));
   }
 
@@ -159,13 +169,17 @@ class _G3_L1_High_A3_MissingLetterState
     final currentTask = _tasks[_taskIndex];
     final String word = currentTask['word'] as String;
     final double progress = (_taskIndex + 1) / _tasks.length;
-    final List<String> chars = word.split('');
+    //final List<String> chars = word.split('');
+    final List<String> chars = word.characters.toList();
     final String correctAnswer = currentTask['correctAnswer'] as String;
     final List<String> options = List<String>.from(currentTask['options']);
 
     // Build completed word for success banner
-    final String completedWord = word.replaceAll('_',
-        _isCorrectAnswerSelected ? correctAnswer : '?');
+    // final String completedWord = word.replaceAll('_', _isCorrectAnswerSelected ? correctAnswer : '?');
+
+    final String completedWord = _isCorrectAnswerSelected
+        ? word.characters.map((c) => c == '_' ? correctAnswer : c).join()
+        : word.replaceAll('_', '?');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FF),
@@ -181,11 +195,11 @@ class _G3_L1_High_A3_MissingLetterState
             padding: const EdgeInsets.only(right: 12),
             child: Row(
               children: [
-                _buildBadge("High Risk", const Color(0xFFFF6B6B), Colors.white),
+                _buildBadge("ඉහළ අවදානම", const Color(0xFFFF6B6B), Colors.white),
                 const SizedBox(width: 6),
-                _buildBadge("Grade 3 · Level 1", const Color(0xFF4A90D9), Colors.white),
-                const SizedBox(width: 6),
-                _buildBadge("Module 1", const Color(0xFF7B61FF), Colors.white),
+                _buildBadge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFF4A90D9), Colors.white),
+                // const SizedBox(width: 6),
+                // _buildBadge("පැවරුම 3", const Color(0xFF7B61FF), Colors.white),
               ],
             ),
           ),
@@ -199,7 +213,7 @@ class _G3_L1_High_A3_MissingLetterState
             children: [
               // Title
               const Text(
-                "Module 1 — Letter & Sound Recognition",
+                "පැවරුම 3 — Letter & Sound Recognition",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -214,7 +228,7 @@ class _G3_L1_High_A3_MissingLetterState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Word ${_taskIndex + 1} of ${_tasks.length}",
+                    "වචන ${_tasks.length} න් ${_taskIndex + 1} වන වචනය",
                     style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF6B7280),
@@ -247,7 +261,7 @@ class _G3_L1_High_A3_MissingLetterState
               Row(
                 children: const [
                   Text(
-                    "Which letter is missing?",
+                    "මොන අකුරද නැතිවෙලා තියෙන්නේ?",
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -395,7 +409,7 @@ class _G3_L1_High_A3_MissingLetterState
                               Text("🔊", style: TextStyle(fontSize: 15)),
                               SizedBox(width: 6),
                               Text(
-                                "Hear word",
+                                "වචනය අසන්න",
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -507,7 +521,7 @@ class _G3_L1_High_A3_MissingLetterState
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Correct! The word is "$completedWord"',
+                          'හරි! වචනය "$completedWord"',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -536,7 +550,7 @@ class _G3_L1_High_A3_MissingLetterState
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "Not quite — try again!",
+                          "හරියටම නැහැ — නැවත උත්සාහ කරන්න!",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -576,8 +590,8 @@ class _G3_L1_High_A3_MissingLetterState
                       children: [
                         Text(
                           _taskIndex < _tasks.length - 1
-                              ? "Next"
-                              : "Next Activity",
+                              ? "ඊළඟ"
+                              : "ඊළඟ පැවරුම",
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,

@@ -18,6 +18,11 @@ import 'Modules/Module1/G3_L1_Low_A2.dart';
 import 'Modules/Module1/G3_L1_Medium_A1.dart';
 import 'Modules/Module1/G3_L1_Medium_A2.dart';
 import 'Modules/Module1/G3_L1_Medium_A3.dart';
+import 'Modules/Module1/G3_L2_Medium_A2.dart';
+import 'Modules/Module1/G3_L2_Medium_A3.dart';
+import 'Modules/Module1/G3_L2_Medium_A4.dart';
+import 'Modules/Module1/G3_L2_Medium_A5.dart';
+import 'Modules/Module1/G3_l2_Medium_A1.dart';
 import 'Modules/learning_progress_session_page.dart';
 
 class ModuleActivityPage extends StatefulWidget {
@@ -59,7 +64,9 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     print("Received Risk Level: $risk");
 
     if (risk == "MEDIUM") {
-      _activityCount = 3;
+      _activityCount = 5;
+    } else if(risk == "LOW") {
+      _activityCount = 4;
     } else {
       _activityCount = 6;
     }
@@ -79,6 +86,24 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     setState(() {
       _activityCompletionStatus[activityIndex] = true;
     });
+    _storeActivityProgress(activityIndex);
+  }
+
+  // Store activity completion status in SharedPreferences
+  Future<void> _storeActivityProgress(int activityIndex) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('activity${activityIndex + 1}_completed', true);
+  }
+
+  // Load activity completion status from SharedPreferences
+  Future<void> _loadProgressFromBackend() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (int i = 0; i < _activityCount; i++) {
+      bool completed = prefs.getBool('activity${i + 1}_completed') ?? false;
+      setState(() {
+        _activityCompletionStatus[i] = completed;
+      });
+    }
   }
 
   Future<void> _navigateToActivity(int activityIndex) async {
@@ -135,6 +160,7 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           result = await Navigator.push(context, MaterialPageRoute(
             builder: (_) => const G3_L1_High_A4_RealOrNot(),
           ));
+          break;
         case 4:
           result = await Navigator.push(context, MaterialPageRoute(
             builder: (_) => const G3_L1_SyllableBlending_A5(),
@@ -145,14 +171,6 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
             builder: (_) => const G3_L1_ShortPhraseReading_A6(),
           ));
           break;
-        // case 5:
-        //   result = await Navigator.push(context, MaterialPageRoute(
-        //     builder: (_) => LearningProgressSessionPage(
-        //       grade: grade, level: level, moduleNumber: widget.moduleNumber,
-        //     ),
-        //   ));
-        //   break;
-
       }
     } else if (grade == 3 && level == 1 && risk == "MEDIUM") {
       switch (activityIndex) {
@@ -179,7 +197,72 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           ));
           break;
       }
-    } else {
+    } else if (grade == 3 && level == 2 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    } else if (grade == 3 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+        case 6:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => LearningProgressSessionPage(
+              grade: grade, level: level, moduleNumber: widget.moduleNumber,
+            ),
+          ));
+          break;
+      }
+    }else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Learning path not implemented yet."),
@@ -193,38 +276,19 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     }
   }
 
-  Future<void> _loadProgressFromBackend() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id');
-    if (userId == null) return;
-
-    final url = Uri.parse(
-        "${Config.baseUrl}/learning/get-module-progress"
-            "?user_id=$userId"
-            "&grade=${widget.sessionPayload['grade']}"
-            "&level=${widget.sessionPayload['level']}"
-            "&module_number=${widget.moduleNumber}");
-
-    final res = await http.get(url);
-    final data = jsonDecode(res.body);
-
-    if (data["ok"] == true) {
-      final progress = data["progress"] ?? {};
-      setState(() {
-        for (int i = 0; i < _activityCount; i++) {
-          _activityCompletionStatus[i] = progress["Activity${i + 1}"] ?? false;
-        }
-      });
-    }
-  }
   String _getRiskLabel(String? risk) {
     switch ((risk ?? '').toUpperCase()) {
-      case 'LOW': return 'අඩු අවදානම';
-      case 'HIGH': return 'ඉහළ අවදානමක';
-      case 'MEDIUM': return 'මධ්‍යම අවදානම';
-      default: return risk ?? '';
+      case 'LOW':
+        return 'අඩු අවදානම';
+      case 'HIGH':
+        return 'ඉහළ අවදානමක';
+      case 'MEDIUM':
+        return 'මධ්‍යම අවදානම';
+      default:
+        return risk ?? '';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -9,24 +9,66 @@ class G3_L1_SyllableBlending_A5 extends StatefulWidget {
       _G3_L1_SyllableBlending_A5State();
 }
 
-class _G3_L1_SyllableBlending_A5State
-    extends State<G3_L1_SyllableBlending_A5> {
+class _G3_L1_SyllableBlending_A5State extends State<G3_L1_SyllableBlending_A5> {
+  final FlutterTts _flutterTts = FlutterTts();
+
   int _currentTaskIndex = 0;
   int _basePlayed = 0;
   int _vowelPlayed = 0;
+  int _thirdPlayed = 0;
   bool _isBlended = false;
 
-  final FlutterTts _flutterTts = FlutterTts();
-
+  // Updated tasks to include a third component for CVC or CCV blending
   final List<Map<String, String>> _tasks = [
-    {'baseLetter': 'ක', 'vowelSign': 'ා', 'combinedSyllable': 'කා', 'vowelLabel': 'aa sound'},
-    {'baseLetter': 'ග', 'vowelSign': 'ී', 'combinedSyllable': 'ගී', 'vowelLabel': 'ii sound'},
-    {'baseLetter': 'ච', 'vowelSign': 'ු', 'combinedSyllable': 'චු', 'vowelLabel': 'u sound'},
-    {'baseLetter': 'ට', 'vowelSign': 'ෙ', 'combinedSyllable': 'ටෙ', 'vowelLabel': 'e sound'},
-    {'baseLetter': 'ත', 'vowelSign': 'ේ', 'combinedSyllable': 'තේ', 'vowelLabel': 'ee sound'},
-    {'baseLetter': 'ධ', 'vowelSign': 'ි', 'combinedSyllable': 'ධි', 'vowelLabel': 'i sound'},
-    {'baseLetter': 'න', 'vowelSign': 'ෝ', 'combinedSyllable': 'නෝ', 'vowelLabel': 'o sound'},
-    {'baseLetter': 'ම', 'vowelSign': 'ෞ', 'combinedSyllable': 'මෞ', 'vowelLabel': 'au sound'},
+    {
+      'baseLetter': 'කු',
+      'vowelSign': 'ඹු',
+      'thirdLetter': 'ර',
+      'combinedSyllable': 'කුඹුර',
+      'vowelLabel': 'ae sound',
+      'thirdLabel': 'la'
+    },
+    {
+      'baseLetter': 'ඉ',
+      'vowelSign': 'ඟු',
+      'thirdLetter': 'රු',
+      'combinedSyllable': 'ඉඟුරු',
+      'vowelLabel': 'nasal',
+      'thirdLabel': 'ha'
+    },
+
+    {
+      'baseLetter': 'අ',
+      'vowelSign': 'ම්',
+      'thirdLetter': 'මා',
+      'combinedSyllable': 'අම්මා',
+      'vowelLabel': 'm sound',
+      'thirdLabel': 'maa'
+    },
+    {
+      'baseLetter': 'තා',
+      'vowelSign': 'ත්',
+      'thirdLetter': 'තා',
+      'combinedSyllable': 'තාත්තා',
+      'vowelLabel': 'm sound',
+      'thirdLabel': 'maa'
+    },
+    {
+      'baseLetter': 'අ',
+      'vowelSign': 'ක්',
+      'thirdLetter': 'කා',
+      'combinedSyllable': 'අක්කා',
+      'vowelLabel': 'm sound',
+      'thirdLabel': 'maa'
+    },
+    {
+      'baseLetter': 'අ',
+      'vowelSign': 'යි',
+      'thirdLetter': 'යා',
+      'combinedSyllable': 'අයියා',
+      'vowelLabel': 'm sound',
+      'thirdLabel': 'maa'
+    },
   ];
 
   @override
@@ -58,6 +100,11 @@ class _G3_L1_SyllableBlending_A5State
     _speak(_tasks[_currentTaskIndex]['vowelSign']!);
   }
 
+  void _playThird() {
+    setState(() => _thirdPlayed++);
+    _speak(_tasks[_currentTaskIndex]['thirdLetter']!);
+  }
+
   void _handleBlend() {
     setState(() => _isBlended = true);
     _speak(_tasks[_currentTaskIndex]['combinedSyllable']!);
@@ -69,6 +116,7 @@ class _G3_L1_SyllableBlending_A5State
         _currentTaskIndex++;
         _basePlayed = 0;
         _vowelPlayed = 0;
+        _thirdPlayed = 0;
         _isBlended = false;
       });
     } else {
@@ -81,16 +129,13 @@ class _G3_L1_SyllableBlending_A5State
     final task = _tasks[_currentTaskIndex];
     final double progress = (_currentTaskIndex + 1) / _tasks.length;
 
-    // Step label
     String stepBanner;
     if (_isBlended) {
-      stepBanner = "🎉 Great! You blended them!";
-    } else if (_basePlayed > 0 && _vowelPlayed > 0) {
-      stepBanner = "Step 3 — Now tap BLEND to join them!";
-    } else if (_basePlayed > 0) {
-      stepBanner = "Step 2 — Now tap the vowel sound!";
+      stepBanner = "🎉 නියමයි! ඔයා ඒවා මිශ්‍ර කළා!";
+    } else if (_basePlayed > 0 && _vowelPlayed > 0 && _thirdPlayed > 0) {
+      stepBanner = "Step 4 — Now tap BLEND to join all three!";
     } else {
-      stepBanner = "Step 1 — Tap the base letter first!";
+      stepBanner = "සියලුම අකුරු මත තට්ටු කරන්න!";
     }
 
     return Scaffold(
@@ -107,11 +152,9 @@ class _G3_L1_SyllableBlending_A5State
             padding: const EdgeInsets.only(right: 12),
             child: Row(
               children: [
-                _buildBadge("High Risk", const Color(0xFFFF6B6B), Colors.white),
+                _buildBadge("ඉහළ අවදානම", const Color(0xFFFF6B6B), Colors.white),
                 const SizedBox(width: 6),
-                _buildBadge("Grade 3 · Level 1", const Color(0xFF4A90D9), Colors.white),
-                const SizedBox(width: 6),
-                _buildBadge("Module 2", const Color(0xFF7B61FF), Colors.white),
+                _buildBadge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFF4A90D9), Colors.white),
               ],
             ),
           ),
@@ -119,23 +162,19 @@ class _G3_L1_SyllableBlending_A5State
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               const Text(
-                "Module 2 — Syllable Blending",
+                "පැවරුම 5 — අක්ෂර මිශ්‍ර කිරීම",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF1A1A2E),
-                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Thin progress bar (no label row)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
@@ -145,214 +184,47 @@ class _G3_L1_SyllableBlending_A5State
                   minHeight: 6,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 20),
 
-              // "Syllable X of Y"
-              Text(
-                "Syllable ${_currentTaskIndex + 1} of ${_tasks.length}",
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Step banner
+              // Instructions Banner
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _isBlended
-                      ? const Color(0xFFF0FDF4)
-                      : const Color(0xFFFFF3E0),
+                  color: _isBlended ? const Color(0xFFF0FDF4) : const Color(0xFFFFF3E0),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _isBlended
-                        ? const Color(0xFF86EFAC)
-                        : const Color(0xFFFFB74D),
-                    width: 1.5,
+                    color: _isBlended ? const Color(0xFF86EFAC) : const Color(0xFFFFB74D),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Text(
-                      _isBlended ? "🎉" : "⚡",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        stepBanner,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: _isBlended
-                              ? const Color(0xFF16A34A)
-                              : const Color(0xFFE65100),
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  stepBanner,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
-              // Main blending row: [Base] + [Vowel] = [Result]
+              // Blending Interface
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Base letter tile
-                  Expanded(
-                    child: _buildLetterTile(
-                      letter: task['baseLetter']!,
-                      label: "base",
-                      playedCount: _basePlayed,
-                      isActive: true,
-                      isPlayed: _basePlayed > 0,
-                      borderColor: const Color(0xFF93C5FD),
-                      bgColor: _basePlayed > 0
-                          ? const Color(0xFFEFF6FF)
-                          : Colors.white,
-                      onPlay: _playBase,
-                    ),
-                  ),
-
-                  // Plus sign
-                  Padding(
-                    padding: const EdgeInsets.only(top: 28),
-                    child: const Text(
-                      " + ",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-
-                  // Vowel tile
-                  Expanded(
-                    child: _buildLetterTile(
-                      letter: task['vowelSign']!,
-                      label: task['vowelLabel']!,
-                      playedCount: _vowelPlayed,
-                      isActive: true,
-                      isPlayed: _vowelPlayed > 0,
-                      borderColor: const Color(0xFF6EE7B7),
-                      bgColor: _vowelPlayed > 0
-                          ? const Color(0xFFF0FDF4)
-                          : Colors.white,
-                      onPlay: _playVowel,
-                      dashed: true,
-                    ),
-                  ),
-
-                  // Equals sign
-                  Padding(
-                    padding: const EdgeInsets.only(top: 28),
-                    child: const Text(
-                      " = ",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ),
-
-                  // Result tile
-                  Expanded(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 18, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: _isBlended
-                            ? const Color(0xFFFFF8EE)
-                            : const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: _isBlended
-                              ? const Color(0xFFFFD199)
-                              : const Color(0xFFD1D5DB),
-                          width: 2,
-                        ),
-                        boxShadow: _isBlended
-                            ? [
-                          BoxShadow(
-                            color: const Color(0xFFFFAA44).withOpacity(0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                            : [],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _isBlended
-                              ? Text(
-                            task['combinedSyllable']!,
-                            style: const TextStyle(
-                              fontSize: 44,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFFE07B20),
-                            ),
-                            textAlign: TextAlign.center,
-                          )
-                              : const Text(
-                            "?",
-                            style: TextStyle(
-                              fontSize: 44,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF9CA3AF),
-                            ),
-                          ),
-                          if (_isBlended) ...[
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () =>
-                                  _speak(task['combinedSyllable']!),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFEDD5),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.volume_up_rounded,
-                                        size: 14,
-                                        color: Color(0xFFE07B20)),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      "hear",
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFFE07B20),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildCompactTile(task['baseLetter']!, "base", _basePlayed, const Color(0xFF93C5FD), _playBase),
+                  _buildSign("+"),
+                  _buildCompactTile(task['vowelSign']!, task['vowelLabel']!, _vowelPlayed, const Color(0xFF6EE7B7), _playVowel),
+                  _buildSign("+"),
+                  _buildCompactTile(task['thirdLetter']!, task['thirdLabel']!, _thirdPlayed, const Color(0xFFF9A8D4), _playThird),
+                  _buildSign("="),
+                  _buildResultTile(task['combinedSyllable']!),
                 ],
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 40),
 
               // BLEND button
               GestureDetector(
-                onTap: (!_isBlended && _basePlayed > 0 && _vowelPlayed > 0)
+                onTap: (!_isBlended && _basePlayed > 0 && _vowelPlayed > 0 && _thirdPlayed > 0)
                     ? _handleBlend
                     : null,
                 child: AnimatedContainer(
@@ -362,21 +234,10 @@ class _G3_L1_SyllableBlending_A5State
                   decoration: BoxDecoration(
                     color: _isBlended
                         ? const Color(0xFF9CA3AF)
-                        : (_basePlayed > 0 && _vowelPlayed > 0)
+                        : (_basePlayed > 0 && _vowelPlayed > 0 && _thirdPlayed > 0)
                         ? const Color(0xFFEA8C2A)
                         : const Color(0xFFD1D5DB),
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: (!_isBlended &&
-                        _basePlayed > 0 &&
-                        _vowelPlayed > 0)
-                        ? [
-                      BoxShadow(
-                        color: const Color(0xFFEA8C2A).withOpacity(0.4),
-                        blurRadius: 14,
-                        offset: const Offset(0, 5),
-                      ),
-                    ]
-                        : [],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -384,60 +245,35 @@ class _G3_L1_SyllableBlending_A5State
                       const Text("⚡", style: TextStyle(fontSize: 20)),
                       const SizedBox(width: 10),
                       Text(
-                        _isBlended
-                            ? "Blended! ${task['baseLetter']} + ${task['vowelSign']} = ${task['combinedSyllable']}"
-                            : "BLEND! ${task['baseLetter']} + ${task['vowelSign']} = ?",
+                        _isBlended ? "Blended!" : "BLEND ALL!",
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
-              // Next Syllable button
-              SizedBox(
-                width: double.infinity,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: _isBlended ? 1.0 : 0.45,
+              // Next Button
+              if (_isBlended)
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isBlended ? _nextTask : null,
+                    onPressed: _nextTask,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4A90D9),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF9CA3AF),
-                      disabledForegroundColor: Colors.white70,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: _isBlended ? 4 : 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _currentTaskIndex < _tasks.length - 1
-                              ? "Next Syllable"
-                              : "Next Activity",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 18),
-                      ],
-                    ),
+                    child: const Text("ඊළඟ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
-              ),
               const SizedBox(height: 24),
             ],
           ),
@@ -446,126 +282,89 @@ class _G3_L1_SyllableBlending_A5State
     );
   }
 
-  Widget _buildLetterTile({
-    required String letter,
-    required String label,
-    required int playedCount,
-    required bool isActive,
-    required bool isPlayed,
-    required Color borderColor,
-    required Color bgColor,
-    required VoidCallback onPlay,
-    bool dashed = false,
-  }) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: onPlay,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isPlayed ? borderColor : const Color(0xFFD1D5DB),
-                width: dashed ? 2 : 2,
+  Widget _buildSign(String sign) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Text(sign, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+    );
+  }
+
+  Widget _buildCompactTile(String text, String label, int played, Color color, VoidCallback onTap) {
+    bool isPlayed = played > 0;
+    return Expanded(
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 80,
+              decoration: BoxDecoration(
+                color: isPlayed ? color.withOpacity(0.1) : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: isPlayed ? color : Colors.grey.shade300, width: 2),
               ),
-              boxShadow: isPlayed
-                  ? [
-                BoxShadow(
-                  color: borderColor.withOpacity(0.25),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ]
-                  : [],
-            ),
-            child: Center(
-              child: Text(
-                letter,
-                style: TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w900,
-                  color: isPlayed
-                      ? const Color(0xFF1E3A5F)
-                      : const Color(0xFF9CA3AF),
+              child: Center(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isPlayed ? Colors.black : Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
-          ),
-        ),
-        if (playedCount > 0) ...[
-          const SizedBox(height: 2),
-          Text(
-            "Played $playedCount+",
-            style: const TextStyle(
-              fontSize: 10,
-              color: Color(0xFF9CA3AF),
-            ),
-          ),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey), textAlign: TextAlign.center),
         ],
-        const SizedBox(height: 6),
-        // Playback icon buttons
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: onPlay,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  Widget _buildResultTile(String result) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: _isBlended ? () => _speak(result) : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          height: 80,
+          decoration: BoxDecoration(
+            color: _isBlended ? const Color(0xFFFFF8EE) : const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _isBlended ? Colors.orange : Colors.grey.shade300, width: 2),
+            boxShadow: _isBlended ? [BoxShadow(color: Colors.orange.withOpacity(0.1), blurRadius: 4)] : [],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _isBlended ? result : "?",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: _isBlended ? Colors.orange : Colors.grey,
                 ),
-                child: const Icon(Icons.volume_up_rounded,
-                    size: 16, color: Color(0xFF6B7280)),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(width: 6),
-            GestureDetector(
-              onTap: onPlay,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.replay_rounded,
-                    size: 16, color: Color(0xFF6B7280)),
-              ),
-            ),
-          ],
+              if (_isBlended) ...[
+                const SizedBox(height: 4),
+                const Icon(Icons.volume_up_rounded, size: 16, color: Colors.orange),
+              ],
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildBadge(String label, Color bg, Color fg) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: fg,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(label, style: TextStyle(color: fg, fontSize: 10, fontWeight: FontWeight.bold)),
     );
   }
 }

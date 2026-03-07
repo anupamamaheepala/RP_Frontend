@@ -17,21 +17,21 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
   bool _isAnswered = false;
 
   final List<Map<String, dynamic>> _tasks = [
-    {'syllable': 'කා', 'isReal': true, 'explanation': "'කා' is a valid Sinhala syllable."},
-    {'syllable': 'කැ', 'isReal': true, 'explanation': "'කැ' is a valid Sinhala syllable."},
-    {'syllable': 'කියා', 'isReal': true, 'explanation': "'කියා' is a valid Sinhala syllable."},
-    {'syllable': 'කබ', 'isReal': false, 'explanation': "'කබ' is not a valid Sinhala syllable."},
-    {'syllable': 'හෙ', 'isReal': true, 'explanation': "'හෙ' is a valid Sinhala syllable."},
-    {'syllable': 'හො', 'isReal': true, 'explanation': "'හො' is a valid Sinhala syllable."},
-    {'syllable': 'ඔ', 'isReal': false, 'explanation': "'ඔ' is not a valid Sinhala syllable."},
-    {'syllable': 'ඖ', 'isReal': true, 'explanation': "'ඖ' is a valid Sinhala syllable."},
+    {'syllable': 'කාලය', 'isReal': true, 'explanation': "'කාලය' වලංගු සිංහල වචනයකි.", 'correctWord': 'කාලය'},
+    {'syllable': 'කැලිය', 'isReal': false, 'explanation': "'කැලිය' වලංගු සිංහල වචනයක් නොවේ. 'කැලය' වලංගු සිංහල වචනයකි.", 'correctWord': 'කැලය'},
+    {'syllable': 'වේගය', 'isReal': true, 'explanation': "'වේගය' වලංගු සිංහල වචනයකි.", 'correctWord': 'වේගය'},
+    {'syllable': 'අලය', 'isReal': false, 'explanation': "'අලය' වලංගු සිංහල වචනයක් නොවේ.'ආලය' වලංගු සිංහල වචනයකි.", 'correctWord': 'ආලය'},
+    {'syllable': 'අරදර', 'isReal': false, 'explanation': "'අරදර' වලංගු සිංහල වචනයක් නොවේ.'කරදර' වලංගු සිංහල වචනයකි.", 'correctWord': 'කරදර'},
+    {'syllable': 'කමත', 'isReal': true, 'explanation': "'කමත' වලංගු සිංහල වචනයකි.", 'correctWord': 'කමත'},
+    {'syllable': 'කලාව', 'isReal': true, 'explanation': "'කලාව' වලංගු සිංහල වචනයකි.", 'correctWord': 'කලාව'},
+    {'syllable': 'සමහර', 'isReal': true, 'explanation': "'සමහර' වලංගු සිංහල වචනයකි.", 'correctWord': 'සමහර'},
   ];
 
   @override
   void initState() {
     super.initState();
     _flutterTts.setLanguage("si-LK");
-    _flutterTts.setSpeechRate(0.35);
+    _flutterTts.setSpeechRate(0.3);
     _flutterTts.setVolume(1.0);
     _flutterTts.setPitch(1.0);
     _playSyllableSound();
@@ -47,12 +47,19 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
     await _flutterTts.speak(_tasks[_currentTaskIndex]['syllable']);
   }
 
+  Future<void> _playCorrectWordSound() async {
+    final correctWord = _tasks[_currentTaskIndex]['correctWord'] ?? _tasks[_currentTaskIndex]['syllable'];
+    await _flutterTts.speak(correctWord);
+  }
+
   void _checkAnswer(bool answer) {
     if (_isAnswered) return;
     setState(() {
       _selectedAnswer = answer;
       _isAnswered = true;
     });
+    // Optional: speak syllable immediately on selection
+    _playSyllableSound();
   }
 
   void _nextTask() {
@@ -69,8 +76,7 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
   }
 
   bool get _isCorrect =>
-      _isAnswered &&
-          _selectedAnswer == _tasks[_currentTaskIndex]['isReal'];
+      _isAnswered && _selectedAnswer == _tasks[_currentTaskIndex]['isReal'];
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +97,9 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
             padding: const EdgeInsets.only(right: 12),
             child: Row(
               children: [
-                _buildBadge("High Risk", const Color(0xFFFF6B6B), Colors.white),
+                _buildBadge("ඉහළ අවදානම", const Color(0xFFFF6B6B), Colors.white),
                 const SizedBox(width: 6),
-                _buildBadge("Grade 3 · Level 1", const Color(0xFF4A90D9), Colors.white),
-                const SizedBox(width: 6),
-                _buildBadge("Module 2", const Color(0xFF7B61FF), Colors.white),
+                _buildBadge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFF4A90D9), Colors.white),
               ],
             ),
           ),
@@ -107,9 +111,8 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               const Text(
-                "Module 2 — Syllable Blending",
+                "පැවරුම 4 — අක්ෂර මිශ්‍ර කිරීම",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -118,13 +121,11 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                 ),
               ),
               const SizedBox(height: 14),
-
-              // Progress bar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "${_currentTaskIndex + 1} of ${_tasks.length}",
+                    "${_tasks.length} න් ${_currentTaskIndex + 1}",
                     style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF6B7280),
@@ -152,12 +153,10 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Instruction
               Row(
                 children: const [
                   Text(
-                    "Is this a real Sinhala syllable?",
+                    "මේක ඇත්තටම සිංහල අක්ෂර මාලාවක්ද?",
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -169,8 +168,6 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Syllable card — yellow/cream
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -189,7 +186,6 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                   padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
                   child: Column(
                     children: [
-                      // Big syllable
                       Text(
                         currentTask['syllable'] as String,
                         style: const TextStyle(
@@ -201,35 +197,22 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 20),
-
-                      // Hear it button
                       GestureDetector(
                         onTap: _playSyllableSound,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                                color: const Color(0xFF7B61FF), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            border: Border.all(color: const Color(0xFF7B61FF), width: 1.5),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: const [
                               Text("🔊", style: TextStyle(fontSize: 16)),
-                              SizedBox(width: 4),
-                              Text("🎵", style: TextStyle(fontSize: 14)),
                               SizedBox(width: 8),
                               Text(
-                                "Hear it",
+                                "අසන්න",
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
@@ -245,185 +228,89 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Yes / No buttons
               Row(
                 children: [
-                  // Yes button
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _checkAnswer(true),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        decoration: BoxDecoration(
-                          color: _isAnswered && _selectedAnswer == true
-                              ? (_isCorrect
-                              ? const Color(0xFF22C55E)
-                              : const Color(0xFFEF4444))
-                              : const Color(0xFFF0FDF4),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _isAnswered && _selectedAnswer == true
-                                ? (_isCorrect
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFFDC2626))
-                                : const Color(0xFF22C55E),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF22C55E).withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check_box_rounded,
-                              color: _isAnswered && _selectedAnswer == true
-                                  ? Colors.white
-                                  : const Color(0xFF22C55E),
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Yes, it's real!",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: _isAnswered && _selectedAnswer == true
-                                    ? Colors.white
-                                    : const Color(0xFF16A34A),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildAnswerButton(true, "ඔව්, ඒක ඇත්ත!", const Color(0xFF22C55E)),
                   const SizedBox(width: 12),
-
-                  // No button
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _checkAnswer(false),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        decoration: BoxDecoration(
-                          color: _isAnswered && _selectedAnswer == false
-                              ? (_isCorrect
-                              ? const Color(0xFF22C55E)
-                              : const Color(0xFFEF4444))
-                              : const Color(0xFFFFF1F1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _isAnswered && _selectedAnswer == false
-                                ? (_isCorrect
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFFDC2626))
-                                : const Color(0xFFEF4444),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFEF4444).withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.cancel_rounded,
-                              color: _isAnswered && _selectedAnswer == false
-                                  ? Colors.white
-                                  : const Color(0xFFEF4444),
-                              size: 22,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "No, it's not!",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: _isAnswered && _selectedAnswer == false
-                                    ? Colors.white
-                                    : const Color(0xFFDC2626),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildAnswerButton(false, "නැහැ, ඒක නෙවෙයි!", const Color(0xFFEF4444)),
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Feedback banner
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: _isAnswered
                     ? Container(
                   key: ValueKey(_currentTaskIndex),
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 13),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                   decoration: BoxDecoration(
-                    color: _isCorrect
-                        ? const Color(0xFFF0FDF4)
-                        : const Color(0xFFFFF1F1),
+                    color: _isCorrect ? const Color(0xFFF0FDF4) : const Color(0xFFFFF1F1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _isCorrect
-                          ? const Color(0xFF86EFAC)
-                          : const Color(0xFFFCA5A5),
+                      color: _isCorrect ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5),
                       width: 1.5,
                     ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _isCorrect ? "🎉" : "❌",
-                        style: const TextStyle(fontSize: 18),
-                      ),
+                      Text(_isCorrect ? "🎉" : "❌", style: const TextStyle(fontSize: 18)),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          _isCorrect
-                              ? "Correct! ${currentTask['explanation']}"
-                              : "Not quite! ${currentTask['explanation']}",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: _isCorrect
-                                ? const Color(0xFF16A34A)
-                                : const Color(0xFFDC2626),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _isCorrect
+                                  ? "නිවැරදියි! ${currentTask['explanation']}"
+                                  : "සම්පූර්ණයෙන්ම නොවේ! ${currentTask['explanation']}",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _isCorrect ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: _playCorrectWordSound,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _isCorrect ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text("🔊", style: TextStyle(fontSize: 12)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "නිවැරදි වචනය අසන්න",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: _isCorrect ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 )
-                    : const SizedBox.shrink(key: ValueKey('empty')),
+                    : const SizedBox.shrink(),
               ),
-
               const SizedBox(height: 16),
-
-              // Next button — only visible after answering
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isAnswered
-                    ? SizedBox(
-                  key: const ValueKey('next'),
+              if (_isAnswered)
+                SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _nextTask,
@@ -431,36 +318,48 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
                       backgroundColor: const Color(0xFF4A90D9),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 4,
-                      shadowColor:
-                      const Color(0xFF4A90D9).withOpacity(0.4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          _currentTaskIndex < _tasks.length - 1
-                              ? "Next"
-                              : "Next Activity",
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
+                        Text(_currentTaskIndex < _tasks.length - 1 ? "ඊළඟ" : "ඊළඟ පැවරුම"),
                         const SizedBox(width: 8),
                         const Icon(Icons.arrow_forward_rounded, size: 20),
                       ],
                     ),
                   ),
-                )
-                    : const SizedBox.shrink(key: ValueKey('hidden')),
-              ),
+                ),
               const SizedBox(height: 24),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnswerButton(bool value, String label, Color baseColor) {
+    bool isSelected = _isAnswered && _selectedAnswer == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _checkAnswer(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            color: isSelected ? (_isCorrect ? const Color(0xFF22C55E) : const Color(0xFFEF4444)) : baseColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isSelected ? Colors.transparent : baseColor, width: 2),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? Colors.white : baseColor,
+              ),
+            ),
           ),
         ),
       ),
@@ -470,19 +369,8 @@ class _G3_L1_High_A4_RealOrNotState extends State<G3_L1_High_A4_RealOrNot> {
   Widget _buildBadge(String label, Color bg, Color fg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: fg,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Text(label, style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w700)),
     );
   }
 }
