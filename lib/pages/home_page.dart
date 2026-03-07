@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'Dyslexia/dyslexia_grade_page.dart';
 import 'Dysgraphia/dysgraphia_grade_selection.dart';
-import 'Dyscalculia/dyscalculia_page.dart';
+import 'Dyscalculia/dyscal_grade.dart'; // Updated import here
 
-import '/profile.dart'; // Import your Profile Page here
-
+import '/profile.dart';
 
 import 'ADHD/grade_selection_page.dart';
-import '/profile.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -92,7 +90,7 @@ class HomePage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // HEADER (same as other pages)
+              // HEADER
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -199,10 +197,11 @@ class HomePage extends StatelessWidget {
                           Colors.teal.shade300,
                         ],
                         onTap: () {
+                          // NOW GOES TO GRADE SELECTION FIRST
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const DyscalculiaPage(),
+                              builder: (_) => const DyscalGradePage(),
                             ),
                           );
                         },
