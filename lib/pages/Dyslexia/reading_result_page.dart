@@ -1,22 +1,111 @@
 import 'package:flutter/material.dart';
-
+import 'dyslexia_read_page.dart';
 
 class ReadingResultPage extends StatelessWidget {
   final String displayedSentence;
   final int durationSeconds;
   final Map<String, dynamic> metrics;
+  final int grade;
+  final int level;
 
   const ReadingResultPage({
     super.key,
     required this.displayedSentence,
     required this.durationSeconds,
     required this.metrics,
+    required this.grade,
+    required this.level,
   });
 
-  // Helper to safely convert any number-like input
   double _toDouble(dynamic v) {
     if (v is num) return v.toDouble();
     return double.tryParse(v.toString()) ?? 0.0;
+  }
+
+  Color _riskColor(String level) {
+    switch (level) {
+      case "LOW":
+        return Colors.green;
+      case "MEDIUM":
+        return Colors.blue;   // 🔵 FIXED
+      case "HIGH":
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _riskMessageSinhala(String level) {
+    switch (level) {
+      case "LOW":
+        return "අවදානම අඩුයි";
+      case "MEDIUM":
+        return "මධ්‍යම අවදානමක් ඇත";
+      case "HIGH":
+        return "ඉහළ අවදානමක් ඇත";
+      default:
+        return "විශ්ලේෂණය කරමින්";
+    }
+  }
+
+  Widget _riskBanner(String riskLevel, double confidence) {
+    final color = _riskColor(riskLevel);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.psychology, color: color, size: 30),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "කියවීමේ අවදානම් මට්ටම",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  _riskMessageSinhala(riskLevel),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              Text(
+                "${(confidence * 100).toStringAsFixed(0)}%",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const Text(
+                "විශ්වාසය",
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -26,171 +115,203 @@ class ReadingResultPage extends StatelessWidget {
     final double correctWords = _toDouble(metrics["correct_words"]);
     final double wer = _toDouble(metrics["wer"]);
     final double speed = _toDouble(metrics["words_per_second"]);
+    final String riskLevel =
+        metrics["dyslexia_assessment"]?["risk_level"]?.toString() ?? "UNKNOWN";
+
+    final double confidence = _toDouble(metrics["dyslexia_assessment"]?["confidence"]);
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF9D50BB),
-              Color(0xFF6E48AA),
-              Color(0xFF62CFF4),
-            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // ---------- TOP BAR ----------
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              // ================= HEADER =================
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.white24,
-                          shape: BoxShape.circle,
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios,
+                          color: Colors.purple),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'කියවීමේ ප්‍රතිඵල',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
                         ),
-                        child: const Icon(Icons.arrow_back,
-                            color: Colors.white, size: 24),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      "📚 Reading Result",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                      ),
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.star, color: Colors.yellowAccent, size: 26),
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+              _riskBanner(riskLevel, confidence),
+              const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // ---------- MAIN RESULT CARD ----------
+              // ================= BODY =================
               Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF79F1A4), Color(0xFF0E5CAD)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      )
-                    ],
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
                   child: SingleChildScrollView(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Trophy + time display
-                        Center(
+                        // ================= TIME CARD =================
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
                           child: Column(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFCD34D),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.shade400,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.emoji_events,
-                                  size: 60,
+                                  Icons.timer,
+                                  size: 46,
                                   color: Colors.white,
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 6,
-                                  horizontal: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  "⏱️ Time Taken: $durationSeconds sec",
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
+                              Text(
+                                "⏱️ කාලය: $durationSeconds තත්පර",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 25),
+                        const SizedBox(height: 20),
 
-                        // Show original sentence
-                        _resultCard(
-                          title: "📘 Sentence:",
+                        // ================= REFERENCE SENTENCE =================
+                        _infoCard(
+                          title: "📘 දෙන ලද වාක්‍යය",
                           value: displayedSentence,
-                          color: Colors.cyan.shade100,
+                          gradient: [
+                            Colors.purple.shade400,
+                            Colors.blue.shade400,
+                          ],
                         ),
 
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 12),
 
-                        // Show user reading transcription
-                        _resultCard(
-                          title: "🎤 Your Reading:",
+                        // ================= TRANSCRIPT =================
+                        _infoCard(
+                          title: "🎤 ඔබ කියවූ වාක්‍යය",
                           value: transcript,
-                          color: Colors.cyan.shade200,
+                          gradient: [
+                            Colors.blue.shade400,
+                            Colors.teal.shade400,
+                          ],
                         ),
 
                         const SizedBox(height: 20),
 
-                        // Accuracy
-                        _badge(
+                        // ================= METRICS =================
+                        _metricBadge(
                           icon: Icons.check_circle,
-                          label: "Accuracy: ${accuracy.toStringAsFixed(1)}%",
-                          color: Colors.green.shade500,
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Correct words
-                        _badge(
-                          icon: Icons.check,
                           label:
-                          "Correct Words: ${correctWords.toStringAsFixed(1)}",
-                          color: Colors.green.shade400,
+                          "Accuracy: ${accuracy.toStringAsFixed(1)}%",
+                          color: Colors.green,
                         ),
                         const SizedBox(height: 10),
 
-                        // WER
-                        _badge(
+                        _metricBadge(
+                          icon: Icons.done,
+                          label:
+                          "Correct Words: ${correctWords.toStringAsFixed(0)}",
+                          color: Colors.green.shade600,
+                        ),
+                        const SizedBox(height: 10),
+
+                        _metricBadge(
                           icon: Icons.close,
                           label: "WER: ${wer.toStringAsFixed(2)}",
                           color: Colors.red.shade400,
                         ),
                         const SizedBox(height: 10),
 
-                        // Speed
-                        _badge(
+                        _metricBadge(
                           icon: Icons.speed,
                           label:
                           "Speed: ${speed.toStringAsFixed(2)} words/sec",
-                          color: Colors.purple.shade400,
+                          color: Colors.purple,
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // ================= TRY AGAIN =================
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text(
+                            "නැවත උත්සාහ කරන්න",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DyslexiaReadPage(
+                                  grade: grade,
+                                  level: level,
+                                  initialSentence: displayedSentence,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -204,17 +325,22 @@ class ReadingResultPage extends StatelessWidget {
     );
   }
 
-  // ---------- Helpers for cards and badges ----------
+  // ================= HELPER WIDGETS =================
 
-  Widget _resultCard({
+  Widget _infoCard({
     required String title,
     required String value,
-    required Color color,
+    required List<Color> gradient,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: color,
+        gradient: LinearGradient(
+          colors: gradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -225,7 +351,7 @@ class ReadingResultPage extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -233,7 +359,8 @@ class ReadingResultPage extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 18,
-              color: Colors.black,
+              height: 1.4,
+              color: Colors.white,
             ),
           ),
         ],
@@ -241,13 +368,13 @@ class ReadingResultPage extends StatelessWidget {
     );
   }
 
-  Widget _badge({
+  Widget _metricBadge({
     required IconData icon,
     required String label,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(25),
@@ -261,7 +388,7 @@ class ReadingResultPage extends StatelessWidget {
               label,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

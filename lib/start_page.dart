@@ -14,8 +14,15 @@ class StartPage extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.mainBackground,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
+          ),
         ),
         child: SafeArea(
           child: Column(
@@ -30,7 +37,7 @@ class StartPage extends StatelessWidget {
                   height: size.height * 0.25,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
-                    return const Icon(Icons.image_not_supported, size: 80, color: Colors.white);
+                    return const Icon(Icons.image_not_supported, size: 80, color: Colors.purple);
                   },
                 ),
               ),
@@ -48,7 +55,7 @@ class StartPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.purple.withOpacity(0.1), // Soft purple shadow
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -111,7 +118,6 @@ class StartPage extends StatelessWidget {
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () {
-                              // UPDATED: Navigate to LoginPage
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -147,12 +153,12 @@ class StartPage extends StatelessWidget {
               const Spacer(flex: 2),
 
               // --- Copyright Footer ---
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
                 child: Text(
                   '© 2025 Arunodaya',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.purple, // Changed to Purple for visibility
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

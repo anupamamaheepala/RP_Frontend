@@ -1,9 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Ink;
 import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'dysgraphia_data.dart';
+import 'package:rp_frontend/config.dart';
+import 'dysgraphia_results_page.dart';
+import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType;
@@ -19,7 +22,8 @@ class DysgraphiaPage extends StatefulWidget {
   State<DysgraphiaPage> createState() => _DysgraphiaPageState();
 }
 
-class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProviderStateMixin {
+class _DysgraphiaPageState extends State<DysgraphiaPage>
+    with SingleTickerProviderStateMixin {
   late List<String> _prompts;
   int _currentIndex = 0;
   int _attemptsCompleted = 0;
@@ -27,13 +31,28 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   List<List<Offset>> _currentStrokes = [];
   List<List<List<Offset>>> _allStrokes = [];
   List<double> _timesTaken = [];
+  List<int> _clearsPerPrompt = [];
+  int _currentPromptClears = 0;
   DateTime? _startTime;
-  Map<String, dynamic>? _metrics;
   String? _error;
   int _stars = 0;
   late AnimationController _celebrationController;
   final ScrollController _scrollController = ScrollController();
-  bool _canScroll = true; // Control scroll behavior
+  bool _canScroll = true;
+  bool _isCompleted = false;
+  bool _isUploading = false;
+
+  // ── ML Kit ──────────────────────────────────────────────────────────────
+  // Stores per-prompt recognition results: true = correctly formed
+  final List<bool?> _formationResults = [];
+  // Stores pending recognition futures so upload can await them all
+  final List<Future<bool?>> _pendingRecognitions = [];
+
+  // ML Kit recognizer — "si-LK" is the Sinhala language model
+  final _recognizer = DigitalInkRecognizer(languageCode: 'si-LK');
+
+  // Track whether the Sinhala model has been downloaded
+  bool _modelReady = false;
 
   @override
   void initState() {
@@ -43,13 +62,24 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    _downloadModelIfNeeded();
     _startPrompt();
+  }
+
+  // Download the Sinhala ink model from Google if not already on device
+  Future<void> _downloadModelIfNeeded() async {
+    final modelManager = DigitalInkRecognizerModelManager();
+    final isDownloaded = await modelManager.isModelDownloaded('si-LK');
+    if (!isDownloaded) {
+      await modelManager.downloadModel('si-LK');
+    }
+    setState(() => _modelReady = true);
   }
 
   void _initializePrompts() {
     _prompts = DysgraphiaData.getPrompts(widget.grade, widget.activityType);
     if (_prompts.isEmpty) {
-      _prompts = ['දෝෂයක්'];
+      _prompts = ['දෝෂක්'];
     }
   }
 
@@ -57,6 +87,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void dispose() {
     _celebrationController.dispose();
     _scrollController.dispose();
+    _recognizer.close(); // Always close ML Kit resources
     super.dispose();
   }
 
@@ -82,14 +113,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     final prompt = _prompts[_currentIndex];
     if (_isLetter(prompt)) return 'මෙම අකුර පැහැදිලිව ලියන්න';
     if (_isWord(prompt)) return 'අකුරු අතර සමාන පරතරයක් තබන්න';
-    return 'වාක්‍යය පැහැදිලිව හා සුමටව ලියන්න';
-  }
-
-  String _getFeedback() {
-    final prompt = _prompts[_currentIndex];
-    if (_isLetter(prompt)) return 'නියමයි! දිගටම කරගෙන යන්න! 🎯';
-    if (_isWord(prompt)) return 'හොඳින් කරනවා! පැහැදිලිව ලියන්න 📝';
-    return 'විශිෂ්ටයි! ඔබ හොඳින් ඉගෙන ගන්නවා! ⭐';
+    return 'වාක්‍යයය පැහැදිලිව හා සුමටව ලියන්න';
   }
 
   void _startPrompt() {
@@ -100,6 +124,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     setState(() {
       _currentStrokes = [];
       _attemptsCompleted = 0;
+      _currentPromptClears = 0;
       _startTime = DateTime.now();
     });
   }
@@ -107,7 +132,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _onPanStart(DragStartDetails details) {
     setState(() {
       _isDrawing = true;
-      _canScroll = false; // Disable scrolling when drawing starts
+      _canScroll = false;
       _currentStrokes.add([details.localPosition]);
     });
   }
@@ -122,17 +147,74 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
   void _onPanEnd(DragEndDetails details) {
     setState(() {
       _isDrawing = false;
-      _canScroll = true; // Re-enable scrolling when drawing ends
+      _canScroll = true;
     });
   }
 
   void _clearCanvas() {
     setState(() {
       _currentStrokes = [];
+      _currentPromptClears++;
     });
   }
 
-  void _submitAttempt() {
+  // ── Core: recognize the drawn ink and compare to expected prompt ─────────
+  Future<bool?> _recognizeAndCompare(
+      List<List<Offset>> strokes, String expectedPrompt) async {
+    if (!_modelReady || strokes.isEmpty) return null;
+
+    try {
+      // Convert strokes to ML Kit 0.12.0 format
+      final ink = Ink();
+      for (final strokePoints in strokes) {
+        final stroke = Stroke();
+        stroke.points = strokePoints
+            .map((o) => StrokePoint(
+          x: o.dx,
+          y: o.dy,
+          t: DateTime.now().millisecondsSinceEpoch,
+        ))
+            .toList();
+        ink.strokes.add(stroke);
+      }
+
+      final candidates = await _recognizer.recognize(ink);
+
+      if (candidates.isEmpty) return false; // No recognition = wrong
+
+      // Only check TOP 1 candidate — strict matching
+      // Top 5 was too lenient, scribbles were matching garbage candidates
+      final topCandidate = candidates.first.text.trim();
+
+      print('Expected: [$expectedPrompt] | ML Kit #1: [$topCandidate] | All: ${candidates.take(3).map((c) => c.text).toList()}');
+
+      // Strict exact match only — the recognised text must equal the expected text
+      // We do NOT use contains() both ways — that caused false positives
+      final matched = topCandidate == expectedPrompt;
+
+      return matched;
+    } catch (e) {
+      print('ML Kit recognition error: $e');
+      return null;
+    }
+  }
+
+  // ── Calculate formation accuracy score (0.0 to 1.0) ─────────────────────
+  double _calculateFormationScore() {
+    if (_formationResults.isEmpty) return -1.0; // -1 = no data at all
+
+    // Count total prompts that SHOULD have been recognised (non-null expected)
+    // null means sentences (skipped) — don't include those
+    final applicable = _formationResults.where((r) => r != null).length;
+    if (applicable == 0) return -1.0; // All were sentences, no formation data
+
+    // Treat unresolved results as incorrect — if ML Kit couldn't recognise
+    // it at all, that itself is a sign of poor formation
+    final correct = _formationResults.where((r) => r == true).length;
+    return correct / applicable;
+  }
+
+  void _submitAttempt() async {
     if (_startTime == null || _currentStrokes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -143,25 +225,52 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       return;
     }
 
-    final timeTaken = DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
+    final timeTaken =
+        DateTime.now().difference(_startTime!).inMilliseconds / 1000.0;
+    final strokesCopy = List<List<Offset>>.from(_currentStrokes);
+    final currentPrompt = _prompts[_currentIndex];
+
+    // Run ML Kit recognition — store the Future so _uploadAllData can await it
+    // Only for letters and words; sentences are too complex
+    if (widget.activityType != 'sentences') {
+      final future = _recognizeAndCompare(strokesCopy, currentPrompt);
+      _pendingRecognitions.add(future);
+      future.then((result) {
+        if (mounted) setState(() => _formationResults.add(result));
+      });
+    } else {
+      _formationResults.add(null); // Sentences skipped
+    }
+
     setState(() {
       _timesTaken.add(timeTaken);
-      _allStrokes.add(List.from(_currentStrokes));
+      _allStrokes.add(strokesCopy);
+      _clearsPerPrompt.add(_currentPromptClears);
       _attemptsCompleted++;
       _currentStrokes = [];
+      _currentPromptClears = 0;
       _startTime = DateTime.now();
 
       if (_attemptsCompleted % _maxAttempts() == 0) {
         _stars++;
-        _celebrationController.forward().then((_) => _celebrationController.reset());
+        _celebrationController
+            .forward()
+            .then((_) => _celebrationController.reset());
         _currentIndex++;
+
+        if (_currentIndex >= _prompts.length) {
+          _isCompleted = true;
+        }
+
         Future.delayed(const Duration(milliseconds: 600), _startPrompt);
       }
     });
   }
 
   Future<void> _uploadAllData() async {
-    if (_allStrokes.isEmpty) return;
+    if (_allStrokes.isEmpty || _isUploading) return;
+
+    setState(() => _isUploading = true);
 
     showDialog(
       context: context,
@@ -175,7 +284,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('ප්‍රතිඵල සැකසෙමින්...', style: TextStyle(fontSize: 16)),
+                Text('ප්‍රතිඵල සකසෙමින්...', style: TextStyle(fontSize: 16)),
               ],
             ),
           ),
@@ -183,116 +292,125 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       ),
     );
 
+    // CRITICAL FIX: Wait for ALL pending ML Kit recognitions to finish
+    // before calculating the formation score. Previously the score was
+    // calculated immediately and futures hadn't resolved yet → always 1.0
+    if (_pendingRecognitions.isNotEmpty) {
+      final results = await Future.wait(_pendingRecognitions);
+      // Sync _formationResults with awaited results in case .then() was slow
+      if (_formationResults.length < results.length) {
+        _formationResults.clear();
+        _formationResults.addAll(results);
+      }
+    }
+
+    final numCompleted = _allStrokes.length;
+    final formationScore = _calculateFormationScore();
+    print('Formation results: $_formationResults | Score: $formationScore');
+
+    final promptsData = <Map<String, dynamic>>[];
+    for (int i = 0; i < numCompleted; i++) {
+      promptsData.add({
+        'prompt': _prompts[i],
+        'strokes': _allStrokes[i]
+            .map((path) => {
+          'points': path
+              .map((offset) => {
+            'x': offset.dx.toDouble(),
+            'y': offset.dy.toDouble(),
+          })
+              .toList(),
+        })
+            .toList(),
+        'time_taken': _timesTaken[i],
+        'clears': _clearsPerPrompt[i],
+        // ── NEW: per-prompt formation result from ML Kit ──
+        'formation_correct': i < _formationResults.length
+            ? _formationResults[i]
+            : null,
+      });
+    }
+
     final data = {
       'grade': widget.grade,
       'activity_type': widget.activityType,
-      'prompts': _prompts,
-      'strokes': _allStrokes.map((strokes) => strokes.map((path) => path.map((offset) => {'x': offset.dx, 'y': offset.dy}).toList()).toList()).toList(),
-      'times_taken': _timesTaken,
+      'prompts_data': promptsData,
+      // formation_accuracy: null if no ML Kit data (-1.0 sentinel),
+      // otherwise 0.0-1.0. Backend treats null as sentences/unavailable.
+      'formation_accuracy': formationScore >= 0.0 ? formationScore : null,
     };
 
     try {
       final response = await http.post(
-        Uri.parse('https://your-api-url.com/dysgraphia/submit-writing'),
+        Uri.parse('${Config.baseUrl}/dysgraphia/submit-writing'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
+
+      print('Status: ${response.statusCode}');
+      print('Body: ${response.body}');
+
       Navigator.pop(context);
 
       if (response.statusCode == 200) {
-        final metrics = jsonDecode(response.body);
-        setState(() {
-          _metrics = metrics;
+        final responseBody = jsonDecode(response.body);
+        if (responseBody['ok'] == true) {
           _error = null;
-        });
-        _showResults();
+          _navigateToResults(responseBody);
+        } else {
+          setState(() {
+            _error = responseBody['error'] ?? 'ඇතුළත් කිරීම අසාර්ථකයි';
+            _isCompleted = false;
+            _isUploading = false;
+          });
+        }
       } else {
-        setState(() => _error = 'උඩුගත කිරීම අසාර්ථකයි (${response.statusCode})');
+        setState(() {
+          _error = 'ඇතුළත් කිරීම අසාර්ථකයි (${response.statusCode})';
+          _isCompleted = false;
+          _isUploading = false;
+        });
       }
     } catch (e) {
       Navigator.pop(context);
-      setState(() => _error = 'දෝෂය: $e');
+      setState(() {
+        _error = 'දෝෂය: $e';
+        _isCompleted = false;
+        _isUploading = false;
+      });
     }
   }
 
-  void _showResults() {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.purple.shade100, Colors.blue.shade100],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
-              const SizedBox(height: 16),
-              const Text(
-                'සුභ පැතුම්! 🎉',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'ඔබ වැඩ ${_prompts.length} ක් සම්පූර්ණ කළා!',
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'ශ්‍රේණිය ${widget.grade} - ${_getActivityName()}',
-                style: TextStyle(fontSize: 16, color: Colors.purple.shade700, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (i) => Icon(
-                        i < _stars ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 32,
-                      )),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'සමස්ත කාලය: ${_timesTaken.fold(0.0, (a, b) => a + b).toStringAsFixed(1)} තත්පර',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'සාමාන්‍ය කාලය: ${(_timesTaken.fold(0.0, (a, b) => a + b) / _timesTaken.length).toStringAsFixed(1)} තත්පර',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.check_circle),
-                label: const Text('හරි', style: TextStyle(fontSize: 18)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
+  void _navigateToResults(Map<String, dynamic> responseBody) {
+    int totalStrokes = 0;
+    for (var promptStrokes in _allStrokes) {
+      totalStrokes += promptStrokes.length;
+    }
+
+    int totalClears =
+    _clearsPerPrompt.fold(0, (sum, clears) => sum + clears);
+
+    final riskLevel = responseBody['risk_level'] ?? 'none';
+    final riskScore = (responseBody['risk_score'] ?? 0.0).toDouble();
+    // ── NEW: pass formation score to results page ──
+    final formationAccuracy =
+    (responseBody['formation_accuracy'] ?? _calculateFormationScore())
+        .toDouble();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DysgraphiaResultsPage(
+          grade: widget.grade,
+          activityType: widget.activityType,
+          totalPrompts: _prompts.length,
+          completedPrompts: _allStrokes.length,
+          timesTaken: _timesTaken,
+          totalStrokes: totalStrokes,
+          totalClears: totalClears,
+          riskLevel: riskLevel,
+          riskScore: riskScore,
+          formationAccuracy: formationAccuracy, // ── NEW
         ),
       ),
     );
@@ -322,7 +440,6 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     double canvasWidth;
     double canvasHeight;
 
-    // Increased canvas heights for better writing space
     if (orientation == Orientation.landscape) {
       canvasWidth = screenWidth - 100;
       canvasHeight = isLetter ? 180 : (isSentence ? 450 : 250);
@@ -352,10 +469,44 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          if ((isSentence || _isWord(currentPrompt)) && orientation == Orientation.portrait)
+          // Model not ready warning
+          if (!_modelReady)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade100,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.amber.shade300),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'භාෂා ආදර්ශය පූරණය වෙමින්...',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.amber.shade900,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          if ((isSentence || _isWord(currentPrompt)) &&
+              orientation == Orientation.portrait)
             Container(
               margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.orange.shade100,
                 borderRadius: BorderRadius.circular(20),
@@ -364,10 +515,11 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.screen_rotation, color: Colors.orange.shade700, size: 20),
+                  Icon(Icons.screen_rotation,
+                      color: Colors.orange.shade700, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    'තිරය කරකවා වැඩි ඉඩක් ලබා ගන්න',
+                    'තිරය කරකවා වඩි ඉඩක් ලබා ගන්න',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange.shade900,
@@ -393,7 +545,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 children: [
                   const Text(
                     'මෙම අකුර ලියන්න:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -423,7 +576,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 children: [
                   const Text(
                     'මෙය ලියන්න:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -438,9 +592,9 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 ],
               ),
             ),
+
           const SizedBox(height: 20),
 
-          // Drawing Canvas - Now with increased height
           Container(
             width: canvasSize.width,
             height: canvasSize.height,
@@ -481,12 +635,17 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                       size: canvasSize,
                       painter: _BaselinePainter(
                         canvasSize,
-                        isLetter ? 'letter' : _isWord(currentPrompt) ? 'word' : 'sentence',
+                        isLetter
+                            ? 'letter'
+                            : _isWord(currentPrompt)
+                            ? 'word'
+                            : 'sentence',
                       ),
                     ),
                     CustomPaint(
                       size: canvasSize,
-                      painter: _StrokePainter(_currentStrokes, canvasSize),
+                      painter:
+                      _StrokePainter(_currentStrokes, canvasSize),
                     ),
                     if (_currentStrokes.isEmpty)
                       Center(
@@ -511,7 +670,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final progress = (_currentIndex + 1) / _prompts.length;
+    if (_isCompleted) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.purple.shade50, Colors.blue.shade50],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final progress = (_currentIndex / _prompts.length).clamp(0.0, 1.0);
 
     return Scaffold(
       body: Container(
@@ -526,7 +699,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -542,37 +716,27 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.purple, size: 20),
                           onPressed: () => Navigator.pop(context),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
                         ),
                         Expanded(
                           child: Text(
                             _getTitle(),
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        Row(
-                          children: List.generate(
-                            5,
-                                (i) => AnimatedScale(
-                              scale: i < _stars ? 1.2 : 1.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Icon(
-                                i < _stars ? Icons.star : Icons.star_border,
-                                color: i < _stars ? Colors.amber : Colors.grey.shade300,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ),
+                        const SizedBox(width: 40),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -581,21 +745,25 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             child: LinearProgressIndicator(
                               value: progress,
                               backgroundColor: Colors.purple.shade100,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
-                              minHeight: 12,
+                              valueColor:
+                              const AlwaysStoppedAnimation<Color>(
+                                  Colors.purple),
+                              minHeight: 8,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.purple.shade100,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${_currentIndex + 1}/${_prompts.length}',
+                            '${_currentIndex}/${_prompts.length}',
                             style: const TextStyle(
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
@@ -607,11 +775,12 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                 ),
               ),
 
-              // WRAPPED IN SingleChildScrollView for scrolling
               Expanded(
                 child: SingleChildScrollView(
                   controller: _scrollController,
-                  physics: _canScroll ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+                  physics: _canScroll
+                      ? const AlwaysScrollableScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     children: [
@@ -620,7 +789,10 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.blue.shade100, Colors.purple.shade100],
+                            colors: [
+                              Colors.blue.shade100,
+                              Colors.purple.shade100
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
@@ -639,7 +811,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                              child: const Icon(Icons.info_outline,
+                                  color: Colors.blue, size: 20),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -665,15 +838,19 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: _clearCanvas,
-                              icon: const Icon(Icons.refresh, size: 22),
+                              icon:
+                              const Icon(Icons.refresh, size: 22),
                               label: const Text(
                                 'මකන්න',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange.shade400,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -685,15 +862,21 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: _submitAttempt,
-                              icon: const Icon(Icons.check_circle, size: 22),
+                              icon: const Icon(Icons.check_circle,
+                                  size: 22),
                               label: Text(
-                                _attemptsCompleted < _maxAttempts() - 1 ? 'ඊළඟ' : 'හරි',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                _attemptsCompleted < _maxAttempts() - 1
+                                    ? 'ඊළඟ'
+                                    : 'හරි',
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -716,7 +899,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
                             ),
                             child: Text(
                               _error!,
-                              style: const TextStyle(color: Colors.red, fontSize: 12),
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 12),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -732,6 +916,8 @@ class _DysgraphiaPageState extends State<DysgraphiaPage> with SingleTickerProvid
     );
   }
 }
+
+// ── Painters (unchanged) ─────────────────────────────────────────────────────
 
 class _StrokePainter extends CustomPainter {
   final List<List<Offset>> strokes;
@@ -770,11 +956,6 @@ class _BaselinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.purple.withOpacity(0.3)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
     final dashPaint = Paint()
       ..color = Colors.blue.withOpacity(0.2)
       ..strokeWidth = 1.0
@@ -782,9 +963,9 @@ class _BaselinePainter extends CustomPainter {
 
     if (type == 'letter' || type == 'word') {
       final y = canvasSize.height / 2;
-      _drawDashedLine(canvas, dashPaint, Offset(0, y), Offset(canvasSize.width, y));
+      _drawDashedLine(
+          canvas, dashPaint, Offset(0, y), Offset(canvasSize.width, y));
     } else {
-      // More lines for sentences to guide writing
       final spacing = canvasSize.height / 5;
       for (int i = 1; i < 5; i++) {
         _drawDashedLine(
@@ -797,18 +978,29 @@ class _BaselinePainter extends CustomPainter {
     }
   }
 
-  void _drawDashedLine(Canvas canvas, Paint paint, Offset start, Offset end) {
+  void _drawDashedLine(
+      Canvas canvas, Paint paint, Offset start, Offset end) {
     const dashWidth = 8.0;
     const dashSpace = 5.0;
     double distance = (end - start).distance;
-    double dashCount = (distance / (dashWidth + dashSpace)).floorToDouble();
+    double dashCount =
+    (distance / (dashWidth + dashSpace)).floorToDouble();
 
     for (int i = 0; i < dashCount; i++) {
-      double startX = start.dx + (end.dx - start.dx) * (i * (dashWidth + dashSpace) / distance);
-      double startY = start.dy + (end.dy - start.dy) * (i * (dashWidth + dashSpace) / distance);
-      double endX = start.dx + (end.dx - start.dx) * ((i * (dashWidth + dashSpace) + dashWidth) / distance);
-      double endY = start.dy + (end.dy - start.dy) * ((i * (dashWidth + dashSpace) + dashWidth) / distance);
-      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), paint);
+      double startX = start.dx +
+          (end.dx - start.dx) *
+              (i * (dashWidth + dashSpace) / distance);
+      double startY = start.dy +
+          (end.dy - start.dy) *
+              (i * (dashWidth + dashSpace) / distance);
+      double endX = start.dx +
+          (end.dx - start.dx) *
+              ((i * (dashWidth + dashSpace) + dashWidth) / distance);
+      double endY = start.dy +
+          (end.dy - start.dy) *
+              ((i * (dashWidth + dashSpace) + dashWidth) / distance);
+      canvas.drawLine(
+          Offset(startX, startY), Offset(endX, endY), paint);
     }
   }
 

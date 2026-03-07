@@ -6,37 +6,35 @@ class DyslexiaLevelPage extends StatelessWidget {
 
   const DyslexiaLevelPage({super.key, required this.grade});
 
-  // Levels Definition
   List<Map<String, dynamic>> getLevels() {
     return [
       {
         "level": 1,
-        "titleSi": "මූලික වචන",
-        "titleEn": "Basic Words",
-        "colors": [Color(0xFF4facfe), Color(0xFF00f2fe)],
+        "titleSi": "මූලික වාක්‍ය ඛණ්ඩ",
+        "titleEn": "Basic Sentence Fragments",
+        "colors": [Colors.purple.shade400, Colors.blue.shade400],
       },
       {
         "level": 2,
-        "titleSi": "සරල වාක්‍ය",
-        "titleEn": "Simple Sentences",
-        "colors": [Color(0xFF43e97b), Color(0xFF38f9d7)],
+        "titleSi": "සරල වාක්‍ය ඛණ්ඩ",
+        "titleEn": "Simple Sentence Fragments",
+        "colors": [Colors.blue.shade400, Colors.teal.shade300],
       },
       {
         "level": 3,
-        "titleSi": "කෙටි වාක්‍ය ඛණ්ඩ",
-        "titleEn": "Short Paragraph",
-        "colors": [Color(0xFFfa709a), Color(0xFFfee140)],
+        "titleSi": "මධ්‍යම සංකීර්ණ වාක්‍ය",
+        "titleEn": "Moderately Complex Sentences",
+        "colors": [Colors.green.shade400, Colors.teal.shade300],
       },
       {
         "level": 4,
-        "titleSi": "උසස් මට්ටම",
-        "titleEn": "Advanced Reading",
-        "colors": [Color(0xFFf7971e), Color(0xFFffd200)],
+        "titleSi": "සංකීර්ණ වාක්‍ය",
+        "titleEn": "Complex Sentences",
+        "colors": [Colors.deepPurple.shade400, Colors.indigo.shade400],
       },
     ];
   }
 
-  // UI for each Level Card
   Widget _buildLevelCard({
     required String titleSi,
     required String titleEn,
@@ -55,27 +53,46 @@ class DyslexiaLevelPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+            color: Colors.purple.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ListTile(
-        leading: const Icon(Icons.star_rounded, color: Colors.white, size: 32),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.star_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
         title: Text(
           "$titleSi (Level $level)",
           style: const TextStyle(
             fontSize: 20,
-            color: Colors.white,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         subtitle: Text(
           titleEn,
-          style: const TextStyle(color: Colors.white70),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.white70,
+          ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
         onTap: onTap,
       ),
     );
@@ -86,42 +103,100 @@ class DyslexiaLevelPage extends StatelessWidget {
     final levels = getLevels();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          "Grade $grade – Select Level",
-          style: const TextStyle(
-            color: Colors.purple,
-            fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.purple.shade50,
+              Colors.blue.shade50,
+            ],
           ),
         ),
-        centerTitle: true,
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: levels.map((level) {
-            return _buildLevelCard(
-              titleSi: level["titleSi"],
-              titleEn: level["titleEn"],
-              level: level["level"],
-              colors: level["colors"],
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DyslexiaReadPage(
-                      grade: grade,
-                      level: level["level"],
+        child: SafeArea(
+          child: Column(
+            children: [
+              // HEADER (same style as other pages)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
                     ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Expanded(
+                      child: Text(
+                        'ශ්‍රේණිය $grade – මට්ටම තෝරන්න',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  "කියවීමේ මට්ටම තෝරන්න",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
                   ),
-                );
-              },
-            );
-          }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // LEVEL LIST
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ListView(
+                    children: levels.map((level) {
+                      return _buildLevelCard(
+                        titleSi: level["titleSi"],
+                        titleEn: level["titleEn"],
+                        level: level["level"],
+                        colors: level["colors"],
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DyslexiaReadPage(
+                                grade: grade,
+                                level: level["level"],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,10 +1,14 @@
+// lib/adhd/grade_selection_page.dart
 import 'package:flutter/material.dart';
-import 'adhd_level_page.dart'; // Make sure this path is correct (e.g., 'adhd_level_page.dart' or '../adhd_level_page.dart')
+import 'adhd_level_page.dart';
 
 class GradeSelectionPage extends StatelessWidget {
   const GradeSelectionPage({super.key});
 
-  final List<int> grades = const [3, 4, 5, 6, 7];
+  // 60-30-10 වර්ණ පද්ධතිය
+  static const Color colorBG = Color(0xFFF8FAFC); // 60%
+  static const Color colorPrimary = Color(0xFF0288D1); // 30%
+  static const Color colorAccent = Color(0xFFFF9800); // 10%
 
   Widget _buildGradeCard({
     required int grade,
@@ -12,45 +16,57 @@ class GradeSelectionPage extends StatelessWidget {
     required BuildContext context,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: colors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+            color: colors[0].withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: ListTile(
-        leading: const Icon(Icons.school_rounded, color: Colors.white, size: 35),
-        title: Text(
-          "ශ්‍රේණිය $grade",
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: const Text(
-          "Grade Level",
-          style: TextStyle(color: Colors.white70),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ADHDLevelPage(grade: grade),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
             ),
-          );
-        },
+            child: const Icon(Icons.school_rounded, color: Colors.white, size: 35),
+          ),
+          title: Text(
+            "ශ්‍රේණිය $grade",
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 1,
+            ),
+          ),
+          subtitle: Text(
+            "ඉගෙනුම් මට්ටම", // Grammar fixed to 'Learning Level' in Sinhala
+            style: TextStyle(color: Colors.white12, fontSize: 16),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ADHDLevelPage(grade: grade),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -58,39 +74,76 @@ class GradeSelectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
+      backgroundColor: colorBG,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.purple),
+          icon: const Icon(Icons.arrow_back_ios_new, color: colorPrimary, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'අවධාන ඌණතා – Grade Selection',
-          style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+          'ශ්‍රේණිය තෝරන්න', // Grammar fixed to 'Choose Grade'
+          style: TextStyle(color: colorPrimary, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Select your grade level",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
+              //
+              const Center(
+                child: Text(
+                  "ඔබේ ශ්‍රේණිය තෝරා ක්‍රීඩාව අරඹන්න",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
+              const SizedBox(height: 30),
+
+              // Grade Cards with updated vibrant but balanced colors
+              _buildGradeCard(
+                  grade: 3,
+                  colors: [const Color(0xFF2196F3), const Color(0xFF00BCD4)],
+                  context: context
+              ),
+              _buildGradeCard(
+                  grade: 4,
+                  colors: [const Color(0xFF4CAF50), const Color(0xFF8BC34A)],
+                  context: context
+              ),
+              _buildGradeCard(
+                  grade: 5,
+                  colors: [const Color(0xFFE91E63), const Color(0xFFFFC107)],
+                  context: context
+              ),
+              _buildGradeCard(
+                  grade: 6,
+                  colors: [const Color(0xFF673AB7), const Color(0xFF9C27B0)],
+                  context: context
+              ),
+              _buildGradeCard(
+                  grade: 7,
+                  colors: [const Color(0xFFFF5722), const Color(0xFFFF9800)],
+                  context: context
+              ),
+
               const SizedBox(height: 20),
-              _buildGradeCard(grade: 3, colors: [const Color(0xFF4facfe), const Color(0xFF00f2fe)], context: context),
-              _buildGradeCard(grade: 4, colors: [const Color(0xFF43e97b), const Color(0xFF38f9d7)], context: context),
-              _buildGradeCard(grade: 5, colors: [const Color(0xFFfa709a), const Color(0xFFfee140)], context: context),
-              _buildGradeCard(grade: 6, colors: [const Color(0xFFF68084), const Color(0xFF8EC5FC)], context: context),
-              _buildGradeCard(grade: 7, colors: [const Color(0xFFf7971e), const Color(0xFFffd200)], context: context),
+              const Center(
+                child: Text(
+                  "ඔයාට පුළුවන්! ජය වේවා! 🌟",
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
