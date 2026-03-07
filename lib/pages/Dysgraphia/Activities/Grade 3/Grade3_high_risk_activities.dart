@@ -135,8 +135,8 @@ class Grade3HighRiskPage extends StatelessWidget {
                       _buildActivityCard(
                         context: context,
                         emoji: '🔢',
-                        title: 'අකුරු හඳුනාගමු',
-                        subtitle: 'ලප ස්පර්ශ කර අකුර සාදන්න',
+                        title: 'හැඩතල සාදමු',
+                        subtitle: 'ලප ස්පර්ශ කර හැඩතල සාදන්න',
                         color: Colors.blue,
                         onTap: () => Navigator.push(
                           context,
@@ -314,11 +314,15 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   bool _isInsideCanvas(Offset pos) {
     final box = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return true;
-    final size = box.size;
-    return pos.dx >= _boundaryPadding &&
-        pos.dy >= _boundaryPadding &&
-        pos.dx <= size.width - _boundaryPadding &&
-        pos.dy <= size.height - _boundaryPadding;
+    final w = box.size.width;
+    final h = box.size.height;
+    // Box centered around the ghost letter (roughly 60% of canvas width, 70% of height)
+    final left   = w * 0.20;
+    final right  = w * 0.80;
+    final top    = h * 0.12;
+    final bottom = h * 0.88;
+    return pos.dx >= left && pos.dx <= right &&
+        pos.dy >= top  && pos.dy <= bottom;
   }
 
   void _triggerOutOfBoundsWarning() {
@@ -619,19 +623,32 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                                       ),
                                     ),
                                   ),
-                                  // Boundary guide line
+                                  // Bounding box guide around the letter
                                   IgnorePointer(
-                                    child: Positioned.fill(
-                                      child: Container(
-                                        margin: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(
-                                            color: Colors.purple.withOpacity(0.18),
-                                            width: 2,
-                                          ),
-                                        ),
-                                      ),
+                                    child: LayoutBuilder(
+                                      builder: (_, constraints) {
+                                        final w = constraints.maxWidth;
+                                        final h = constraints.maxHeight;
+                                        return Stack(
+                                          children: [
+                                            Positioned(
+                                              left: w * 0.20,
+                                              top: h * 0.12,
+                                              width: w * 0.60,
+                                              height: h * 0.76,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.purple.withOpacity(0.25),
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     ),
                                   ),
                                   // User strokes
@@ -654,7 +671,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                                             borderRadius: BorderRadius.circular(20),
                                           ),
                                           child: const Text(
-                                            '⚠️ රේඛාව ඇතුළත ලියන්න!',
+                                            '⚠️ අකුර මත ලියන්න!',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
@@ -794,8 +811,14 @@ class _GhostStrokePainter extends CustomPainter {
 // Numbered dots form the letter. Child taps dots in order.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIVITY 2 — SHAPES DOT TO DOT
+// Child taps numbered dots in order to trace simple shapes (motor skill building)
+// Shapes: Circle, Square, Triangle, Zigzag, Spiral, Wavy line
+// ─────────────────────────────────────────────────────────────────────────────
+
 class DotToDotActivity extends StatefulWidget {
-  final List<String> letters;
+  final List<String> letters; // kept for API compatibility, not used
   const DotToDotActivity({super.key, required this.letters});
 
   @override
@@ -803,117 +826,92 @@ class DotToDotActivity extends StatefulWidget {
 }
 
 class _DotToDotActivityState extends State<DotToDotActivity> {
-  int _currentIndex = 0;
+  int _currentShapeIndex = 0;
   int _nextDot = 0;
   bool _showCelebration = false;
   List<Offset> _connectedPath = [];
 
-  // Pre-defined dot positions for each vowel (normalized 0.0–1.0, scaled to canvas)
-  // Each letter has key points that roughly form its shape
-  // Dot positions carefully mapped to each Sinhala vowel's stroke shape.
-  // Coordinates are normalized (0.0–1.0) and scaled to 280×280 canvas.
-  static const Map<String, List<Offset>> _dotPositions = {
-    // අ — top arc curving right, then tail curves down-left
-    'අ': [
-      Offset(0.45, 0.18), // 1: top of head
-      Offset(0.65, 0.22), // 2: right of head
-      Offset(0.72, 0.40), // 3: right curve down
-      Offset(0.58, 0.55), // 4: middle body
-      Offset(0.40, 0.55), // 5: left of body
-      Offset(0.30, 0.70), // 6: tail start
-      Offset(0.45, 0.82), // 7: tail bottom
-      Offset(0.62, 0.72), // 8: tail right finish
-    ],
-    // ඇ — like අ but with extra hook on right
-    'ඇ': [
-      Offset(0.40, 0.18), // 1: top
-      Offset(0.58, 0.22), // 2: right of head
-      Offset(0.65, 0.38), // 3: curve down
-      Offset(0.52, 0.52), // 4: body
-      Offset(0.36, 0.52), // 5: left body
-      Offset(0.28, 0.67), // 6: tail
-      Offset(0.42, 0.80), // 7: tail bottom
-      Offset(0.58, 0.70), // 8: tail right
-      Offset(0.72, 0.45), // 9: extra hook right
-      Offset(0.72, 0.28), // 10: hook top
-    ],
-    // ඉ — vertical stroke, then small loop at bottom
-    'ඉ': [
-      Offset(0.50, 0.15), // 1: top
-      Offset(0.50, 0.35), // 2: upper mid
-      Offset(0.50, 0.55), // 3: mid
-      Offset(0.38, 0.68), // 4: bottom left curve
-      Offset(0.50, 0.78), // 5: bottom
-      Offset(0.62, 0.68), // 6: bottom right curve
-      Offset(0.55, 0.55), // 7: back up slightly
-    ],
-    // උ — two vertical strokes connected at bottom
-    'උ': [
-      Offset(0.33, 0.18), // 1: left top
-      Offset(0.33, 0.45), // 2: left mid
-      Offset(0.33, 0.65), // 3: left bottom
-      Offset(0.50, 0.78), // 4: base
-      Offset(0.67, 0.65), // 5: right bottom
-      Offset(0.67, 0.45), // 6: right mid
-      Offset(0.67, 0.25), // 7: right top
-    ],
-    // එ — starts top-right, sweeps left and down
-    'එ': [
-      Offset(0.68, 0.20), // 1: top right
-      Offset(0.50, 0.18), // 2: top mid
-      Offset(0.32, 0.25), // 3: top left
-      Offset(0.28, 0.45), // 4: left mid
-      Offset(0.38, 0.62), // 5: bottom left
-      Offset(0.55, 0.70), // 6: bottom
-      Offset(0.70, 0.58), // 7: bottom right
-    ],
-    // ඔ — oval shape with a small inner hook
-    'ඔ': [
-      Offset(0.50, 0.15), // 1: top
-      Offset(0.68, 0.28), // 2: top right
-      Offset(0.73, 0.50), // 3: right mid
-      Offset(0.65, 0.70), // 4: bottom right
-      Offset(0.50, 0.80), // 5: bottom
-      Offset(0.35, 0.70), // 6: bottom left
-      Offset(0.27, 0.50), // 7: left mid
-      Offset(0.32, 0.28), // 8: top left
-      Offset(0.50, 0.15), // 9: back to top (closes oval)
-    ],
-  };
+  // Each shape: name (Sinhala), emoji, and dot positions (normalized 0–1, canvas 300×300)
+  static const List<Map<String, dynamic>> _shapes = [
+    {
+      'name': 'වෘත්තය',   // Circle
+      'emoji': '⭕',
+      'dots': [
+        Offset(0.50, 0.12), Offset(0.73, 0.20), Offset(0.85, 0.42),
+        Offset(0.82, 0.67), Offset(0.63, 0.83), Offset(0.38, 0.83),
+        Offset(0.18, 0.67), Offset(0.15, 0.42), Offset(0.27, 0.20),
+      ],
+    },
+    {
+      'name': 'චතුරශ්‍රය', // Square
+      'emoji': '⬜',
+      'dots': [
+        Offset(0.18, 0.18), Offset(0.82, 0.18),
+        Offset(0.82, 0.82), Offset(0.18, 0.82),
+      ],
+    },
+    {
+      'name': 'ත්‍රිකෝණය', // Triangle
+      'emoji': '🔺',
+      'dots': [
+        Offset(0.50, 0.12),
+        Offset(0.85, 0.82),
+        Offset(0.15, 0.82),
+      ],
+    },
+    {
+      'name': 'දත් රේඛාව', // Zigzag
+      'emoji': '⚡',
+      'dots': [
+        Offset(0.10, 0.30), Offset(0.28, 0.70),
+        Offset(0.46, 0.30), Offset(0.64, 0.70),
+        Offset(0.82, 0.30), Offset(0.90, 0.50),
+      ],
+    },
+    {
+      'name': 'සර්පිලය',   // Spiral
+      'emoji': '🌀',
+      'dots': [
+        Offset(0.50, 0.50), Offset(0.62, 0.43), Offset(0.68, 0.32),
+        Offset(0.60, 0.20), Offset(0.45, 0.16), Offset(0.28, 0.22),
+        Offset(0.18, 0.38), Offset(0.20, 0.58), Offset(0.32, 0.74),
+        Offset(0.52, 0.80), Offset(0.72, 0.72),
+      ],
+    },
+    {
+      'name': 'රළු රේඛාව', // Wavy line
+      'emoji': '〰️',
+      'dots': [
+        Offset(0.08, 0.50), Offset(0.20, 0.28), Offset(0.35, 0.50),
+        Offset(0.50, 0.72), Offset(0.65, 0.50), Offset(0.80, 0.28),
+        Offset(0.92, 0.50),
+      ],
+    },
+  ];
 
-  String get _currentLetter => widget.letters[_currentIndex];
+  Map<String, dynamic> get _currentShape => _shapes[_currentShapeIndex];
 
   List<Offset> get _scaledDots {
-    const canvasW = 280.0;
-    const canvasH = 280.0;
-    final raw = _dotPositions[_currentLetter] ??
-        [
-          Offset(0.5, 0.2), Offset(0.7, 0.5), Offset(0.5, 0.8), Offset(0.3, 0.5)
-        ];
-    return raw
-        .map((o) => Offset(o.dx * canvasW, o.dy * canvasH))
-        .toList();
+    const canvasW = 300.0;
+    const canvasH = 300.0;
+    final rawDots = (_currentShape['dots'] as List).cast<Offset>();
+    return rawDots.map((o) => Offset(o.dx * canvasW, o.dy * canvasH)).toList();
   }
 
   void _tapDot(int dotIndex) {
-    if (dotIndex != _nextDot) return; // Must tap in order
+    if (dotIndex != _nextDot) return;
     final dots = _scaledDots;
     setState(() {
-      if (_connectedPath.isEmpty) {
-        _connectedPath.add(dots[dotIndex]);
-      } else {
-        _connectedPath.add(dots[dotIndex]);
-      }
+      _connectedPath.add(dots[dotIndex]);
       _nextDot++;
 
       if (_nextDot >= dots.length) {
-        // All dots connected
         _showCelebration = true;
         Future.delayed(const Duration(seconds: 2), () {
           if (!mounted) return;
-          if (_currentIndex < widget.letters.length - 1) {
+          if (_currentShapeIndex < _shapes.length - 1) {
             setState(() {
-              _currentIndex++;
+              _currentShapeIndex++;
               _nextDot = 0;
               _connectedPath = [];
               _showCelebration = false;
@@ -934,11 +932,11 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🌈', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 12),
-            const Text(
-              'ඉතා හොඳයි! සියලු අකුරු ලියා ඉවර!',
+          children: const [
+            Text('🌈', style: TextStyle(fontSize: 64)),
+            SizedBox(height: 12),
+            Text(
+              'ඉතා හොඳයි! සියලු හැඩතල ඉවරයි!',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -954,6 +952,20 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
             child: const Text('ඉවරයි',
                 style: TextStyle(color: Colors.white, fontSize: 16)),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _currentShapeIndex = 0;
+                _nextDot = 0;
+                _connectedPath = [];
+                _showCelebration = false;
+              });
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+            child: const Text('නැවත කරමු',
+                style: TextStyle(color: Colors.white, fontSize: 16)),
+          ),
         ],
       ),
     );
@@ -962,7 +974,8 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   @override
   Widget build(BuildContext context) {
     final dots = _scaledDots;
-    final progress = (_currentIndex / widget.letters.length).clamp(0.0, 1.0);
+    final progress = (_currentShapeIndex / _shapes.length).clamp(0.0, 1.0);
+    final shape = _currentShape;
 
     return Scaffold(
       body: Container(
@@ -978,16 +991,14 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
             children: [
               // Header
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 color: Colors.white,
                 child: Column(
                   children: [
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios,
-                              color: Colors.blue),
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.blue),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Expanded(
@@ -1013,15 +1024,14 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                             child: LinearProgressIndicator(
                               value: progress,
                               backgroundColor: Colors.blue.shade100,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.blue),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                               minHeight: 8,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          '${_currentIndex + 1}/${widget.letters.length}',
+                          '${_currentShapeIndex + 1}/${_shapes.length}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue,
@@ -1048,8 +1058,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.touch_app,
-                                color: Colors.blue, size: 20),
+                            const Icon(Icons.touch_app, color: Colors.blue, size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -1066,14 +1075,22 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
 
                       const SizedBox(height: 16),
 
-                      // Letter label
-                      Text(
-                        'අකුර: $_currentLetter',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
+                      // Shape name + emoji
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(shape['emoji'] as String,
+                              style: const TextStyle(fontSize: 32)),
+                          const SizedBox(width: 12),
+                          Text(
+                            shape['name'] as String,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 16),
@@ -1085,8 +1102,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border:
-                          Border.all(color: Colors.blue.shade300, width: 3),
+                          border: Border.all(color: Colors.blue.shade300, width: 3),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.blue.withOpacity(0.15),
@@ -1096,12 +1112,13 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                           ],
                         ),
                         child: _showCelebration
-                            ? const Column(
+                            ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('🎉',
-                                style: TextStyle(fontSize: 72)),
-                            Text(
+                            Text(shape['emoji'] as String,
+                                style: const TextStyle(fontSize: 72)),
+                            const SizedBox(height: 8),
+                            const Text(
                               'ඉතා හොඳයි!',
                               style: TextStyle(
                                 fontSize: 28,
@@ -1113,74 +1130,73 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                         )
                             : Stack(
                           children: [
-                            // Ghost letter hint — IgnorePointer so it never blocks taps
+                            // Faint shape guide lines (all dots connected faintly)
                             IgnorePointer(
-                              child: Center(
-                                child: Text(
-                                  _currentLetter,
-                                  style: TextStyle(
-                                    fontSize: 120,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue.withOpacity(0.07),
-                                  ),
-                                ),
+                              child: CustomPaint(
+                                size: const Size(300, 300),
+                                painter: _ShapeGuidePainter(dots),
                               ),
                             ),
-                            // Connected lines — IgnorePointer so paint never blocks taps
+                            // Connected lines so far
                             IgnorePointer(
                               child: CustomPaint(
                                 size: const Size(300, 300),
                                 painter: _DotLinePainter(_connectedPath),
                               ),
                             ),
-                            // Dots — last in Stack so they sit on top and receive taps
+                            // Dots
                             ...List.generate(dots.length, (i) {
                               final isConnected = i < _nextDot;
                               final isNext = i == _nextDot;
+                              // Hit area is 64px, visual dot is 44px
                               return Positioned(
-                                left: dots[i].dx - 20,
-                                top: dots[i].dy - 20,
+                                left: dots[i].dx - 32,
+                                top: dots[i].dy - 32,
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () => _tapDot(i),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(
-                                        milliseconds: 300),
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: isConnected
-                                          ? Colors.green
-                                          : isNext
-                                          ? Colors.blue
-                                          : Colors.grey.shade200,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: isNext
-                                            ? Colors.blue.shade700
-                                            : Colors.grey.shade400,
-                                        width: 2,
-                                      ),
-                                      boxShadow: isNext
-                                          ? [
-                                        BoxShadow(
-                                          color: Colors.blue
-                                              .withOpacity(0.4),
-                                          blurRadius: 8,
-                                          spreadRadius: 2,
-                                        )
-                                      ]
-                                          : null,
-                                    ),
+                                  child: SizedBox(
+                                    width: 64,
+                                    height: 64,
                                     child: Center(
-                                      child: Text(
-                                        '${i + 1}',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: isConnected || isNext
-                                              ? Colors.white
-                                              : Colors.grey.shade600,
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 250),
+                                        width: isNext ? 50 : 44,
+                                        height: isNext ? 50 : 44,
+                                        decoration: BoxDecoration(
+                                          color: isConnected
+                                              ? Colors.green
+                                              : isNext
+                                              ? Colors.blue
+                                              : Colors.grey.shade200,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isNext
+                                                ? Colors.blue.shade700
+                                                : Colors.grey.shade400,
+                                            width: 2,
+                                          ),
+                                          boxShadow: isNext
+                                              ? [
+                                            BoxShadow(
+                                              color: Colors.blue.withOpacity(0.45),
+                                              blurRadius: 12,
+                                              spreadRadius: 4,
+                                            )
+                                          ]
+                                              : null,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${i + 1}',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: isConnected || isNext
+                                                  ? Colors.white
+                                                  : Colors.grey.shade600,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -1206,8 +1222,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text('නැවත උත්සාහ කරන්න',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange.shade400,
                             foregroundColor: Colors.white,
@@ -1227,6 +1242,31 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
       ),
     );
   }
+}
+
+// Paints a faint guide showing all dots connected — so child can see the full shape
+class _ShapeGuidePainter extends CustomPainter {
+  final List<Offset> dots;
+  _ShapeGuidePainter(this.dots);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (dots.length < 2) return;
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.10)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final p = Path();
+    p.moveTo(dots[0].dx, dots[0].dy);
+    for (int i = 1; i < dots.length; i++) {
+      p.lineTo(dots[i].dx, dots[i].dy);
+    }
+    canvas.drawPath(p, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => true;
 }
 
 class _DotLinePainter extends CustomPainter {
@@ -1252,11 +1292,6 @@ class _DotLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter _) => true;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTIVITY 3 — WHICH ONE IS RIGHT?
-// Three versions shown, child taps the correct one. No drawing.
-// ─────────────────────────────────────────────────────────────────────────────
 
 class WhichOneIsRightActivity extends StatefulWidget {
   final List<String> letters;
