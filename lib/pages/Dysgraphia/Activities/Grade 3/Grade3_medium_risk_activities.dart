@@ -376,7 +376,7 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
           child: Column(
             children: [
               _buildHeader(
-                  'අකුරු ලිවීම ✍️', Colors.orange, progress,
+                  context, 'අකුරු ලිවීම ✍️', Colors.orange, progress,
                   widget.letters.length),
               Expanded(
                 child: SingleChildScrollView(
@@ -725,7 +725,7 @@ class _WordInContextActivityState extends State<WordInContextActivity>
           child: Column(
             children: [
               _buildHeader(
-                  'පින්තූරයෙන් ලිවීම 🖼️', Colors.green, progress,
+                  context, 'පින්තූරයෙන් ලිවීම 🖼️', Colors.green, progress,
                   widget.words.length),
               Expanded(
                 child: SingleChildScrollView(
@@ -1476,7 +1476,7 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
           child: Column(
             children: [
               _buildHeader(
-                  'වචන සාදමු 🧩', Colors.blue, progress, widget.words.length),
+                  context, 'වචන සාදමු 🧩', Colors.blue, progress, widget.words.length),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
@@ -1852,20 +1852,33 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 Widget _buildHeader(
-    String title, Color color, double progress, int total) {
+    BuildContext context, String title, Color color, double progress, int total) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     color: Colors.white,
     child: Column(
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-          textAlign: TextAlign.center,
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: color),
+              onPressed: () => Navigator.pop(context),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: 40),
+          ],
         ),
         const SizedBox(height: 8),
         ClipRRect(

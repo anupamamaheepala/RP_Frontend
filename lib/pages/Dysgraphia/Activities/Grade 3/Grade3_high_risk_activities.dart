@@ -999,24 +999,27 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                         )
                             : Stack(
                           children: [
-                            // Ghost letter hint
-                            Center(
-                              child: Text(
-                                _currentLetter,
-                                style: TextStyle(
-                                  fontSize: 120,
-                                  fontWeight: FontWeight.bold,
-                                  color:
-                                  Colors.blue.withOpacity(0.07),
+                            // Ghost letter hint — IgnorePointer so it never blocks taps
+                            IgnorePointer(
+                              child: Center(
+                                child: Text(
+                                  _currentLetter,
+                                  style: TextStyle(
+                                    fontSize: 120,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.withOpacity(0.07),
+                                  ),
                                 ),
                               ),
                             ),
-                            // Connected lines
-                            CustomPaint(
-                              size: const Size(300, 300),
-                              painter: _DotLinePainter(_connectedPath),
+                            // Connected lines — IgnorePointer so paint never blocks taps
+                            IgnorePointer(
+                              child: CustomPaint(
+                                size: const Size(300, 300),
+                                painter: _DotLinePainter(_connectedPath),
+                              ),
                             ),
-                            // Dots
+                            // Dots — last in Stack so they sit on top and receive taps
                             ...List.generate(dots.length, (i) {
                               final isConnected = i < _nextDot;
                               final isNext = i == _nextDot;
@@ -1024,6 +1027,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                                 left: dots[i].dx - 20,
                                 top: dots[i].dy - 20,
                                 child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
                                   onTap: () => _tapDot(i),
                                   child: AnimatedContainer(
                                     duration: const Duration(
@@ -1060,8 +1064,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
-                                          color: isConnected ||
-                                              isNext
+                                          color: isConnected || isNext
                                               ? Colors.white
                                               : Colors.grey.shade600,
                                         ),
