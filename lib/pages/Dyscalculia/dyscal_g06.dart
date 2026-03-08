@@ -88,6 +88,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
 
   int _retryCount = 0;
   int _backtrackCount = 0;
+  int _wrongCount = 0; // <-- ADDED THIS LINE
   bool _lastCheckWasIncorrect = false;
 
   bool _hasInteractedWithCurrent = false;
@@ -114,6 +115,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
 
       _retryCount = 0;
       _backtrackCount = 0;
+      _wrongCount = 0; // <-- ADDED THIS LINE
       _lastCheckWasIncorrect = false;
 
       _taskStopwatch.reset();
@@ -181,6 +183,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
         _feedbackColor = Colors.green;
         _lastCheckWasIncorrect = false;
       } else {
+        _wrongCount++; // <-- ADDED THIS LINE
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
         _lastCheckWasIncorrect = true;
@@ -259,6 +262,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       retries: _retryCount,
       backtracks: _backtrackCount,
       skipped: finalSkipped,
+      wrongCount: _wrongCount, // <-- ADDED THIS LINE
       totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
     )));
   }
