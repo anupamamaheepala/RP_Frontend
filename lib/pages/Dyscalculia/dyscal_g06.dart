@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-// Required for Timers
 import '/theme.dart';
 import 'task_result.dart';
 
@@ -63,7 +62,6 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
     ],
   ];
 
-  // Colors for each task card to match theme
   final List<List<Color>> _taskGradients = [
     [Colors.purple.shade400, Colors.blue.shade400],
     [Colors.blue.shade400, Colors.teal.shade300],
@@ -79,14 +77,20 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   Color _feedbackColor = Colors.transparent;
   bool _isChecked = false;
 
+  // --- NEW METRICS VARIABLES ---
   final Stopwatch _taskStopwatch = Stopwatch();
   final Stopwatch _questionStopwatch = Stopwatch();
-  int _totalCorrect = 0;
+
+  List<bool> _isCorrectList = [];
+  List<bool> _isSkippedList = [];
+  List<double> _timeSpentList = [];
+  List<double?> _hesitationList = [];
+
   int _retryCount = 0;
   int _backtrackCount = 0;
-  int _skippedCount = 0;
-  List<double> _responseTimes = [];
-  List<double> _hesitationTimes = [];
+  int _wrongCount = 0; // <-- ADDED THIS LINE
+  bool _lastCheckWasIncorrect = false;
+
   bool _hasInteractedWithCurrent = false;
   DateTime? _questionLoadTime;
 
@@ -102,16 +106,31 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
     setState(() {
       _selectedTaskIndex = index;
       _currentQuestionIndex = 0;
-      _totalCorrect = 0;
+
+      int qCount = _allTasks[index].length;
+      _isCorrectList = List.filled(qCount, false);
+      _isSkippedList = List.filled(qCount, true);
+      _timeSpentList = List.filled(qCount, 0.0);
+      _hesitationList = List.filled(qCount, null);
+
       _retryCount = 0;
       _backtrackCount = 0;
-      _skippedCount = 0;
-      _responseTimes = [];
-      _hesitationTimes = [];
+      _wrongCount = 0; // <-- ADDED THIS LINE
+      _lastCheckWasIncorrect = false;
+
       _taskStopwatch.reset();
       _taskStopwatch.start();
       _resetQuestion();
     });
+  }
+
+  void _handleRetry() {
+    if (_lastCheckWasIncorrect) {
+      setState(() {
+        _retryCount++;
+      });
+    }
+    _resetQuestion();
   }
 
   void _resetQuestion() {
@@ -124,6 +143,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       _feedbackMessage = "";
       _feedbackColor = Colors.transparent;
       _isChecked = false;
+      _lastCheckWasIncorrect = false;
       _questionStopwatch.reset();
       _questionStopwatch.start();
       _questionLoadTime = DateTime.now();
@@ -136,8 +156,10 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       bool isAnyText = _controllers.any((c) => c.text.isNotEmpty);
       if (isAnyText) {
         _hasInteractedWithCurrent = true;
-        final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
-        _hesitationTimes.add(hesitation);
+        if (_hesitationList[_currentQuestionIndex] == null) {
+          final hesitation = DateTime.now().difference(_questionLoadTime!).inMilliseconds / 1000.0;
+          _hesitationList[_currentQuestionIndex] = hesitation;
+        }
       }
     }
   }
@@ -159,19 +181,23 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
       if (allCorrect) {
         _feedbackMessage = "නියමයි! (Correct!)";
         _feedbackColor = Colors.green;
+        _lastCheckWasIncorrect = false;
       } else {
+        _wrongCount++; // <-- ADDED THIS LINE
         _feedbackMessage = "නැවත උත්සාහ කරන්න (Try Again)";
         _feedbackColor = Colors.red;
-        _retryCount++;
+        _lastCheckWasIncorrect = true;
       }
     });
   }
 
   void _recordQuestionMetrics() {
     _questionStopwatch.stop();
-    _responseTimes.add(_questionStopwatch.elapsedMilliseconds / 1000.0);
+    _timeSpentList[_currentQuestionIndex] += (_questionStopwatch.elapsedMilliseconds / 1000.0);
+
     List<_QuizQuestion> currentTaskList = _allTasks[_selectedTaskIndex];
     _QuizQuestion currentQ = currentTaskList[_currentQuestionIndex];
+
     bool allCorrect = true;
     bool isEmpty = true;
     for (int i = 0; i < currentQ.answers.length; i++) {
@@ -181,10 +207,13 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
         allCorrect = false;
       }
     }
+
     if (isEmpty) {
-      _skippedCount++;
-    } else if (allCorrect) {
-      _totalCorrect++;
+      _isSkippedList[_currentQuestionIndex] = true;
+      _isCorrectList[_currentQuestionIndex] = false;
+    } else {
+      _isSkippedList[_currentQuestionIndex] = false;
+      _isCorrectList[_currentQuestionIndex] = allCorrect;
     }
   }
 
@@ -212,20 +241,28 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
   void _finishTask() {
     _recordQuestionMetrics();
     _taskStopwatch.stop();
-    double totalResponseTime = _responseTimes.fold(0, (sum, item) => sum + item);
-    double avgResponse = _responseTimes.isEmpty ? 0 : totalResponseTime / _responseTimes.length;
-    double totalHesitation = _hesitationTimes.fold(0, (sum, item) => sum + item);
-    double avgHesitation = _hesitationTimes.isEmpty ? 0 : totalHesitation / _hesitationTimes.length;
+
+    int finalAccuracy = _isCorrectList.where((isCorrect) => isCorrect).length;
+    int finalSkipped = _isSkippedList.where((isSkipped) => isSkipped).length;
+
+    int answeredCount = _isSkippedList.where((isSkipped) => !isSkipped).length;
+    double totalResponseTime = _timeSpentList.fold(0.0, (sum, time) => sum + time);
+    double avgResponse = answeredCount > 0 ? (totalResponseTime / answeredCount) : 0.0;
+
+    var validHesitations = _hesitationList.where((h) => h != null).cast<double>().toList();
+    double totalHesitation = validHesitations.fold(0.0, (sum, time) => sum + time);
+    double avgHesitation = validHesitations.isNotEmpty ? (totalHesitation / validHesitations.length) : 0.0;
 
     Navigator.push(context, MaterialPageRoute(builder: (context) => TaskResultPage(
       grade: 6,
       taskNumber: _selectedTaskIndex + 1,
-      accuracy: _totalCorrect,
+      accuracy: finalAccuracy,
       avgResponseTime: avgResponse,
       avgHesitationTime: avgHesitation,
       retries: _retryCount,
       backtracks: _backtrackCount,
-      skipped: _skippedCount,
+      skipped: finalSkipped,
+      wrongCount: _wrongCount, // <-- ADDED THIS LINE
       totalCompletionTime: _taskStopwatch.elapsedMilliseconds / 1000.0,
     )));
   }
@@ -332,7 +369,7 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
           const SizedBox(height: 30),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             ElevatedButton.icon(onPressed: _checkAnswer, icon: const Icon(Icons.check), label: const Text("Check"), style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
-            ElevatedButton.icon(onPressed: _resetQuestion, icon: const Icon(Icons.refresh), label: const Text("Retry"), style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
+            ElevatedButton.icon(onPressed: _handleRetry, icon: const Icon(Icons.refresh), label: const Text("Retry"), style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12))),
           ]),
           const SizedBox(height: 30),
           Column(
@@ -411,7 +448,6 @@ class _DyscalG06PageState extends State<DyscalG06Page> {
           child: SafeArea(
             child: Column(
               children: [
-                // HEADER
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(

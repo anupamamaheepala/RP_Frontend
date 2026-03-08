@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '/theme.dart'; // Ensure theme.dart is imported
-import 'Dyscalculia/dyscal_grade.dart'; // Import for Detect page
-import 'Dyscalculia/dyscal_improve.dart'; // Import for Improve page
+import '/theme.dart';
+import 'dyscal_improve.dart';
 
 class DyscalculiaPage extends StatelessWidget {
-  const DyscalculiaPage({super.key});
+  final Widget targetDetectPage; // Added to store the specific grade page
+
+  const DyscalculiaPage({super.key, required this.targetDetectPage}); // Updated constructor
 
   Widget _buildSquareButton({
     required BuildContext context,
@@ -120,7 +121,7 @@ class DyscalculiaPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40), // Balance the back button
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
@@ -147,16 +148,17 @@ class DyscalculiaPage extends StatelessWidget {
                               Colors.blue.shade400
                             ],
                             onTap: () {
+                              // NOW ROUTES TO THE PASSED GRADE SPECIFIC PAGE
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const DyscalGradePage(),
+                                  builder: (context) => targetDetectPage,
                                 ),
                               );
                             },
                           ),
 
-                          const SizedBox(height: 30), // Spacing between buttons
+                          const SizedBox(height: 30),
 
                           // Button 2: Improve Skills (Orange/Pink Theme for contrast)
                           _buildSquareButton(
