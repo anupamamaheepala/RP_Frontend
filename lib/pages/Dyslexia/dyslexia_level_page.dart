@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dyslexia_read_page.dart';
+import 'Dyslexia_Level_Details_Page.dart';  // The details page with tabs for tasks and learning paths
+import 'dyslexia_read_session_page.dart';  // Existing task page
 
 class DyslexiaLevelPage extends StatelessWidget {
   final int grade;
+  final String tier;  // You need to pass the tier here
 
-  const DyslexiaLevelPage({super.key, required this.grade});
+  const DyslexiaLevelPage({super.key, required this.grade, required this.tier});  // Make sure to pass tier
 
   List<Map<String, dynamic>> getLevels() {
     return [
@@ -183,9 +185,11 @@ class DyslexiaLevelPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => DyslexiaReadPage(
+                              builder: (_) => DyslexiaLevelDetailsPage(
                                 grade: grade,
                                 level: level["level"],
+                                tier: tier,  // Pass the tier here
+                                sessionPayload: {},  // Pass sessionPayload here
                               ),
                             ),
                           );
