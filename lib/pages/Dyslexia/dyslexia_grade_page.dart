@@ -64,7 +64,7 @@ class DyslexiaGradePage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => DyslexiaLevelPage(grade: grade),
+              builder: (_) => DyslexiaLevelPage(grade: grade, tier: '',),
             ),
           );
         },

@@ -4,6 +4,7 @@ import '../theme.dart';
 import 'pages/home_page.dart';
 import 'edit_profile.dart';
 import 'login_page.dart';
+import '/pages/all_results.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -169,6 +170,56 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               Text(
                                 'Select Learning Difficulty',
+                                style: TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // --- RESULTS BUTTON (NEW) ---
+                    Container(
+                      width: double.infinity,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade400, Colors.pink.shade300],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.pink.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AllResultsPage()),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.assessment_rounded, color: Colors.white, size: 28),
+                              SizedBox(height: 4),
+                              Text(
+                                'ඉගෙනුම් ක්‍රියාවලියේ ප්‍රතිඵල',
+                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Learning Process Results',
                                 style: TextStyle(color: Colors.white70, fontSize: 12),
                               ),
                             ],
