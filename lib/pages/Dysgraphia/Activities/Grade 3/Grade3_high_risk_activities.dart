@@ -829,7 +829,10 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   int _currentShapeIndex = 0;
   int _nextDot = 0;
   bool _showCelebration = false;
-  List<Offset> _connectedPath = [];
+  List<Offset> _connectedPath = [];   // centres of connected dots
+  List<Offset> _drawnPath    = [];    // raw finger path for display
+  static const double _hitRadius = 60.0; // generous hit radius
+  final GlobalKey _dotCanvasKey = GlobalKey();
 
   // Each shape: name (Sinhala), emoji, and dot positions (normalized 0–1, canvas 300×300)
   static const List<Map<String, dynamic>> _shapes = [
@@ -892,21 +895,30 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   Map<String, dynamic> get _currentShape => _shapes[_currentShapeIndex];
 
   List<Offset> get _scaledDots {
-    const canvasW = 300.0;
-    const canvasH = 300.0;
+    final box = _dotCanvasKey.currentContext?.findRenderObject() as RenderBox?;
+    final canvasW = box?.size.width  ?? 300.0;
+    final canvasH = box?.size.height ?? 300.0;
     final rawDots = (_currentShape['dots'] as List).cast<Offset>();
     return rawDots.map((o) => Offset(o.dx * canvasW, o.dy * canvasH)).toList();
   }
 
-  void _tapDot(int dotIndex) {
-    if (dotIndex != _nextDot) return;
-    final dots = _scaledDots;
-    setState(() {
-      _connectedPath.add(dots[dotIndex]);
+  void _onPointerMove(Offset pos) {
+    if (_showCelebration) return;
+
+    // Add to drawn path without setState to avoid interrupting the gesture
+    _drawnPath.add(pos);
+
+    if (_nextDot >= _scaledDots.length) return;
+    final target = _scaledDots[_nextDot];
+    final dist = (pos - target).distance;
+
+    if (dist <= _hitRadius) {
+      _connectedPath.add(target);
       _nextDot++;
 
-      if (_nextDot >= dots.length) {
-        _showCelebration = true;
+      if (_nextDot >= _scaledDots.length) {
+        // Shape complete — now trigger setState once
+        setState(() => _showCelebration = true);
         Future.delayed(const Duration(seconds: 2), () {
           if (!mounted) return;
           if (_currentShapeIndex < _shapes.length - 1) {
@@ -914,13 +926,25 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
               _currentShapeIndex++;
               _nextDot = 0;
               _connectedPath = [];
+              _drawnPath = [];
               _showCelebration = false;
             });
           } else {
             _showCompletionDialog();
           }
         });
+      } else {
+        // A dot was hit — update UI to show it green
+        setState(() {});
       }
+    }
+  }
+
+  void _resetShape() {
+    setState(() {
+      _nextDot = 0;
+      _connectedPath = [];
+      _drawnPath = [];
     });
   }
 
@@ -1062,7 +1086,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '1 සිට ${dots.length} දක්වා ලප අනුපිළිවෙලට ස්පර්ශ කරන්න',
+                                '1 සිට ${dots.length} දක්වා රේඛාවෙන් ලප හරහා යන්න 🖊️',
                                 style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -1111,100 +1135,40 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                             ),
                           ],
                         ),
-                        child: _showCelebration
-                            ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(shape['emoji'] as String,
-                                style: const TextStyle(fontSize: 72)),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'ඉතා හොඳයි!',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        )
-                            : Stack(
-                          children: [
-                            // Faint shape guide lines (all dots connected faintly)
-                            IgnorePointer(
-                              child: CustomPaint(
-                                size: const Size(300, 300),
-                                painter: _ShapeGuidePainter(dots),
-                              ),
-                            ),
-                            // Connected lines so far
-                            IgnorePointer(
-                              child: CustomPaint(
-                                size: const Size(300, 300),
-                                painter: _DotLinePainter(_connectedPath),
-                              ),
-                            ),
-                            // Dots
-                            ...List.generate(dots.length, (i) {
-                              final isConnected = i < _nextDot;
-                              final isNext = i == _nextDot;
-                              // Hit area is 64px, visual dot is 44px
-                              return Positioned(
-                                left: dots[i].dx - 32,
-                                top: dots[i].dy - 32,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => _tapDot(i),
-                                  child: SizedBox(
-                                    width: 64,
-                                    height: 64,
-                                    child: Center(
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 250),
-                                        width: isNext ? 50 : 44,
-                                        height: isNext ? 50 : 44,
-                                        decoration: BoxDecoration(
-                                          color: isConnected
-                                              ? Colors.green
-                                              : isNext
-                                              ? Colors.blue
-                                              : Colors.grey.shade200,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isNext
-                                                ? Colors.blue.shade700
-                                                : Colors.grey.shade400,
-                                            width: 2,
-                                          ),
-                                          boxShadow: isNext
-                                              ? [
-                                            BoxShadow(
-                                              color: Colors.blue.withOpacity(0.45),
-                                              blurRadius: 12,
-                                              spreadRadius: 4,
-                                            )
-                                          ]
-                                              : null,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '${i + 1}',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: isConnected || isNext
-                                                  ? Colors.white
-                                                  : Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(17),
+                          child: _showCelebration
+                              ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(shape['emoji'] as String,
+                                  style: const TextStyle(fontSize: 72)),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'ඉතා හොඳයි!',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
                                 ),
-                              );
-                            }),
-                          ],
+                              ),
+                            ],
+                          )
+                              : GestureDetector(
+                            onPanStart: (d) => _onPointerMove(d.localPosition),
+                            onPanUpdate: (d) => _onPointerMove(d.localPosition),
+                            child: SizedBox(
+                              width: 300,
+                              height: 300,
+                              child: CustomPaint(
+                                painter: _DotCanvasPainter(
+                                  dots: dots,
+                                  connectedCount: _nextDot,
+                                  connectedPath: _connectedPath,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
 
@@ -1214,12 +1178,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _nextDot = 0;
-                              _connectedPath = [];
-                            });
-                          },
+                          onPressed: _resetShape,
                           icon: const Icon(Icons.refresh),
                           label: const Text('නැවත උත්සාහ කරන්න',
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -1244,7 +1203,106 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   }
 }
 
-// Paints a faint guide showing all dots connected — so child can see the full shape
+class _DotCanvasPainter extends CustomPainter {
+  final List<Offset> dots;
+  final int connectedCount;
+  final List<Offset> connectedPath;
+
+  const _DotCanvasPainter({
+    required this.dots,
+    required this.connectedCount,
+    required this.connectedPath,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Faint guide lines
+    if (dots.length >= 2) {
+      final guidePaint = Paint()
+        ..color = Colors.blue.withOpacity(0.12)
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      final guidePath = Path()..moveTo(dots[0].dx, dots[0].dy);
+      for (int i = 1; i < dots.length; i++) guidePath.lineTo(dots[i].dx, dots[i].dy);
+      canvas.drawPath(guidePath, guidePaint);
+    }
+
+    // 2. Connected path (green)
+    if (connectedPath.length >= 2) {
+      final linePaint = Paint()
+        ..color = Colors.green.shade400
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      final linePath = Path()..moveTo(connectedPath[0].dx, connectedPath[0].dy);
+      for (int i = 1; i < connectedPath.length; i++) linePath.lineTo(connectedPath[i].dx, connectedPath[i].dy);
+      canvas.drawPath(linePath, linePaint);
+    }
+
+    // 3. Dots + numbers
+    for (int i = 0; i < dots.length; i++) {
+      final isConnected = i < connectedCount;
+      final isNext      = i == connectedCount;
+      final radius      = isNext ? 26.0 : 22.0;
+      final fillColor   = isConnected ? Colors.green : isNext ? Colors.blue : Colors.white;
+      final borderColor = isConnected ? Colors.green.shade700 : isNext ? Colors.blue.shade800 : Colors.blue.shade300;
+
+      if (isNext) {
+        canvas.drawCircle(dots[i], radius + 8, Paint()..color = Colors.blue.withOpacity(0.25));
+      }
+      canvas.drawCircle(dots[i], radius, Paint()..color = fillColor);
+      canvas.drawCircle(dots[i], radius, Paint()
+        ..color = borderColor
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke);
+
+      final tp = TextPainter(
+        text: TextSpan(
+          text: '${i + 1}',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: isConnected || isNext ? Colors.white : Colors.blue.shade400,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, dots[i] - Offset(tp.width / 2, tp.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DotCanvasPainter old) =>
+      old.connectedCount != connectedCount || old.connectedPath.length != connectedPath.length;
+}
+
+// Paints the child's raw finger path (light blue trail)
+class _DrawnPathPainter extends CustomPainter {
+  final List<Offset> path;
+  _DrawnPathPainter(this.path);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (path.length < 2) return;
+    final paint = Paint()
+      ..color = Colors.blue.withOpacity(0.25)
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    final p = Path();
+    p.moveTo(path[0].dx, path[0].dy);
+    for (int i = 1; i < path.length; i++) {
+      p.lineTo(path[i].dx, path[i].dy);
+    }
+    canvas.drawPath(p, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => true;
+}
+
 class _ShapeGuidePainter extends CustomPainter {
   final List<Offset> dots;
   _ShapeGuidePainter(this.dots);
