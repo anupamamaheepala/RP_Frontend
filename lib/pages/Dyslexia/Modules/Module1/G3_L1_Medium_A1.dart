@@ -1,83 +1,175 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class G3_L1_Medium_A1 extends StatefulWidget {
-  final List<String> sentences;
-
-  const G3_L1_Medium_A1({super.key, required this.sentences});
+class WordChainActivity extends StatefulWidget {
+  const WordChainActivity({Key? key}) : super(key: key);
 
   @override
-  _G3_L1_Medium_A1State createState() => _G3_L1_Medium_A1State();
+  _WordChainActivityState createState() => _WordChainActivityState();
 }
 
-class _G3_L1_Medium_A1State extends State<G3_L1_Medium_A1> {
+class _WordChainActivityState extends State<WordChainActivity> {
   final FlutterTts _flutterTts = FlutterTts();
-  bool _isTtsPlaying = false;
-  int _currentRound = 0; // Round index
+
+  int _taskIndex = 0;
+  int _wordIndex = 0;
+  List<String> sentenceParts = [];
+  bool _isCorrectAnswerSelected = false;
+  bool _isWrongAnswerSelected = false;
+
+  final List<Map<String, dynamic>> _tasks = [
+    {
+      "startingWord": "අලියා", // Elephant
+      "options": ["අරක්ක", "මිතුරා", "අයියා", "තාරකා"], // options (action, etc.)
+      "correctAnswer": "අරක්ක", // Eats
+      "exampleSentence": "අලියා අරක්ක",
+    },
+    {
+      "startingWord": "නිවස", // House
+      "options": ["ගෙදර", "පනස්", "අලුත්", "කවිය"],
+      "correctAnswer": "ගෙදර", // House
+      "exampleSentence": "නිවස ගෙදර",
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-
     _flutterTts.setLanguage("si-LK");
-    _flutterTts.setSpeechRate(0.85); // Slow speech rate
+    _flutterTts.setSpeechRate(0.35);
     _flutterTts.setVolume(1.0);
+    _flutterTts.setPitch(1.0);
   }
 
-  Future<void> _playSentence() async {
-    await _flutterTts.speak(widget.sentences[_currentRound]);
+  Future<void> _playWordSound(String word) async {
+    await _flutterTts.speak(word);
   }
 
-  void _nextRound() {
-    if (_currentRound < widget.sentences.length - 1) {
+  void _checkAnswer(String selectedWord) {
+    if (selectedWord == _tasks[_taskIndex]["correctAnswer"]) {
       setState(() {
-        _currentRound++;
+        _isCorrectAnswerSelected = true;
+        _isWrongAnswerSelected = false;
+        sentenceParts.add(selectedWord);
       });
+      if (_wordIndex < _tasks[_taskIndex]["options"].length - 1) {
+        _wordIndex++;
+      }
     } else {
-      Navigator.pop(context, true); // Finished the activity
+      setState(() {
+        _isCorrectAnswerSelected = false;
+        _isWrongAnswerSelected = true;
+      });
     }
+  }
+
+  void _nextSentence() {
+    setState(() {
+      if (_taskIndex < _tasks.length - 1) {
+        _taskIndex++;
+        _wordIndex = 0;
+        sentenceParts.clear();
+        _isCorrectAnswerSelected = false;
+        _isWrongAnswerSelected = false;
+      }else{
+        Navigator.pop(context, true);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentTask = _tasks[_taskIndex];
+    final progress = (_taskIndex + 1) / _tasks.length;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
-        title: const Text("Activity 1 - Listen First"),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Word Chain Activity'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              "Round ${_currentRound + 1}",
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Image.asset('assets/word_image.png'),  // Display word image
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              const Text(
+                "Word Chain - Build the Sentence",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 20),
+              // Progress Bar
+              LinearProgressIndicator(
+                value: progress,
+                backgroundColor: const Color(0xFFE5E7EB),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF7B61FF)),
+                minHeight: 8,
+              ),
+              const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: _isTtsPlaying ? null : () async {
-                setState(() {
-                  _isTtsPlaying = true;
-                });
-                await _playSentence();
-                setState(() {
-                  _isTtsPlaying = false;
-                });
-              },
-              child: Text(_isTtsPlaying ? "Playing..." : "Play Word"),
-            ),
+              // Display current word to start the chain
+              Row(
+                children: [
+                  Text(
+                    "Start with: ${currentTask['startingWord']}",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 20),
+              // Word Options
+              Wrap(
+                spacing: 10,
+                children: List.generate(currentTask["options"].length, (index) {
+                  final option = currentTask["options"][index];
 
-            ElevatedButton(
-              onPressed: _nextRound,
-              child: const Text("Next Round"),
-            ),
-          ],
+                  return ElevatedButton(
+                    onPressed: () => _checkAnswer(option),
+                    child: Text(option),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        _isCorrectAnswerSelected && option == currentTask["correctAnswer"]
+                            ? Colors.green
+                            : _isWrongAnswerSelected && option != currentTask["correctAnswer"]
+                            ? Colors.red
+                            : Colors.blue,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Feedback
+              if (_isCorrectAnswerSelected)
+                Text(
+                  "Correct! Sentence: ${sentenceParts.join(' ')}",
+                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                ),
+              if (_isWrongAnswerSelected)
+                const Text(
+                  "Incorrect! Try again.",
+                  style: TextStyle(color: Colors.red),
+                ),
+
+              // Next Button
+              if (_isCorrectAnswerSelected)
+                ElevatedButton(
+                  onPressed: _nextSentence,
+                  child: const Text("Next Sentence"),
+                ),
+            ],
+          ),
         ),
       ),
     );

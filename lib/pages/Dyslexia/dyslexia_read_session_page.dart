@@ -431,21 +431,16 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
               });
             },
             onFinishAndUpload: () async {
-              Navigator.pop(context); // close result page
-
               try {
                 final payload = _buildSessionPayload();
-                final tier = _calculateTier(payload);
-
-                print("==== FINAL SESSION PAYLOAD ====");
-                print(jsonEncode(payload));
-
                 final backendResp = await _submitSessionToBackend(payload);
 
-                print("==== SESSION RESPONSE ====");
-                print(jsonEncode(backendResp));
-
                 if (!mounted) return;
+
+                // The backend returns a Map for "dyslexia_assessment"
+                // Extract the String 'risk_level' from that map to pass as 'risklevel'
+                final assessmentMap = backendResp["dyslexia_assessment"] as Map<String, dynamic>;
+                final String actualRiskLevel = assessmentMap["risk_level"]?.toString() ?? "UNKNOWN";
 
                 Navigator.pushReplacement(
                   context,
@@ -455,13 +450,11 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
                       level: widget.level,
                       sessionPayload: payload,
                       backendResponse: backendResp,
-                      risklevel: tier,
+                      risklevel: actualRiskLevel, // Pass the String, not the whole Map!
                     ),
                   ),
                 );
               } catch (e) {
-                print("==== SESSION ERROR ====");
-                print(e.toString());
                 setState(() => _error = e.toString());
               }
             },

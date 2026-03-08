@@ -56,10 +56,13 @@ class OverallReadingResultPage extends StatelessWidget {
     final meanSentenceAccuracy = _toDouble(sessionPayload["mean_sentence_accuracy"]);
     final stdDev = _toDouble(sessionPayload["sentence_accuracy_std_dev"]);
     final sentences = (sessionPayload["sentences"] as List?) ?? [];
-    final assessment = backendResponse["dyslexia_assessment"] ?? {};
+    //final assessment = backendResponse["dyslexia_assessment"] ?? {};
+    final assessment = backendResponse["dyslexia_assessment"] as Map<String, dynamic>;
     final riskLevel = assessment["risk_level"]?.toString() ?? "UNKNOWN";
-    final confidence = _toDouble(assessment["risk_score"]);
+    //final confidence = _toDouble(assessment["risk_score"]);
+    final confidence = _toDouble(assessment["confidence"]); // Changed from risk_score
     final color = _riskColor(riskLevel);
+
 
     return Scaffold(
       body: Container(

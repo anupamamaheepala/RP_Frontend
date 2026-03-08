@@ -6,9 +6,13 @@ import '../Modules/Module1/G3_L1_High_A5.dart';
 import '../Modules/Module1/G3_L1_High_A6.dart';
 import '../Modules/Module1/G3_L1_Low_A1.dart';
 import '../Modules/Module1/G3_L1_Low_A2.dart';
+import '../Modules/Module1/G3_L1_Low_A3.dart';
+import '../Modules/Module1/G3_L1_Low_A4.dart';
 import '../Modules/Module1/G3_L1_Medium_A1.dart';
 import '../Modules/Module1/G3_L1_Medium_A2.dart';
 import '../Modules/Module1/G3_L1_Medium_A3.dart';
+import '../Modules/Module1/G3_L1_Medium_A4.dart';
+import '../Modules/Module1/G3_L1_Medium_A5.dart';
 import '../Modules/Module1/G3_L2_Medium_A2.dart';
 import '../Modules/Module1/G3_L2_Medium_A3.dart';
 import '../Modules/Module1/G3_L2_Medium_A4.dart';
@@ -31,12 +35,15 @@ class ActivityFactory {
     final key = "${grade}_${level}_${risk}_A$activityNumber";
 
     switch (key) {
-
+//GRADE 3 Level 1 LOW
       case "3_1_LOW_A1":
-        return G3_L1_Low_A1(sentences: sentences);
-
+        return ExpressionReaderActivity();
       case "3_1_LOW_A2":
-        return G3_L1_Low_A2(sentences: sentences);
+        return G3_L1_LOW_A2();
+      case "3_1_LOW_A3":
+        return G3_L1_LOW_A3();
+      case "3_1_LOW_A4":
+        return G3_L1_LOW_A4();
 
 //------------------Grade 3 level 1 HIGH
       case "3_1_HIGH_A1":
@@ -51,6 +58,31 @@ class ActivityFactory {
         return const G3_L1_SyllableBlending_A5();
       case "3_1_HIGH_A6":
         return const G3_L1_ShortPhraseReading_A6();
+
+    //------------------Grade 3 level 1 MEDIUM
+      case "3_1_MEDIUM_A1":
+        return const WordChainActivity();
+      case "3_1_MEDIUM_A2":
+        return const SyllableTapActivity();
+      case "3_1_MEDIUM_A3":
+        return const PictureSentenceMatchActivity();
+      case "3_2_MEDIUM_A4":
+        return const SentenceRepairActivity();
+      case "3_1_MEDIUM_A5":
+        return const MyTurnToReadActivity();
+
+    //------------------TEST
+      case "3_2_HIGH_A1":
+        return const WordChainActivity();
+      case "3_2_HIGH_A2":
+        return const SyllableTapActivity();
+      case "3_2_HIGH_A3":
+        return const PictureSentenceMatchActivity();
+      case "3_2_HIGH_A4":
+        return const SentenceRepairActivity();
+      case "3_2_HIGH_A5":
+        return const MyTurnToReadActivity();
+
 //------------------Grade 3 level 2 MEDIUM
       case "3_2_MEDIUM_A1":
         return const WordPickerActivity();
@@ -62,31 +94,15 @@ class ActivityFactory {
         return const G3_L2_MEDIUM_A4();
       case "3_2_MEDIUM_A5":
         return const G3_L2_MEDIUM_A5();
-//------------------Grade 3 level 2 LOW
-      case "3_2_HIGH_A1":
-        return const WordPickerActivity();
-      case "3_2_HIGH_A2":
-        return const G3_L2_MEDIUM_A2();
-      case "3_2_HIGH_A3":
-        return const G3_L2_MEDIUM_A3();
-      case "3_2_HIGH_A4":
-        return const G3_L2_MEDIUM_A4();
-      case "3_2_HIGH_A5":
-        return const G3_L2_MEDIUM_A5();
 
 
 
-    //------------------Grade 3 level 1 MEDIUM
-      case "3_1_MEDIUM_A1":
-        return const G3_L1_Medium_A1(sentences: [],);
-      case "3_1_MEDIUM_A2":
-        return const G3_L1_Medium_A2(sentences: [],);
-      case "3_1_MEDIUM_A3":
-        return const G3_L1_Medium_A3(sentences: [],);
-      case "3_2_MEDIUM_A4":
-        return const G3_L1_Medium_A3(sentences: [],);
-      case "3_1_MEDIUM_A5":
-        return const G3_L1_Medium_A2(sentences: [],);
+
+
+
+
+
+
       default:
         return null;
     }
