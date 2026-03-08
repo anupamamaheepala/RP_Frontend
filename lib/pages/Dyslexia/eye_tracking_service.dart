@@ -14,6 +14,29 @@ class EyeTrackingMetrics {
 
   static const fixationThresholdPx = 18;
   static const fixationMinMs = 80;
+  static const regressionThresholdPx = 5;
+  static const saccadeThresholdPx = 8;
+
+  void reset() {
+    fixationCount = 0;
+    totalFixationMs = 0;
+    regressionCount = 0;
+    saccadeCount = 0;
+    blinkCount = 0;
+    _lastX = null;
+    _fixationStart = null;
+    _eyesClosed = false;
+  }
+
+  EyeTrackingMetrics clone() {
+    final copy = EyeTrackingMetrics();
+    copy.fixationCount = fixationCount;
+    copy.totalFixationMs = totalFixationMs;
+    copy.regressionCount = regressionCount;
+    copy.saccadeCount = saccadeCount;
+    copy.blinkCount = blinkCount;
+    return copy;
+  }
 
   void processFace(Face face) {
     final leftEye = face.landmarks[FaceLandmarkType.leftEye];
@@ -26,6 +49,7 @@ class EyeTrackingMetrics {
     // ---------------- Blink detection ----------------
     final leftOpen = face.leftEyeOpenProbability ?? 1.0;
     final rightOpen = face.rightEyeOpenProbability ?? 1.0;
+
 
     if (leftOpen < 0.2 && rightOpen < 0.2) {
       if (!_eyesClosed) {
@@ -41,12 +65,11 @@ class EyeTrackingMetrics {
       final dx = x - _lastX!;
 
       // Regression (right → left)
-      if (dx < -15) {
+      if (dx < -regressionThresholdPx) {
         regressionCount++;
       }
 
-      // Saccade
-      if (dx.abs() > 25) {
+      if (dx.abs() > saccadeThresholdPx) {
         saccadeCount++;
       }
 
@@ -61,6 +84,8 @@ class EyeTrackingMetrics {
     _lastX = x;
     print("Eye X = $x");
     print("Fixations=$fixationCount, Regressions=$regressionCount, Saccades=$saccadeCount, Blinks=$blinkCount");
+
+    print("processFace called");
 
   }
 

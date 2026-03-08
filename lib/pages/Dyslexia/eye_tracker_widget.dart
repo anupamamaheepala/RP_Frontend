@@ -34,6 +34,7 @@ class _EyeTrackerWidgetState extends State<EyeTrackerWidget> {
       enableAudio: false,
     );
 
+
     await _controller!.initialize();
 
     _detector = FaceDetector(
