@@ -3,6 +3,7 @@
 // Activities: Free Copy, Word in Context, My Best One, Drag and Build
 
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
 
 // Grade 3 data
 const List<String> _grade3Letters = ['ක', 'ග', 'ත', 'ද', 'ප', 'බ', 'ම', 'ය'];
@@ -291,14 +292,65 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
   List<List<Offset>> _strokes = [];
   bool _submitted = false;
   bool _showCelebration = false;
+  bool _isRecognizing = false;
+  bool? _isCorrect;   // null = not checked yet, true = correct, false = wrong
+
+  // ML Kit
+  final mlkit.DigitalInkRecognizer _recognizer =
+  mlkit.DigitalInkRecognizer(languageCode: 'si');
+
+  @override
+  void dispose() {
+    _recognizer.close();
+    super.dispose();
+  }
 
   String get _currentLetter => widget.letters[_currentIndex];
 
-  void _clearCanvas() => setState(() => _strokes = []);
+  void _clearCanvas() {
+    setState(() {
+      _strokes = [];
+      _isCorrect = null;
+      _submitted = false;
+    });
+  }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_strokes.isEmpty) return;
-    setState(() => _submitted = true);
+    setState(() {
+      _isRecognizing = true;
+      _submitted = true;
+    });
+
+    try {
+      final ink = mlkit.Ink();
+      for (final stroke in _strokes) {
+        final points = stroke
+            .map((o) => mlkit.StrokePoint(
+          x: o.dx,
+          y: o.dy,
+          t: DateTime.now().millisecondsSinceEpoch,
+        ))
+            .toList();
+        if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
+      }
+
+      final candidates = await _recognizer.recognize(ink);
+      final recognized = candidates.isNotEmpty
+          ? candidates.first.text.trim()
+          : '';
+
+      setState(() {
+        _isCorrect = recognized == _currentLetter;
+        _isRecognizing = false;
+      });
+    } catch (_) {
+      // If ML Kit fails, fall back to manual comparison
+      setState(() {
+        _isCorrect = null;
+        _isRecognizing = false;
+      });
+    }
   }
 
   void _nextLetter({bool tryAgain = false}) {
@@ -306,6 +358,7 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
       setState(() {
         _strokes = [];
         _submitted = false;
+        _isCorrect = null;
       });
       return;
     }
@@ -491,72 +544,110 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
 
                       const SizedBox(height: 16),
 
-                      // After submission — show comparison + choice
+                      // After submission — ML Kit result feedback
                       if (_submitted && !_showCelebration) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.blue.shade200),
+                        if (_isRecognizing)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 12),
+                                Text('පරීක්ෂා කරමින්...', style: TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          // Result banner
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: _isCorrect == true
+                                  ? Colors.green.shade50
+                                  : _isCorrect == false
+                                  ? Colors.red.shade50
+                                  : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _isCorrect == true
+                                    ? Colors.green.shade300
+                                    : _isCorrect == false
+                                    ? Colors.red.shade300
+                                    : Colors.blue.shade200,
+                                width: 2,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _isCorrect == true
+                                      ? '🎉 නිවැරදියි!'
+                                      : _isCorrect == false
+                                      ? '💪 නැවත උත්සාහ කරන්න!'
+                                      : '👀 සසඳා බලන්න',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: _isCorrect == true
+                                        ? Colors.green.shade700
+                                        : _isCorrect == false
+                                        ? Colors.red.shade700
+                                        : Colors.blue.shade700,
+                                  ),
+                                ),
+                                if (_isCorrect == false) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'හරි අකුර: $_currentLetter',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.red.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          const SizedBox(height: 16),
+                          Row(
                             children: [
-                              const Icon(Icons.compare, color: Colors.blue),
-                              const SizedBox(width: 8),
-                              Text(
-                                'ඔබේ ලිවීම "$_currentLetter" සමඟ සසඳන්න',
-                                style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.blue),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _nextLetter(tryAgain: true),
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('නැවත ලිය',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _isCorrect == true ? () => _nextLetter() : null,
+                                  icon: const Icon(Icons.arrow_forward),
+                                  label: const Text('ඊළඟ අකුර',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.grey.shade300,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _nextLetter(tryAgain: true),
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('නැවත ලිය',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _nextLetter(),
-                                icon: const Icon(Icons.arrow_forward),
-                                label: const Text('ඊළඟ අකුර',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       ] else if (!_showCelebration) ...[
                         Row(
                           children: [
@@ -581,7 +672,7 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: _strokes.isEmpty ? null : _submit,
+                                onPressed: _strokes.isEmpty || _isRecognizing ? null : _submit,
                                 icon: const Icon(Icons.check_circle),
                                 label: const Text('ඉදිරිපත් කරන්න',
                                     style: TextStyle(
