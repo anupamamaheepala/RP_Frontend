@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:rp_frontend/utils/sessions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'theme.dart';
@@ -62,6 +63,7 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setInt('age', data['age']);
         await prefs.setInt('grade', data['grade']);
         await prefs.setString('avatar_image', data['avatar_image'] ?? "plogo1");
+        await Session.load();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

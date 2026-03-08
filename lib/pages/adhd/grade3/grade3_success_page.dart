@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import './task_stats.dart'; // Ensure this import matches your path
+import './task_stats.dart';
 
 class Grade3SuccessPage extends StatefulWidget {
   final String taskNumber;
   final Widget nextPage;
-  final Map<String, int> stats;
+  final Map<String, dynamic> stats; // changed int → dynamic to allow List
 
   const Grade3SuccessPage({
     super.key,
@@ -25,17 +25,17 @@ class _Grade3SuccessPageState extends State<Grade3SuccessPage> {
   @override
   void initState() {
     super.initState();
-    // Update global diagnostic stats as soon as the task is finished
-    TaskStats.addStats(widget.stats);
+    // ── CHANGED: pass taskNumber so stats knows which task these times belong to
+    TaskStats.addStats(
+      widget.stats,
+      taskNumber: int.tryParse(widget.taskNumber) ?? 0,
+    );
     _startCountdown();
   }
 
   void _startCountdown() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+      if (!mounted) { timer.cancel(); return; }
       setState(() => _countdown--);
       if (_countdown <= 0) {
         timer.cancel();
@@ -65,7 +65,10 @@ class _Grade3SuccessPageState extends State<Grade3SuccessPage> {
             const SizedBox(height: 30),
             Text(
               'නියමයි! ${widget.taskNumber} පියවර අවසන්!',
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF6741D9)),
+              style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6741D9)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 50),
@@ -73,7 +76,8 @@ class _Grade3SuccessPageState extends State<Grade3SuccessPage> {
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 100, height: 100,
+                  width: 100,
+                  height: 100,
                   child: CircularProgressIndicator(
                     value: _countdown / 5,
                     strokeWidth: 8,
@@ -81,7 +85,9 @@ class _Grade3SuccessPageState extends State<Grade3SuccessPage> {
                     backgroundColor: Colors.grey[200],
                   ),
                 ),
-                Text('$_countdown', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                Text('$_countdown',
+                    style: const TextStyle(
+                        fontSize: 40, fontWeight: FontWeight.bold)),
               ],
             ),
           ],
