@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/pages/Dyscalculia/dyscal_results.dart';
 
 class AllResultsPage extends StatelessWidget {
   const AllResultsPage({super.key});
@@ -106,7 +107,7 @@ class AllResultsPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40), // Balances the back button
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
@@ -142,7 +143,11 @@ class AllResultsPage extends StatelessWidget {
                       icon: Icons.calculate_rounded,
                       colors: [Colors.green.shade400, Colors.teal.shade300],
                       onTap: () {
-                        // TODO: Navigate to Dyscalculia Results Fetch Page
+                        // --- UPDATED NAVIGATION ---
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DyscalResultsPage()),
+                        );
                       },
                     ),
                     _buildResultCard(

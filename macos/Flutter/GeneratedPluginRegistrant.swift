@@ -10,7 +10,6 @@ import firebase_auth
 import firebase_core
 import flutter_sound
 import flutter_tts
-import path_provider_foundation
 import record_macos
 import shared_preferences_foundation
 
@@ -20,7 +19,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))
   FlutterSoundPlugin.register(with: registry.registrar(forPlugin: "FlutterSoundPlugin"))
   FlutterTtsPlugin.register(with: registry.registrar(forPlugin: "FlutterTtsPlugin"))
-  PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   RecordMacOsPlugin.register(with: registry.registrar(forPlugin: "RecordMacOsPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
 }
