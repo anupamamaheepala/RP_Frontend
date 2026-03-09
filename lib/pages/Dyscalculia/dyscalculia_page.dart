@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/theme.dart';
-import 'dyscal_improve.dart';
+import 'Dyscal_Improve/dyscal_improve.dart';
 
 class DyscalculiaPage extends StatelessWidget {
   final Widget targetDetectPage; // Added to store the specific grade page

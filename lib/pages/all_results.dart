@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/pages/Dyscalculia/dyscal_results.dart';
+import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
 
 class AllResultsPage extends StatelessWidget {
   const AllResultsPage({super.key});
