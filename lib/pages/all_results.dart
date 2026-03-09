@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
+import '/pages/Dysgraphia/dysgraphia_results_hub.dart';
 
 class AllResultsPage extends StatelessWidget {
   const AllResultsPage({super.key});
@@ -134,7 +135,12 @@ class AllResultsPage extends StatelessWidget {
                       icon: Icons.drive_file_rename_outline_rounded,
                       colors: [Colors.blue.shade400, Colors.teal.shade300],
                       onTap: () {
-                        // TODO: Navigate to Dysgraphia Results Fetch Page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DysgraphiaResultsHub(),
+                          ),
+                        );
                       },
                     ),
                     _buildResultCard(
