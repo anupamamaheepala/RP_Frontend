@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ENTRY POINT — Hub page shown to High Risk Grade 3 students
@@ -288,6 +289,10 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   static const double _boundaryPadding = 18.0;
   late AnimationController _celebrationController;
   late Animation<double> _celebrationScale;
+  bool _isRecognizing = false;
+  bool? _isCorrect;
+  final mlkit.DigitalInkRecognizer _recognizer =
+  mlkit.DigitalInkRecognizer(languageCode: 'si');
 
   @override
   void initState() {
@@ -305,6 +310,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   @override
   void dispose() {
     _celebrationController.dispose();
+    _recognizer.close();
     super.dispose();
   }
 
@@ -317,10 +323,10 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
     final w = box.size.width;
     final h = box.size.height;
     // Box centered around the ghost letter (roughly 60% of canvas width, 70% of height)
-    final left   = w * 0.20;
-    final right  = w * 0.80;
-    final top    = h * 0.12;
-    final bottom = h * 0.88;
+    final left   = w * 0.10;
+    final right  = w * 0.90;
+    final top    = h * 0.08;
+    final bottom = h * 0.92;
     return pos.dx >= left && pos.dx <= right &&
         pos.dy >= top  && pos.dy <= bottom;
   }
@@ -364,12 +370,29 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   }
 
   void _clearCanvas() {
-    setState(() => _strokes = []);
+    setState(() { _strokes = []; _isCorrect = null; });
   }
 
-  void _submitTrace() {
+  Future<void> _submitTrace() async {
     if (_strokes.isEmpty) return;
-
+    setState(() => _isRecognizing = true);
+    try {
+      final ink = mlkit.Ink();
+      for (final stroke in _strokes) {
+        final points = stroke.map((o) => mlkit.StrokePoint(
+          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+        )).toList();
+        if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
+      }
+      final candidates = await _recognizer.recognize(ink);
+      final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
+      final correct = recognized == _currentLetter;
+      setState(() { _isCorrect = correct; _isRecognizing = false; });
+      if (!correct) return; // stay on same letter, show error
+    } catch (_) {
+      setState(() { _isCorrect = null; _isRecognizing = false; });
+    }
+    // Correct (or catch fallthrough) — celebrate and advance
     setState(() => _showCelebration = true);
     _celebrationController.forward().then((_) {
       _celebrationController.reset();
@@ -379,6 +402,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
           setState(() {
             _currentIndex++;
             _strokes = [];
+            _isCorrect = null;
             _showCelebration = false;
           });
         } else {
@@ -632,10 +656,10 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                                         return Stack(
                                           children: [
                                             Positioned(
-                                              left: w * 0.20,
-                                              top: h * 0.12,
-                                              width: w * 0.60,
-                                              height: h * 0.76,
+                                              left: w * 0.10,
+                                              top: h * 0.08,
+                                              width: w * 0.80,
+                                              height: h * 0.84,
                                               child: Container(
                                                 decoration: BoxDecoration(
                                                   borderRadius: BorderRadius.circular(12),
@@ -726,48 +750,107 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
                       const SizedBox(height: 20),
 
                       // Buttons
-                      Row(
+                      Column(
                         children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _clearCanvas,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('මකන්න',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange.shade400,
-                                foregroundColor: Colors.white,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                          if (_isRecognizing)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 24, height: 24,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.purple, strokeWidth: 3),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text('පරීක්ෂා කරමින්...',
+                                      style: TextStyle(fontSize: 15)),
+                                ],
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _strokes.isEmpty ? null : _submitTrace,
-                              icon: const Icon(Icons.check_circle),
-                              label: const Text('හරි!',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                            )
+                          else ...[
+                            if (_isCorrect == false)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: Colors.red.shade300, width: 2),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const Text(
+                                      '❌ වැරදියි! නැවත ලිවීමට උත්සාහ කරන්න.',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'හරි අකුර: $_currentLetter',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.red.shade700),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _clearCanvas,
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('මකන්න',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange.shade400,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(14)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _strokes.isEmpty || _isRecognizing
+                                        ? null
+                                        : _submitTrace,
+                                    icon: const Icon(Icons.check_circle),
+                                    label: const Text('හරි!',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(14)),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ],
+
                   ),
                 ),
               ),
@@ -1712,6 +1795,10 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
   bool _animationPlaying = false;
   List<List<Offset>> _strokes = [];
   bool _showCelebration = false;
+  bool _isRecognizing4 = false;
+  bool? _isCorrect4;
+  final mlkit.DigitalInkRecognizer _recognizer4 =
+  mlkit.DigitalInkRecognizer(languageCode: 'si');
 
   late AnimationController _progressController;
 
@@ -1727,6 +1814,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
   @override
   void dispose() {
     _progressController.dispose();
+    _recognizer4.close();
     super.dispose();
   }
 
@@ -1747,10 +1835,27 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
     });
   }
 
-  void _clearCanvas() => setState(() => _strokes = []);
+  void _clearCanvas() => setState(() { _strokes = []; _isCorrect4 = null; });
 
-  void _submitDrawing() {
+  Future<void> _submitDrawing() async {
     if (_strokes.isEmpty) return;
+    setState(() => _isRecognizing4 = true);
+    try {
+      final ink = mlkit.Ink();
+      for (final stroke in _strokes) {
+        final points = stroke.map((o) => mlkit.StrokePoint(
+          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+        )).toList();
+        if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
+      }
+      final candidates = await _recognizer4.recognize(ink);
+      final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
+      final correct = recognized == _currentLetter;
+      setState(() { _isCorrect4 = correct; _isRecognizing4 = false; });
+      if (!correct) return;
+    } catch (_) {
+      setState(() { _isCorrect4 = null; _isRecognizing4 = false; });
+    }
     setState(() => _showCelebration = true);
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
@@ -1759,6 +1864,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
           _currentIndex++;
           _isWatching = true;
           _strokes = [];
+          _isCorrect4 = null;
           _showCelebration = false;
         });
       } else {
@@ -2095,50 +2201,87 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
 
                         const SizedBox(height: 16),
 
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _clearCanvas,
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('මකන්න',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange.shade400,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(14)),
-                                ),
+                        if (_isRecognizing4)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(color: Colors.green),
+                                SizedBox(width: 12),
+                                Text('පරීක්ෂා කරමින්...', style: TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          if (_isCorrect4 == false)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red.shade300, width: 2),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Text('❌ වැරදියි! නැවත ලිවීමට උත්සාහ කරන්න.',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('හරි අකුර: $_currentLetter',
+                                    style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed:
-                                _strokes.isEmpty ? null : _submitDrawing,
-                                icon: const Icon(Icons.check_circle),
-                                label: const Text('හරි!',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(14)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _clearCanvas,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('මකන්න',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange.shade400,
+                                    foregroundColor: Colors.white,
+                                    padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(14)),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed:
+                                  _strokes.isEmpty || _isRecognizing4 ? null : _submitDrawing,
+                                  icon: const Icon(Icons.check_circle),
+                                  label: const Text('හරි!',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                        BorderRadius.circular(14)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
 
                         const SizedBox(height: 12),
 
