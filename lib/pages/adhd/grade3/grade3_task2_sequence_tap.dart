@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_task3_match_drag.dart';
-import 'diagnostic_metrics.dart';
+import 'task_stats.dart';
 
 class Grade3Task2SequenceTap extends StatefulWidget {
   const Grade3Task2SequenceTap({super.key});
@@ -17,21 +17,21 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
   int currentTrial = 0;
 
   List<int> displayedNumbers = [];
-  List<int> correctOrder = [];
-  List<int> userSequence = [];
+  List<int> correctOrder     = [];
+  List<int> userSequence     = [];
 
   int correctTaps = 0;
-  int wrongTaps = 0;
+  int wrongTaps   = 0;
 
-  final Color primaryBg = const Color(0xFFF8FAFF);
-  final Color secondaryPurple = const Color(0xFF6741D9);
-  final Color accentAmber = const Color(0xFFFFB300);
-
-  final Random _random = Random();
-
+  // ── NEW ──────────────────────────────────────────────────────────────────
   DateTime? _trialStartTime;
+  final List<int> _responseTimesMs = [];
+  // ─────────────────────────────────────────────────────────────────────────
 
-  final DiagnosticMetrics _metrics = DiagnosticMetrics();
+  final Color primaryBg       = const Color(0xFFF8FAFF);
+  final Color secondaryPurple = const Color(0xFF6741D9);
+  final Color accentAmber     = const Color(0xFFFFB300);
+  final Random _random = Random();
 
   @override
   void initState() {
@@ -42,59 +42,52 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
   void _generateNewTrial() {
     List<int> pool = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     pool.shuffle(_random);
-    List<int> selected = pool.sublist(0, 4);
-    selected.sort();
+    final List<int> selected = pool.sublist(0, 4)..sort();
 
     setState(() {
-      correctOrder = selected;
+      correctOrder    = selected;
       displayedNumbers = List.from(correctOrder)..shuffle(_random);
-      userSequence = [];
-      _trialStartTime = DateTime.now();
+      userSequence    = [];
+      _trialStartTime = DateTime.now(); // ── NEW: start timer for this trial
     });
   }
 
   void _handleTap(int number) {
     if (userSequence.contains(number)) return;
 
-    int expectedNext = correctOrder[userSequence.length];
+    final int expectedNext = correctOrder[userSequence.length];
 
     if (number == expectedNext) {
+      // ── NEW: time from trial start to this correct tap ──
+      if (_trialStartTime != null) {
+        _responseTimesMs.add(
+            DateTime.now().difference(_trialStartTime!).inMilliseconds);
+      }
       HapticFeedback.lightImpact();
       setState(() {
         correctTaps++;
         userSequence.add(number);
       });
-
-      if (userSequence.length == 4) {
-        _onCorrectSequence();
-      }
+      if (userSequence.length == 4) _onCorrectSequence();
     } else {
       wrongTaps++;
-      _metrics.task2Wrong++;
-
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: Colors.redAccent,
           duration: Duration(milliseconds: 800),
-          content: Text('වැරදියි! කුඩාම අංකයේ සිට විශාල අංකයට ස්පර්ශ කරන්න.'),
+          content:
+          Text('වැරදියි! කුඩාම අංකයේ සිට විශාල අංකයට ස්පර්ශ කරන්න.'),
         ),
       );
     }
   }
 
   void _onCorrectSequence() {
-    if (_trialStartTime != null) {
-      double trialTime = DateTime.now().difference(_trialStartTime!).inMilliseconds / 1000.0;
-      _metrics.task2TrialTimes.add(trialTime);
-    }
-
     if (currentTrial < maxTrials - 1) {
       Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
-        setState(() {
-          currentTrial++;
-        });
+        setState(() => currentTrial++);
         _generateNewTrial();
       });
     } else {
@@ -104,9 +97,10 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
           builder: (_) => Grade3SuccessPage(
             taskNumber: '2',
             stats: {
-              'correct': correctTaps,
-              'premature': 0,
-              'wrong': wrongTaps,
+              'correct':           correctTaps,
+              'premature':         0,
+              'wrong':             wrongTaps,
+              'response_times_ms': List<int>.from(_responseTimesMs), // ── NEW
             },
             nextPage: const Grade3Task3MatchDrag(),
           ),
@@ -117,7 +111,6 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
 
   @override
   Widget build(BuildContext context) {
-    // UI unchanged — same as original
     return Scaffold(
       backgroundColor: primaryBg,
       appBar: AppBar(
@@ -129,7 +122,8 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
         ),
         title: Text(
           'පියවර 2: අනුපිළිවෙලට තබන්න',
-          style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold),
+          style:
+          TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -147,22 +141,19 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
               'කුඩාම අංකයේ සිට විශාල අංකය දක්වා පිළිවෙලින් ස්පර්ශ කරන්න',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: secondaryPurple,
-              ),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: secondaryPurple),
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            'වටය ${currentTrial + 1} / $maxTrials',
-            style: const TextStyle(fontSize: 18, color: Colors.black54),
-          ),
+          Text('වටය ${currentTrial + 1} / $maxTrials',
+              style: const TextStyle(fontSize: 18, color: Colors.black54)),
           const Spacer(),
-
           Container(
             margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+            padding:
+            const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.5),
               borderRadius: BorderRadius.circular(30),
@@ -171,7 +162,7 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
             child: Wrap(
               alignment: WrapAlignment.center,
               children: displayedNumbers
-                  .map((num) => _buildNumberButton(num))
+                  .map((n) => _buildNumberButton(n))
                   .toList(),
             ),
           ),
@@ -182,7 +173,7 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
   }
 
   Widget _buildNumberButton(int number) {
-    bool isTapped = userSequence.contains(number);
+    final bool isTapped = userSequence.contains(number);
     return GestureDetector(
       onTap: () => _handleTap(number),
       child: AnimatedContainer(
@@ -194,12 +185,12 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
           color: isTapped ? Colors.green[100] : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isTapped ? Colors.green : Colors.white,
-            width: 3,
-          ),
+              color: isTapped ? Colors.green : Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: isTapped ? Colors.transparent : secondaryPurple.withOpacity(0.1),
+              color: isTapped
+                  ? Colors.transparent
+                  : secondaryPurple.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -209,10 +200,9 @@ class _Grade3Task2SequenceTapState extends State<Grade3Task2SequenceTap> {
           child: Text(
             '$number',
             style: TextStyle(
-              fontSize: 38,
-              fontWeight: FontWeight.bold,
-              color: isTapped ? Colors.green : secondaryPurple,
-            ),
+                fontSize: 38,
+                fontWeight: FontWeight.bold,
+                color: isTapped ? Colors.green : secondaryPurple),
           ),
         ),
       ),

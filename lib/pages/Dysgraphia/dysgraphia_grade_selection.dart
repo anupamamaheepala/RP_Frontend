@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dysgraphia_activity_selection_page.dart';
+import 'dysgraphia_learning_page.dart';
 
 class DysgraphiaGradePage extends StatelessWidget {
   const DysgraphiaGradePage({super.key});
@@ -64,7 +64,7 @@ class DysgraphiaGradePage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => DysgraphiaSelectionPage(grade: grade),
+              builder: (_) => DysgraphiaLearningPage(grade: grade),
             ),
           );
         },

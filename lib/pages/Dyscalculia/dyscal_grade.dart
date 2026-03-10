@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dyscal_g03.dart';
-import 'dyscal_g04.dart';
-import 'dyscal_g05.dart';
-import 'dyscal_g06.dart';
-import 'dyscal_g07.dart';
+import 'Dyscal_Tasks/dyscal_g03.dart';
+import 'Dyscal_Tasks/dyscal_g04.dart';
+import 'Dyscal_Tasks/dyscal_g05.dart';
+import 'Dyscal_Tasks/dyscal_g06.dart';
+import 'Dyscal_Tasks/dyscal_g07.dart';
+import 'dyscalculia_page.dart'; // Added this import
 
 class DyscalGradePage extends StatelessWidget {
   const DyscalGradePage({super.key});
@@ -117,7 +118,7 @@ class DyscalGradePage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 40), // Balance the back button
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
@@ -138,7 +139,7 @@ class DyscalGradePage extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // GRADE CARDS
+              // GRADE CARDS (Now pushing to DyscalculiaPage with the target task)
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -148,31 +149,31 @@ class DyscalGradePage extends StatelessWidget {
                         grade: 3,
                         gradientColors: [Colors.purple.shade400, Colors.blue.shade400],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalG03Page())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG03Page()))),
                       ),
                       _buildGradeCard(
                         grade: 4,
                         gradientColors: [Colors.blue.shade400, Colors.teal.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalG04Page())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG04Page()))),
                       ),
                       _buildGradeCard(
                         grade: 5,
                         gradientColors: [Colors.green.shade400, Colors.teal.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalG05Page())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG05Page()))),
                       ),
                       _buildGradeCard(
                         grade: 6,
                         gradientColors: [Colors.orange.shade400, Colors.pink.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalG06Page())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG06Page()))),
                       ),
                       _buildGradeCard(
                         grade: 7,
                         gradientColors: [Colors.deepPurple.shade400, Colors.indigo.shade400],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalG07Page())),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG07Page()))),
                       ),
                     ],
                   ),

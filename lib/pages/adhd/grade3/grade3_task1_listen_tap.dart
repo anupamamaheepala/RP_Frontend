@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'grade3_success_page.dart';
 import 'grade3_task2_sequence_tap.dart';
-import 'diagnostic_metrics.dart';
+import 'task_stats.dart';
 
 class Grade3Task1ListenTap extends StatefulWidget {
   const Grade3Task1ListenTap({super.key});
@@ -32,37 +32,35 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
   int currentIndex = 0;
   bool canTap = false;
 
-  int correctTaps = 0;
+  int correctTaps   = 0;
   int prematureTaps = 0;
-  int wrongTaps = 0;
+  int wrongTaps     = 0;
+
+  // ── NEW ──────────────────────────────────────────────────────────────────
+  DateTime? _tapReadyTime;
+  final List<int> _responseTimesMs = [];
+  // ─────────────────────────────────────────────────────────────────────────
 
   Color? feedbackColor;
 
-  final Color primaryBg = const Color(0xFFF8FAFF);
+  final Color primaryBg       = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
-  final Color accentAmber = const Color(0xFFFFB300);
+  final Color accentAmber     = const Color(0xFFFFB300);
 
   late final AudioPlayer _audioPlayer;
-
   late List<Map<String, dynamic>> circleData;
-
-  DateTime? _instructionEndTime;
-
-  final DiagnosticMetrics _metrics = DiagnosticMetrics();
 
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
     _audioPlayer.setVolume(1.0);
-
     circleData = [
-      {'color': Colors.red, 'key': 'red'},
-      {'color': Colors.blue, 'key': 'blue'},
+      {'color': Colors.red,   'key': 'red'},
+      {'color': Colors.blue,  'key': 'blue'},
       {'color': Colors.amber, 'key': 'yellow'},
       {'color': Colors.green, 'key': 'green'},
     ];
-
     _startInstruction();
   }
 
@@ -73,14 +71,13 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
       circleData.shuffle(Random());
     });
 
-    String audioFile = colorAudioFiles[currentIndex]!;
-    await _audioPlayer.play(AssetSource('sounds/$audioFile'));
+    await _audioPlayer.play(AssetSource('sounds/${colorAudioFiles[currentIndex]}'));
     await _audioPlayer.onPlayerComplete.first;
 
     if (mounted) {
       setState(() {
         canTap = true;
-        _instructionEndTime = DateTime.now();
+        _tapReadyTime = DateTime.now(); // ── NEW: start timer when audio ends
       });
     }
   }
@@ -88,7 +85,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
   void _handleTap(String tappedColor) {
     if (!canTap) {
       prematureTaps++;
-      _metrics.task1Premature++;
       HapticFeedback.vibrate();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -100,18 +96,17 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
       return;
     }
 
-    List<String> colorKeys = ['red', 'blue', 'yellow', 'green'];
-    String expected = colorKeys[currentIndex];
+    // ── NEW: record response time for every valid tap attempt ──
+    if (_tapReadyTime != null) {
+      _responseTimesMs.add(
+          DateTime.now().difference(_tapReadyTime!).inMilliseconds);
+    }
+
+    final List<String> colorKeys = ['red', 'blue', 'yellow', 'green'];
+    final String expected = colorKeys[currentIndex];
 
     if (tappedColor == expected) {
       correctTaps++;
-      _metrics.task1Correct++;
-
-      if (_instructionEndTime != null) {
-        double rt = DateTime.now().difference(_instructionEndTime!).inMilliseconds / 1000.0;
-        _metrics.task1ResponseTimes.add(rt);
-      }
-
       setState(() => feedbackColor = Colors.green.withOpacity(0.4));
       HapticFeedback.lightImpact();
 
@@ -129,9 +124,10 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
               builder: (_) => Grade3SuccessPage(
                 taskNumber: '1',
                 stats: {
-                  'correct': correctTaps,
-                  'premature': prematureTaps,
-                  'wrong': wrongTaps,
+                  'correct':           correctTaps,
+                  'premature':         prematureTaps,
+                  'wrong':             wrongTaps,
+                  'response_times_ms': List<int>.from(_responseTimesMs), // ── NEW
                 },
                 nextPage: const Grade3Task2SequenceTap(),
               ),
@@ -143,11 +139,8 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
       });
     } else {
       wrongTaps++;
-      _metrics.task1Wrong++;
-
       setState(() => feedbackColor = Colors.red.withOpacity(0.4));
       HapticFeedback.heavyImpact();
-
       Future.delayed(const Duration(milliseconds: 800), () {
         if (mounted) setState(() => feedbackColor = null);
       });
@@ -162,7 +155,6 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
 
   @override
   Widget build(BuildContext context) {
-    // UI unchanged — same as your original
     return Scaffold(
       backgroundColor: primaryBg,
       appBar: AppBar(
@@ -195,17 +187,28 @@ class _Grade3Task1ListenTapState extends State<Grade3Task1ListenTap> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(color: secondaryPurple.withOpacity(0.1), blurRadius: 20)
+                    BoxShadow(
+                        color: secondaryPurple.withOpacity(0.1),
+                        blurRadius: 20)
                   ],
                 ),
                 child: Column(
                   children: [
-                    Icon(canTap ? Icons.play_circle_fill : Icons.spatial_audio_off,
-                        size: 40, color: canTap ? Colors.green : Colors.grey),
+                    Icon(
+                        canTap
+                            ? Icons.play_circle_fill
+                            : Icons.spatial_audio_off,
+                        size: 40,
+                        color: canTap ? Colors.green : Colors.grey),
                     const SizedBox(height: 15),
                     Text(
-                      currentIndex < instructions.length ? instructions[currentIndex] : 'නිමයි!',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: secondaryPurple),
+                      currentIndex < instructions.length
+                          ? instructions[currentIndex]
+                          : 'නිමයි!',
+                      style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryPurple),
                       textAlign: TextAlign.center,
                     ),
                   ],
