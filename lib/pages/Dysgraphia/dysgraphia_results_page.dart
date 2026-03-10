@@ -203,6 +203,9 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
   }
 
   Widget _buildFormationCard() {
+    // Formation stats hidden for now
+    return const SizedBox.shrink();
+    // ignore: dead_code
     if (widget.activityType == 'sentences') return const SizedBox.shrink();
     if (widget.formationAccuracy < 0) return const SizedBox.shrink();
 

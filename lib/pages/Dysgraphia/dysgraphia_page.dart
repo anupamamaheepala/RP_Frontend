@@ -7,6 +7,7 @@ import 'dysgraphia_data.dart';
 import 'package:rp_frontend/config.dart';
 import 'dysgraphia_results_page.dart';
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
+import 'package:rp_frontend/utils/sessions.dart';
 
 class DysgraphiaPage extends StatefulWidget {
   final String activityType;
@@ -332,6 +333,7 @@ class _DysgraphiaPageState extends State<DysgraphiaPage>
     }
 
     final data = {
+      'user_id': Session.userId,
       'grade': widget.grade,
       'activity_type': widget.activityType,
       'prompts_data': promptsData,
