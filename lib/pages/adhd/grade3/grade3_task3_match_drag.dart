@@ -8,23 +8,24 @@ class Grade3Task3MatchDrag extends StatefulWidget {
   const Grade3Task3MatchDrag({super.key});
 
   @override
-  _Grade3Task3MatchDragState createState() => _Grade3Task3MatchDragState();
+  State<Grade3Task3MatchDrag> createState() => _Grade3Task3MatchDragState();
 }
 
 class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
+
   final List<Map<String, dynamic>> items = [
-    {'name': 'ඇපල්',      'type': 'fruit',   'image': Icons.apple},
-    {'name': 'කෙසෙල්',     'type': 'fruit',   'image': Icons.breakfast_dining},
+    {'name': 'ඇපල්', 'type': 'fruit', 'image': Icons.apple},
+    {'name': 'කෙසෙල්', 'type': 'fruit', 'image': Icons.breakfast_dining},
     {'name': 'මෝටර් රථය', 'type': 'vehicle', 'image': Icons.directions_car},
-    {'name': 'බල්ලා',      'type': 'animal',  'image': Icons.pets},
-    {'name': 'බස් රථය',   'type': 'vehicle', 'image': Icons.directions_bus},
-    {'name': 'පූසා',       'type': 'animal',  'image': Icons.pets},
+    {'name': 'බල්ලා', 'type': 'animal', 'image': Icons.pets},
+    {'name': 'බස් රථය', 'type': 'vehicle', 'image': Icons.directions_bus},
+    {'name': 'පූසා', 'type': 'animal', 'image': Icons.pets},
   ];
 
   Map<String, List<String>> categories = {
     'පලතුරු': [],
-    'සතුන්':  [],
-    'වාහන':   [],
+    'සතුන්': [],
+    'වාහන': [],
   };
 
   int correctDrops = 0;
@@ -161,6 +162,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                               opacity: 0.3,
                               child: _buildItemCard(item),
                             ),
+
                             child: _buildItemCard(item),
                           ),
                         );
