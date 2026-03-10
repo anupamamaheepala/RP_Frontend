@@ -1,7 +1,7 @@
 {
   "stories": [
     {
-      "audio": "sounds/stories/story_1.wav",
+      "audio": "sounds/lplans/story_1.wav",
       "items": [
         {"emoji": "☀️", "label": "අවදි වුණා"},
         {"emoji": "🍚", "label": "කෑම කෑවා"},
@@ -9,7 +9,7 @@
       ]
     },
     {
-      "audio": "sounds/stories/story_2.wav",
+      "audio": "sounds/lplans/story_2.wav",
       "items": [
         {"emoji": "🌧️", "label": "වැස්ස ආවා"},
         {"emoji": "☂️", "label": "කුඩය ගත්තා"},
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "audio": "sounds/stories/story_3.wav",
+      "audio": "sounds/lplans/story_3.wav",
       "items": [
         {"emoji": "🌳", "label": "ගහ ළඟට ගියා"},
         {"emoji": "🍎", "label": "ඇපල් කෑවා"},
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "audio": "sounds/stories/story_4.wav",
+      "audio": "sounds/lplans/story_4.wav",
       "items": [
         {"emoji": "🌱", "label": "ඇටයක් සිටෙව්වා"},
         {"emoji": "💧", "label": "වතුර දැමුවා"},
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "audio": "sounds/stories/story_5.wav",
+      "audio": "sounds/lplans/story_5.wav",
       "items": [
         {"emoji": "🥚", "label": "බිත්තරය තිබුණා"},
         {"emoji": "🐣", "label": "පැටියා ආවා"},

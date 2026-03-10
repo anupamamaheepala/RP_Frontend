@@ -31,6 +31,10 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
   bool _audioPlayed = false;
   bool _taskDone = false;
 
+  // Analysis variables
+  DateTime? _taskStartTime;
+  final List<int> _rts = [];
+
   List<Map<String, dynamic>?> _slots = [null, null, null];
   List<Map<String, dynamic>> _pool = [];
   List<Map<String, dynamic>> _correctOrder = [];
@@ -38,8 +42,7 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
   final Color primaryBg = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
 
-  int get _totalTrials =>
-      widget.difficulty == 1 ? 2 : widget.difficulty == 2 ? 3 : 4;
+  int get _totalTrials => widget.difficulty == 1 ? 2 : widget.difficulty == 2 ? 3 : 4;
 
   @override
   void initState() {
@@ -63,7 +66,7 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
       setState(() {
         _stories = [
           {
-            'audio': 'sounds/stories/story_1.wav',
+            'audio': 'sounds/lplans/story_1.wav',
             'items': [
               {'emoji': '☀️', 'label': 'අවදි වුණා'},
               {'emoji': '🍚', 'label': 'කෑම කෑවා'},
@@ -100,17 +103,20 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
   Future<void> _playStory() async {
     setState(() => _isPlaying = true);
     try {
-      final audioPath =
-      _stories[_trial % _stories.length]['audio'] as String;
+      // Path is updated to look into assets/sounds/lplans/ via the JSON or hardcoded fallback
+      final String audioPath = _stories[_trial % _stories.length]['audio'] as String;
+
       await _player.play(AssetSource(audioPath));
       await _player.onPlayerComplete.first;
     } catch (e) {
+      debugPrint("Audio Play Error: $e");
       await Future.delayed(const Duration(seconds: 3));
     }
     if (mounted) {
       setState(() {
         _isPlaying = false;
         _audioPlayed = true;
+        _taskStartTime = DateTime.now(); // Start tracking time for impulsivity/focus
       });
     }
   }
@@ -143,6 +149,13 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
 
   void _checkAnswer() {
     _attempts++;
+
+    // Capture the time taken to complete the sequence
+    if (_taskStartTime != null) {
+      final duration = DateTime.now().difference(_taskStartTime!).inMilliseconds;
+      _rts.add(duration);
+    }
+
     bool isCorrect = true;
     for (int i = 0; i < 3; i++) {
       if (_slots[i]?['label'] != _correctOrder[i]['label']) {
@@ -167,6 +180,7 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
           setState(() {
             _pool = List.from(_correctOrder)..shuffle();
             _slots = [null, null, null];
+            _taskStartTime = DateTime.now(); // Reset timer for the retry
           });
         }
       });
@@ -188,9 +202,9 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
           "difficulty":        widget.difficulty,
           "correct":           _correct,
           "wrong":             _attempts - _correct,
-          "premature":         0,           // ✅ Fixed: no premature concept for this task
+          "premature":         0,
           "total_trials":      _totalTrials,
-          "response_times_ms": <int>[],     // ✅ Fixed: no per-tap RT for this task
+          "response_times_ms": _rts, // Now sending actual completion times
           "session_number":    widget.sessionNumber,
         }),
       );
@@ -207,19 +221,15 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('කාර්යය අවසන්! 🎉',
-            textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('කාර්යය අවසන්! 🎉', textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('ලකුණු: ${data['score_percent']}%',
-                style: const TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(data['encouragement'] as String,
-                textAlign: TextAlign.center),
+            Text(data['encouragement'] as String, textAlign: TextAlign.center),
           ],
         ),
         actions: [
@@ -244,8 +254,7 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     bool isAllFilled = !_slots.contains(null);
@@ -256,8 +265,7 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('කතාවේ අනුපිළිවෙල — මට්ටම ${widget.difficulty}',
-            style: TextStyle(
-                color: secondaryPurple, fontWeight: FontWeight.bold)),
+            style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -279,32 +287,27 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
                   const SizedBox(height: 30),
                   const Text('පළමු, දෙවන සහ තෙවන රූප පිළිවෙලට තෝරන්න:',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   _buildSlotsRow(),
                   const SizedBox(height: 30),
+
                   if (isAllFilled)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: ElevatedButton.icon(
                         onPressed: _checkAnswer,
-                        icon: const Icon(Icons.check_circle,
-                            color: Colors.white),
+                        icon: const Icon(Icons.check_circle, color: Colors.white),
                         label: const Text('පිළිතුර පරීක්ෂා කරන්න',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     ),
+
                   const Text('රූප මෙතැනින් තෝරන්න:',
                       style: TextStyle(fontSize: 14, color: Colors.grey)),
                   const SizedBox(height: 15),
@@ -330,28 +333,16 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
       ),
       child: Row(
         children: [
-          Icon(
-              _audioPlayed ? Icons.check_circle : Icons.headphones,
+          Icon(_audioPlayed ? Icons.check_circle : Icons.headphones,
               color: _audioPlayed ? Colors.green : secondaryPurple),
           const SizedBox(width: 12),
           Expanded(
-              child: Text(
-                  _isPlaying
-                      ? 'සවන් දෙන්න...'
-                      : _audioPlayed
-                      ? 'නැවත අසන්න'
-                      : 'කතාවට සවන් දෙන්න',
-                  style: TextStyle(
-                      color: secondaryPurple,
-                      fontWeight: FontWeight.bold))),
+              child: Text(_isPlaying ? 'සවන් දෙන්න...' : _audioPlayed ? 'නැවත අසන්න' : 'කතාවට සවන් දෙන්න',
+                  style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold))),
           IconButton(
             onPressed: _isPlaying ? null : _playStory,
-            icon: Icon(
-                _isPlaying
-                    ? Icons.hourglass_top
-                    : Icons.play_circle_fill,
-                size: 38,
-                color: secondaryPurple),
+            icon: Icon(_isPlaying ? Icons.hourglass_top : Icons.play_circle_fill,
+                size: 38, color: secondaryPurple),
           ),
         ],
       ),
@@ -372,44 +363,25 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
       child: Column(
         children: [
           Container(
-            width: 80,
-            height: 100,
+            width: 80, height: 100,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: item == null
-                      ? Colors.grey.shade300
-                      : secondaryPurple,
-                  width: 2),
+              border: Border.all(color: item == null ? Colors.grey.shade300 : secondaryPurple, width: 2),
             ),
             child: Center(
               child: item == null
                   ? Text('${index + 1}',
-                  style: TextStyle(
-                      color: Colors.grey.shade300,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold))
-                  : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(item['emoji'],
-                        style: const TextStyle(fontSize: 34)),
-                    const SizedBox(height: 4),
-                    Text(item['label'],
-                        style: const TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold)),
-                  ]),
+                  style: TextStyle(color: Colors.grey.shade300, fontSize: 32, fontWeight: FontWeight.bold))
+                  : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(item['emoji'], style: const TextStyle(fontSize: 34)),
+                const SizedBox(height: 4),
+                Text(item['label'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+              ]),
             ),
           ),
           const SizedBox(height: 5),
-          Text(
-              index == 0
-                  ? "පළමු"
-                  : index == 1
-                  ? "දෙවන"
-                  : "තෙවන",
+          Text(index == 0 ? "පළමු" : index == 1 ? "දෙවන" : "තෙවන",
               style: const TextStyle(fontSize: 10, color: Colors.grey)),
         ],
       ),
@@ -435,18 +407,14 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
             onTap: () => _handlePoolTap(index),
             child: Card(
               elevation: 3,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(item['emoji'],
-                      style: const TextStyle(fontSize: 32)),
+                  Text(item['emoji'], style: const TextStyle(fontSize: 32)),
                   const SizedBox(height: 4),
-                  Text(item['label'],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 10, fontWeight: FontWeight.w600)),
+                  Text(item['label'], textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -470,12 +438,8 @@ class _TaskAudioSequenceState extends State<TaskAudioSequence> {
   Widget _chip(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12)),
-      child: Text(text,
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: color, fontSize: 13)),
+      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+      child: Text(text, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13)),
     );
   }
 }

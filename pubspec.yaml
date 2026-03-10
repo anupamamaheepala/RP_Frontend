@@ -83,6 +83,7 @@ flutter:
   assets:
     - assets/RP_logo.png
     - assets/sounds/
+    - assets/sounds/lplans/
     - assets/
     - assets/tasks_adhd/
     - assets/rpicon.jpg

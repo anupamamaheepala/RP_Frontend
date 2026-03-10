@@ -6,7 +6,6 @@ import '../../../../config.dart';
 import '../../../../utils/sessions.dart';
 import 'learning_task_home.dart';
 
-
 class AdhDProgressPage extends StatefulWidget {
   const AdhDProgressPage({super.key});
 
@@ -19,55 +18,57 @@ class _AdhDProgressPageState extends State<AdhDProgressPage>
   // ── State ─────────────────────────────────────────────────────────────────
   Map<String, dynamic>? _diagnosticHistory;
   Map<String, dynamic>? _taskProgress;
+  Map<String, dynamic>? _plan;
   bool _isLoading = true;
   String? _error;
 
   late TabController _tabController;
 
-  // ── Theme ─────────────────────────────────────────────────────────────────
+  // ── Theme Gradients ───────────────────────────────────────────────────────
+  final List<Color> blueGradient   = [const Color(0xFF00B4DB), const Color(0xFF0083B0)];
+  final List<Color> greenGradient  = [const Color(0xFF56AB2F), const Color(0xFFA8E063)];
+  final List<Color> pinkGradient   = [const Color(0xFFFF512F), const Color(0xFFDD2476)];
+  final List<Color> purpleGradient = [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
+  final List<Color> orangeGradient = [const Color(0xFFF2994A), const Color(0xFFF2C94C)];
+
   final Color primaryBg       = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
-  final Color accentAmber     = const Color(0xFFFFB300);
 
-  // ── Profile helpers ───────────────────────────────────────────────────────
-  static const _profileColors = {
-    'profile_a': Color(0xFF4CAF50),
-    'profile_b': Color(0xFF2196F3),
-    'profile_c': Color(0xFFFF9800),
-    'profile_d': Color(0xFFF44336),
+  static const _profileGradients = {
+    'profile_a': [Color(0xFF56AB2F), Color(0xFFA8E063)],
+    'profile_b': [Color(0xFF00B4DB), Color(0xFF0083B0)],
+    'profile_c': [Color(0xFFF2994A), Color(0xFFF2C94C)],
+    'profile_d': [Color(0xFFFF512F), Color(0xFFDD2476)],
   };
+
   static const _profileLabels = {
     'profile_a': 'ඉහළ අවධානය 🌟',
     'profile_b': 'අවධානය ගොඩනගමු 🎧',
-    'profile_c': 'ඉවසීම ගොඩනගමු ⏸️',
+    'profile_c': 'ඉවසීම පුරුදු වෙමු ⏸️',
     'profile_d': 'අවධානය වර්ධනය කරමු 💪',
   };
+
   static const _taskLabels = {
     'gonogo':          'යන්න / නවතින්න',
     'wait_match':      'බලා ගැලපීම',
-    'audio_sequence':  'කතාව අනුපිළිවෙල',
+    'audio_sequence':  'කතාවේ අනුපිළිවෙල',
     'spot_change':     'වෙනස සොයන්න',
     'attention_grid':  'අවධාන ජාලය',
   };
+
   static const _taskIcons = {
-    'gonogo':          Icons.do_not_touch,
-    'wait_match':      Icons.hourglass_empty,
-    'audio_sequence':  Icons.queue_music,
-    'spot_change':     Icons.find_in_page,
-    'attention_grid':  Icons.grid_on,
-  };
-  static const _taskColors = {
-    'gonogo':          Color(0xFF4CAF50),
-    'wait_match':      Color(0xFFFF9800),
-    'audio_sequence':  Color(0xFF9C27B0),
-    'spot_change':     Color(0xFF2196F3),
-    'attention_grid':  Color(0xFFE91E63),
+    'gonogo':          Icons.pan_tool_alt_rounded,
+    'wait_match':      Icons.timer_rounded,
+    'audio_sequence':  Icons.auto_stories_rounded,
+    'spot_change':     Icons.remove_red_eye_rounded,
+    'attention_grid':  Icons.grid_view_rounded,
   };
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // length 3 to match the UI tabs
+    _tabController = TabController(length: 3, vsync: this);
     _loadAll();
   }
 
@@ -77,7 +78,6 @@ class _AdhDProgressPageState extends State<AdhDProgressPage>
     super.dispose();
   }
 
-  // ── Data loading ──────────────────────────────────────────────────────────
   Future<void> _loadAll() async {
     setState(() { _isLoading = true; _error = null; });
     final childId = Session.userId ?? 'unknown';
@@ -85,64 +85,64 @@ class _AdhDProgressPageState extends State<AdhDProgressPage>
       final results = await Future.wait([
         _fetchDiagnosticHistory(childId),
         _fetchTaskProgress(childId),
+        _fetchLatestPlan(childId),
       ]);
       setState(() {
         _diagnosticHistory = results[0];
         _taskProgress      = results[1];
+        _plan              = results[2];
         _isLoading         = false;
       });
     } catch (e) {
       setState(() {
-        _error     = 'දත්ත ලබා ගත නොහැකිය: $e';
+        _error     = 'දත්ත ලබා ගත නොහැක: $e';
         _isLoading = false;
       });
     }
   }
 
   Future<Map<String, dynamic>> _fetchDiagnosticHistory(String id) async {
-    final res = await http.get(
-        Uri.parse('${Config.baseUrl}/adhd/history/$id'));
+    final res = await http.get(Uri.parse('${Config.baseUrl}/adhd/history/$id'));
     if (res.statusCode == 200) return jsonDecode(res.body);
-    throw Exception('History fetch failed: ${res.statusCode}');
+    return {};
   }
 
   Future<Map<String, dynamic>> _fetchTaskProgress(String id) async {
-    final res = await http.get(
-        Uri.parse('${Config.baseUrl}/learning-tasks/progress/$id'));
+    final res = await http.get(Uri.parse('${Config.baseUrl}/learning-tasks/progress/$id'));
     if (res.statusCode == 200) return jsonDecode(res.body);
-    throw Exception('Progress fetch failed: ${res.statusCode}');
+    return {};
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> _fetchLatestPlan(String id) async {
+    final res = await http.get(Uri.parse('${Config.baseUrl}/learning-plan/latest/$id'));
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    return {};
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryBg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: secondaryPurple),
+          icon: Icon(Icons.arrow_back_ios_new, color: secondaryPurple, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('ප්‍රගති වාර්තාව',
-            style: TextStyle(
-                color: secondaryPurple, fontWeight: FontWeight.bold)),
+        title: Text('ප්‍රගති වාර්තාව', style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh_rounded, color: secondaryPurple),
-            onPressed: _loadAll,
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: secondaryPurple,
           unselectedLabelColor: Colors.grey,
           indicatorColor: secondaryPurple,
+          indicatorWeight: 3,
+          isScrollable: true,
           tabs: const [
-            Tab(icon: Icon(Icons.psychology_alt), text: 'රෝග විනිශ්චය'),
-            Tab(icon: Icon(Icons.task_alt),        text: 'ඉගෙනුම් කාර්ය'),
+            Tab(text: 'රෝග විනිශ්චය'),
+            Tab(text: 'ක්‍රියාකාරකම්'),
+            Tab(text: 'ඉගෙනුම් සැලැස්ම'),
           ],
         ),
       ),
@@ -155,321 +155,94 @@ class _AdhDProgressPageState extends State<AdhDProgressPage>
         children: [
           _buildDiagnosticTab(),
           _buildLearningTaskTab(),
+          _buildPlanTab(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const LearningTaskHome())),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LearningTaskHome())),
         backgroundColor: secondaryPurple,
-        icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
-        label: const Text('කාර්ය ආරම්භ',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.play_circle_fill, color: Colors.white),
+        label: const Text('ක්‍රියාකාරකම් අරඹන්න', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  // ── Error state ───────────────────────────────────────────────────────────
-  Widget _buildError() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.wifi_off_rounded, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(_error!,
-              style: TextStyle(color: Colors.grey[600]),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _loadAll,
-            icon: const Icon(Icons.refresh),
-            label: const Text('නැවත උත්සාහ කරන්න'),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: secondaryPurple,
-                foregroundColor: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildError() => Center(child: Text(_error!));
 
   // ════════════════════════════════════════════════════════════════════════════
-  // TAB 1 — Diagnostic history
+  // TAB 1 — Diagnostic History
   // ════════════════════════════════════════════════════════════════════════════
   Widget _buildDiagnosticTab() {
     final history = _diagnosticHistory!['history'] as List<dynamic>? ?? [];
     final total   = _diagnosticHistory!['total_sessions'] as int? ?? 0;
 
-    if (total == 0) return _buildEmpty('රෝග විනිශ්චය සැසි නොමැත',
-        'ළමාවයෙ ශිෂ්‍යයා රෝග විනිශ්චය ක්‍රියාකාරකම් සම්පූර්ණ කළ විට ප්‍රතිඵල මෙහි දිස්වේ');
+    if (total == 0) return _buildEmpty('ප්‍රතිඵල තවම නොමැත', 'පළමු පරීක්ෂණයෙන් පසු විස්තර මෙහි දිස්වේ');
 
     final latest  = history.first as Map<String, dynamic>;
     final metrics = latest['computed_metrics'] as Map<String, dynamic>? ?? {};
     final label   = metrics['attention_label'] as String? ?? '';
-    final profileColor = _profileColors[label] ?? Colors.grey;
+    final gradient = _profileGradients[label] ?? blueGradient;
 
     return RefreshIndicator(
       onRefresh: _loadAll,
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Latest profile card ──────────────────────────────────────
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
+              width: double.infinity, padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: profileColor.withOpacity(0.1),
+                gradient: LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                    color: profileColor.withOpacity(0.4), width: 2),
+                boxShadow: [BoxShadow(color: gradient.last.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
               ),
               child: Column(
                 children: [
-                  Icon(Icons.psychology_rounded, size: 52, color: profileColor),
-                  const SizedBox(height: 12),
-                  Text(
-                    _profileLabels[label] ?? label,
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: profileColor),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 6),
-                  Text('නවතම සැසිය · $total සැසි ගණනාවක් ලකුණු කළා',
-                      style: const TextStyle(fontSize: 13, color: Colors.black45)),
+                  const CircleAvatar(radius: 30, backgroundColor: Colors.white24, child: Icon(Icons.psychology_rounded, size: 35, color: Colors.white)),
+                  const SizedBox(height: 16),
+                  Text(_profileLabels[label] ?? label, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white), textAlign: TextAlign.center),
+                  const SizedBox(height: 4),
+                  Text('නවතම වාර්තාව • සැසි $total ක් සම්පූර්ණයි', style: const TextStyle(fontSize: 13, color: Colors.white70)),
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // ── Metric bars ──────────────────────────────────────────────
-            _sectionTitle('නවතම මෙට්‍රික්'),
+            _sectionTitle('මෑතකාලීන මිනුම්'),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: _cardDecoration(),
-              child: Column(
-                children: [
-                  _metricBar('ඉක්මන් ප්‍රතිචාරය',
-                      (metrics['impulsivity_ratio'] as num?)?.toDouble() ?? 0,
-                      Colors.orange),
-                  const SizedBox(height: 12),
-                  _metricBar('අවධාන දුර්වලතා',
-                      (metrics['inattention_score'] as num?)?.toDouble() ?? 0,
-                      Colors.blue),
-                  const SizedBox(height: 12),
-                  _metricBar('නිරවද්‍යතාව',
-                      (metrics['overall_accuracy'] as num?)?.toDouble() ?? 0,
-                      Colors.green,
-                      isPositive: true),
-                ],
-              ),
+              padding: const EdgeInsets.all(20), decoration: _cardDecoration(),
+              child: Column(children: [
+                _metricBar('ආවේගශීලී බව (Impulsivity)', (metrics['impulsivity_ratio'] as num?)?.toDouble() ?? 0, Colors.orange),
+                const SizedBox(height: 16),
+                _metricBar('අවධානය අඩුවීම (Inattention)', (metrics['inattention_score'] as num?)?.toDouble() ?? 0, Colors.blue),
+                const SizedBox(height: 16),
+                _metricBar('නිරවද්‍යතාව (Accuracy)', (metrics['overall_accuracy'] as num?)?.toDouble() ?? 0, Colors.green),
+              ]),
             ),
-
             const SizedBox(height: 24),
-
-            // ── Accuracy trend ───────────────────────────────────────────
-            _sectionTitle('නිරවද්‍යතා ප්‍රවණතාව'),
+            _sectionTitle('ප්‍රගති ප්‍රස්ථාරය'),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: _cardDecoration(),
-              child: _buildAccuracyChart(history),
-            ),
-
+            Container(padding: const EdgeInsets.all(20), decoration: _cardDecoration(), child: _buildAccuracyChart(history)),
             const SizedBox(height: 24),
-
-            // ── Session history list ─────────────────────────────────────
-            _sectionTitle('සැසි ඉතිහාසය ($total)'),
+            _sectionTitle('පෙර සැසි වාර්තා'),
             const SizedBox(height: 12),
-            ...history.take(10).map((s) =>
-                _buildDiagnosticSessionCard(s as Map<String, dynamic>)),
+            ...history.take(5).map((s) => _buildDiagnosticSessionCard(s as Map<String, dynamic>)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _metricBar(String label, double value, Color color,
-      {bool isPositive = false}) {
-    final pct = (value * 100).round();
-    final level = isPositive
-        ? (value >= 0.7 ? 'ඉහළ 🟢' : value >= 0.4 ? 'මධ්‍යම 🟡' : 'පහළ 🔴')
-        : (value > 0.35 ? 'ඉහළ 🔴' : value > 0.2 ? 'මධ්‍යම 🟡' : 'පහළ 🟢');
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label,
-                style: const TextStyle(fontSize: 14, color: Colors.black54)),
-            Row(children: [
-              Text(level,
-                  style: const TextStyle(fontSize: 12)),
-              const SizedBox(width: 6),
-              Text('$pct%',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
-            ]),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: value.clamp(0.0, 1.0),
-            minHeight: 10,
-            backgroundColor: Colors.grey[200],
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAccuracyChart(List<dynamic> history) {
-    if (history.isEmpty) {
-      return const Center(
-          child: Text('දත්ත නොමැත', style: TextStyle(color: Colors.grey)));
-    }
-    final reversed = history.reversed.toList();
-    return SizedBox(
-      height: 100,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: reversed.take(10).toList().asMap().entries.map((e) {
-          final m   = (e.value as Map<String, dynamic>)['computed_metrics']
-          as Map<String, dynamic>? ?? {};
-          final acc = (m['overall_accuracy'] as num?)?.toDouble() ?? 0;
-          final height = (acc * 80).clamp(4.0, 80.0);
-          final barColor = acc >= 0.7
-              ? Colors.green
-              : acc >= 0.4
-              ? Colors.orange
-              : Colors.red;
-          return Tooltip(
-            message: '${(acc * 100).round()}%',
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text('${(acc * 100).round()}%',
-                    style: TextStyle(
-                        fontSize: 9,
-                        color: barColor,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 600),
-                  width: 22,
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: barColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text('${e.key + 1}',
-                    style: const TextStyle(fontSize: 9, color: Colors.grey)),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildDiagnosticSessionCard(Map<String, dynamic> session) {
-    final metrics = session['computed_metrics'] as Map<String, dynamic>? ?? {};
-    final label   = metrics['attention_label'] as String? ?? '';
-    final acc     = (metrics['overall_accuracy'] as num?)?.toDouble() ?? 0;
-    final ts      = session['timestamp'] as String? ?? '';
-    final color   = _profileColors[label] ?? Colors.grey;
-
-    String dateStr = '';
-    try {
-      final dt = DateTime.parse(ts).toLocal();
-      dateStr =
-      '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}';
-    } catch (_) {
-      dateStr = ts.length > 10 ? ts.substring(0, 10) : ts;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text('${(acc * 100).round()}%',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: color)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_profileLabels[label] ?? label,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: color)),
-                const SizedBox(height: 2),
-                Text(
-                    'නිවැරදි: ${session['total_correct']}  '
-                        'ඉක්මන්: ${session['total_premature']}  '
-                        'වැරදි: ${session['total_wrong']}',
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.black45)),
-              ],
-            ),
-          ),
-          Text(dateStr,
-              style: const TextStyle(fontSize: 11, color: Colors.black38)),
-        ],
       ),
     );
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // TAB 2 — Learning task progress
+  // TAB 2 — Task Progress
   // ════════════════════════════════════════════════════════════════════════════
   Widget _buildLearningTaskTab() {
     final sessions = _taskProgress!['sessions'] as List<dynamic>? ?? [];
+    if (sessions.isEmpty) return _buildEmpty('ක්‍රියාකාරකම් තවම නැත', 'ක්‍රියාකාරකම් අරඹා ඔබේ ප්‍රගතිය නිරීක්ෂණය කරන්න');
 
-    if (sessions.isEmpty) {
-      return _buildEmpty('ඉගෙනුම් කාර්ය ලකුණු නොමැත',
-          '"කාර්ය ආරම්භ" බොත්තම ඔබා කාර්ය ආරම්භ කරන්න');
-    }
-
-    // Group sessions by task_id
     final Map<String, List<Map<String, dynamic>>> byTask = {};
     for (final s in sessions) {
-      final m  = s as Map<String, dynamic>;
+      final m = s as Map<String, dynamic>;
       final id = m['task_id'] as String? ?? 'unknown';
       byTask.putIfAbsent(id, () => []).add(m);
     }
@@ -477,336 +250,150 @@ class _AdhDProgressPageState extends State<AdhDProgressPage>
     return RefreshIndicator(
       onRefresh: _loadAll,
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Summary row ──────────────────────────────────────────────
             _buildTaskSummaryRow(sessions),
             const SizedBox(height: 24),
-
-            // ── Per-task progress cards ───────────────────────────────────
-            _sectionTitle('කාර්ය අනුව ප්‍රගතිය'),
+            _sectionTitle('ක්‍රියාකාරකම් අනුව ප්‍රගතිය'),
             const SizedBox(height: 12),
-            ...byTask.entries.map((e) =>
-                _buildPerTaskCard(e.key, e.value)),
-
+            ...byTask.entries.map((e) => _buildPerTaskCard(e.key, e.value)),
             const SizedBox(height: 24),
-
-            // ── Recent session list ───────────────────────────────────────
-            _sectionTitle('මෑත සැසි (${sessions.length})'),
+            _sectionTitle('මෑතකාලීන සැසි'),
             const SizedBox(height: 12),
-            ...sessions.take(15).map((s) =>
-                _buildTaskSessionCard(s as Map<String, dynamic>)),
+            ...sessions.take(10).map((s) => _buildTaskSessionCard(s as Map<String, dynamic>)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTaskSummaryRow(List<dynamic> sessions) {
-    final totalSessions = sessions.length;
-    final avgScore = sessions.isEmpty
-        ? 0.0
-        : sessions
-        .map((s) =>
-    (s as Map<String, dynamic>)['score_percent'] as num? ?? 0)
-        .reduce((a, b) => a + b) /
-        sessions.length;
-    final maxDiff = sessions.isEmpty
-        ? 1
-        : sessions
-        .map((s) => (s as Map<String, dynamic>)['difficulty'] as int? ?? 1)
-        .reduce((a, b) => a > b ? a : b);
+  // ════════════════════════════════════════════════════════════════════════════
+  // TAB 3 — Learning Plan
+  // ════════════════════════════════════════════════════════════════════════════
+  Widget _buildPlanTab() {
+    if (_plan == null || _plan!.isEmpty) return _buildEmpty('සැලැස්ම තවම නැත', 'පළමු පරීක්ෂණයෙන් පසු විස්තර මෙහි දිස්වේ');
 
-    return Row(
-      children: [
-        Expanded(
-            child: _summaryTile('සැසි', '$totalSessions', Colors.blue)),
-        const SizedBox(width: 10),
-        Expanded(
-            child: _summaryTile(
-                'සාමාන්‍ය ලකුණු',
-                '${avgScore.toStringAsFixed(1)}%',
-                avgScore >= 70 ? Colors.green : Colors.orange)),
-        const SizedBox(width: 10),
-        Expanded(
-            child: _summaryTile('ඉහළ මට්ටම', '$maxDiff',
-                maxDiff == 3 ? Colors.purple : Colors.teal)),
-      ],
-    );
-  }
+    final params     = _plan!['adaptation_params'] as Map<String, dynamic>;
+    final activities = _plan!['activities'] as List<dynamic>;
+    final teacherNote = _plan!['teacher_note'] as String? ?? "";
+    final parentNote  = _plan!['parent_note'] as String? ?? "";
+    final profile    = _plan!['profile'] as String?;
+    final color      = _profileGradients[profile]?[0] ?? Colors.grey;
 
-  Widget _summaryTile(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(value,
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color)),
-          const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(fontSize: 11, color: Colors.black45),
-              textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPerTaskCard(
-      String taskId, List<Map<String, dynamic>> sessions) {
-    final color  = _taskColors[taskId] ?? secondaryPurple;
-    final icon   = _taskIcons[taskId] ?? Icons.star;
-    final label  = _taskLabels[taskId] ?? taskId;
-    final latest = sessions.first;
-    final diff   = latest['difficulty'] as int? ?? 1;
-    final score  = (latest['score_percent'] as num?)?.toDouble() ?? 0;
-    final stars  = '⭐' * diff;
-
-    // Trend: compare last 2 sessions
-    String trend = '';
-    if (sessions.length >= 2) {
-      final prev =
-          (sessions[1]['score_percent'] as num?)?.toDouble() ?? 0;
-      if (score > prev + 5) {
-        trend = ' ↑';
-      } else if (score < prev - 5) {
-        trend = ' ↓';
-      }
-    }
-
-    // Mini score bars for last 5 sessions
-    final recent = sessions.take(5).toList().reversed.toList();
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.25), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-              color: color.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))
-        ],
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label,
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: color)),
-                    Text('මට්ටම $diff $stars  ·  ${sessions.length} සැසි',
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.black45)),
-                  ],
-                ),
-              ),
-              Text(
-                '${score.toStringAsFixed(0)}%$trend',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: score >= 75
-                        ? Colors.green
-                        : score >= 50
-                        ? Colors.orange
-                        : Colors.red),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          // Mini bar chart
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const Text('ප්‍රගතිය: ',
-                  style: TextStyle(fontSize: 11, color: Colors.black38)),
-              ...recent.map((r) {
-                final s =
-                    (r['score_percent'] as num?)?.toDouble() ?? 0;
-                final h = (s / 100 * 28).clamp(2.0, 28.0);
-                final c = s >= 75
-                    ? Colors.green
-                    : s >= 50
-                    ? Colors.orange
-                    : Colors.red;
-                return Container(
-                  width: 16,
-                  height: h,
-                  margin: const EdgeInsets.only(right: 4),
-                  decoration: BoxDecoration(
-                    color: c,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                );
-              }),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTaskSessionCard(Map<String, dynamic> session) {
-    final taskId = session['task_id'] as String? ?? '';
-    final score  = (session['score_percent'] as num?)?.toDouble() ?? 0;
-    final diff   = session['difficulty'] as int? ?? 1;
-    final ts     = session['timestamp'] as String? ?? '';
-    final color  = _taskColors[taskId] ?? secondaryPurple;
-    final icon   = _taskIcons[taskId] ?? Icons.star;
-
-    String dateStr = '';
-    try {
-      final dt = DateTime.parse(ts).toLocal();
-      dateStr =
-      '${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')} '
-          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      dateStr = ts.length > 10 ? ts.substring(0, 10) : ts;
-    }
-
-    // Stars for difficulty
-    final stars = '⭐' * diff;
-    // Score circle color
-    final scoreColor = score >= 75
-        ? Colors.green
-        : score >= 50
-        ? Colors.orange
-        : Colors.red;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.15)),
-      ),
-      child: Row(
-        children: [
+          _sectionTitle('දරුවාගේ ඉගෙනුම් සැලැස්ම සහ ගුරු උපදෙස්'),
+          const SizedBox(height: 12),
           Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 20),
+            padding: const EdgeInsets.all(20), decoration: _cardDecoration(),
+            child: Column(children: [
+              _paramRow(Icons.layers_rounded, 'එකවර ලැබෙන ප්‍රශ්න ගණන', '${params['chunk_size']}'),
+              _divider(),
+              _paramRow(Icons.timer_rounded, 'සැසි කාලය', '${params['session_minutes']} min'),
+            ]),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_taskLabels[taskId] ?? taskId,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: color)),
-                Text('$stars  ·  නිවැරදි: ${session['correct']}  '
-                    'වැරදි: ${session['wrong']}',
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.black38)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: scoreColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text('${score.toStringAsFixed(0)}%',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: scoreColor)),
-              ),
-              const SizedBox(height: 2),
-              Text(dateStr,
-                  style: const TextStyle(
-                      fontSize: 10, color: Colors.black38)),
-            ],
-          ),
+          const SizedBox(height: 25),
+          _sectionTitle('නිර්දේශිත ක්‍රියාකාරකම්'),
+          const SizedBox(height: 12),
+          ...activities.map((a) => _activityCard(a as Map<String, dynamic>, color)),
+          const SizedBox(height: 25),
+          _noteCard(teacherNote, Icons.school_rounded, Colors.teal, "ගුරු උපදෙස්"),
+          const SizedBox(height: 12),
+          _noteCard(parentNote, Icons.family_restroom_rounded, Colors.orange, "දෙමාපියන් සඳහා"),
         ],
       ),
     );
   }
 
-  // ── Shared helpers ────────────────────────────────────────────────────────
-  Widget _sectionTitle(String text) {
-    return Text(text,
-        style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: secondaryPurple));
-  }
+  // ════════════════════════════════════════════════════════════════════════════
+  // UI HELPERS
+  // ════════════════════════════════════════════════════════════════════════════
 
-  BoxDecoration _cardDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-            color: secondaryPurple.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4))
+  Widget _sectionTitle(String text) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(text, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: secondaryPurple)));
+
+  BoxDecoration _cardDecoration() => BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5))]);
+
+  Widget _divider() => Divider(color: Colors.grey.shade100, height: 20);
+
+  Widget _metricBar(String label, double value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black54)), Text('${(value * 100).round()}%', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color))]),
+        const SizedBox(height: 8),
+        ClipRRect(borderRadius: BorderRadius.circular(10), child: LinearProgressIndicator(value: value.clamp(0.0, 1.0), minHeight: 12, backgroundColor: color.withOpacity(0.1), color: color)),
       ],
     );
   }
 
+  Widget _noteCard(String text, IconData icon, Color color, String title) {
+    return Container(
+      padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: color.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.2))),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [Icon(icon, color: color, size: 18), const SizedBox(width: 8), Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13))]),
+        const SizedBox(height: 8), Text(text, style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.5)),
+      ]),
+    );
+  }
+
+  Widget _paramRow(IconData icon, String label, String value) {
+    return Row(children: [Icon(icon, color: secondaryPurple.withOpacity(0.5), size: 20), const SizedBox(width: 12), Text(label, style: const TextStyle(fontSize: 14, color: Colors.black54)), const Spacer(), Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: secondaryPurple))]);
+  }
+
   Widget _buildEmpty(String title, String subtitle) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_rounded, size: 72, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(title,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[500]),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(subtitle,
-                style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                textAlign: TextAlign.center),
-          ],
-        ),
+    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.auto_awesome_motion_rounded, size: 80, color: Colors.grey[300]), const SizedBox(height: 16), Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54)), Padding(padding: const EdgeInsets.symmetric(horizontal: 40), child: Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.grey)))]));
+  }
+
+  Widget _activityCard(Map<String, dynamic> a, Color color) {
+    final List<Color> gradient = a['title'].hashCode % 2 == 0 ? blueGradient : purpleGradient;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(children: [
+          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient)), child: Row(children: [CircleAvatar(backgroundColor: Colors.white24, child: Icon(_taskIcons[a['type']] ?? Icons.star, color: Colors.white)), const SizedBox(width: 12), Expanded(child: Text(a['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)))])),
+          Padding(padding: const EdgeInsets.all(16), child: Text(a['description'], style: const TextStyle(color: Colors.grey, fontSize: 13))),
+        ]),
       ),
     );
+  }
+
+  Widget _buildAccuracyChart(List<dynamic> history) {
+    if (history.isEmpty) return const SizedBox();
+    return SizedBox(height: 100, child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: history.reversed.take(8).toList().asMap().entries.map((e) {
+      final acc = (e.value['computed_metrics']['overall_accuracy'] as num).toDouble();
+      return Container(width: 25, height: (acc * 70).clamp(5.0, 70.0), decoration: BoxDecoration(gradient: LinearGradient(colors: acc > 0.6 ? greenGradient : orangeGradient, begin: Alignment.bottomCenter, end: Alignment.topCenter), borderRadius: BorderRadius.circular(6)));
+    }).toList()));
+  }
+
+  Widget _buildDiagnosticSessionCard(Map<String, dynamic> session) {
+    final metrics = session['computed_metrics'] as Map<String, dynamic>? ?? {};
+    final label = metrics['attention_label'] as String? ?? '';
+    final color = (_profileGradients[label] ?? blueGradient).first;
+    return Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(12), decoration: _cardDecoration(), child: Row(children: [Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(gradient: LinearGradient(colors: _profileGradients[label] ?? blueGradient), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.history_rounded, color: Colors.white, size: 20)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_profileLabels[label] ?? label, style: TextStyle(fontWeight: FontWeight.bold, color: color)), Text('නිවැරදි: ${session['total_correct']} | වැරදි: ${session['total_wrong']}', style: const TextStyle(fontSize: 11, color: Colors.grey))]))]));
+  }
+
+  Widget _buildPerTaskCard(String taskId, List<Map<String, dynamic>> sessions) {
+    final label = _taskLabels[taskId] ?? taskId;
+    final score = (sessions.first['score_percent'] as num).toDouble();
+    final gradient = taskId.hashCode % 2 == 0 ? blueGradient : purpleGradient;
+    return Container(margin: const EdgeInsets.only(bottom: 16), decoration: _cardDecoration(), child: ClipRRect(borderRadius: BorderRadius.circular(24), child: Column(children: [Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(gradient: LinearGradient(colors: gradient)), child: Row(children: [CircleAvatar(backgroundColor: Colors.white24, child: Icon(_taskIcons[taskId] ?? Icons.star, color: Colors.white)), const SizedBox(width: 12), Expanded(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))), Text('${score.toStringAsFixed(0)}%', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20))])), Padding(padding: const EdgeInsets.all(16), child: Text('සම්පූර්ණ කළ වාර: ${sessions.length}', style: const TextStyle(color: Colors.grey, fontSize: 13)))])));
+  }
+
+  Widget _buildTaskSummaryRow(List<dynamic> sessions) {
+    final avgScore = sessions.isEmpty ? 0 : (sessions.map((s) => s['score_percent'] as num).reduce((a, b) => a + b) / sessions.length).round();
+    return Row(children: [Expanded(child: _summaryTile('සැසි වාර', '${sessions.length}', blueGradient)), const SizedBox(width: 12), Expanded(child: _summaryTile('සාමාන්‍යය', '$avgScore%', greenGradient)), const SizedBox(width: 12), Expanded(child: _summaryTile('දක්ෂතාව', 'ඉහළ', orangeGradient))]);
+  }
+
+  Widget _summaryTile(String label, String value, List<Color> colors) => Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(gradient: LinearGradient(colors: colors), borderRadius: BorderRadius.circular(20)), child: Column(children: [Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)), const SizedBox(height: 4), Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70))]));
+
+  Widget _buildTaskSessionCard(Map<String, dynamic> session) {
+    final score = (session['score_percent'] as num).toDouble();
+    return Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade100)), child: Row(children: [Icon(_taskIcons[session['task_id']] ?? Icons.task_alt, color: secondaryPurple.withOpacity(0.5), size: 20), const SizedBox(width: 10), Expanded(child: Text(_taskLabels[session['task_id']] ?? session['task_id'].toString(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))), Text('${score.toInt()}%', style: TextStyle(fontWeight: FontWeight.bold, color: score > 70 ? Colors.green : Colors.orange))]));
   }
 }
