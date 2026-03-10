@@ -83,6 +83,7 @@ flutter:
     - assets/RP_logo.png
     - assets/sounds/
     - assets/
+    - assets/tasks_adhd/
     - assets/rpicon.jpg
   # assets:
   #   - images/a_dot_burr.jpeg

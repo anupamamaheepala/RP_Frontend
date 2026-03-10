@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../utils/sessions.dart';
 import 'task_stats.dart';
 import '../../../config.dart';
+import 'grade3_learning_plan_page.dart';
+import 'learning_tasks/learning_task_home.dart';
 
 class Grade3ResultsPage extends StatefulWidget {
   const Grade3ResultsPage({super.key});
@@ -14,6 +17,8 @@ class Grade3ResultsPage extends StatefulWidget {
 class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
   bool _isSaving = true;
   String _saveMessage = "ප්‍රතිඵල සුරකිමින්...";
+  String? _profile;
+  Map<String, dynamic>? _computedMetrics;
 
   int get totalActions =>
       TaskStats.totalCorrect + TaskStats.totalWrong + TaskStats.totalPremature;
@@ -40,15 +45,17 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
   }
 
   Future<void> _submitResultsToBackend() async {
-    final url = Uri.parse("${Config.baseUrl}/adhd/submit-results");
+    final url     = Uri.parse("${Config.baseUrl}/adhd/submit-results");
+    final childId = Session.userId ?? "unknown";
 
     final payload = {
-      "grade":            3,
-      "total_correct":    TaskStats.totalCorrect,
-      "total_premature":  TaskStats.totalPremature,
-      "total_wrong":      TaskStats.totalWrong,
-      "overall_accuracy": overallAccuracy,
-      "timestamp":        DateTime.now().toIso8601String(),
+      "grade":             3,
+      "total_correct":     TaskStats.totalCorrect,
+      "total_premature":   TaskStats.totalPremature,
+      "total_wrong":       TaskStats.totalWrong,
+      "overall_accuracy":  overallAccuracy,
+      "timestamp":         DateTime.now().toIso8601String(),
+      "child_id":          childId,
       "task_response_times": {
         "task1": TaskStats.task1ResponseTimes,
         "task2": TaskStats.task2ResponseTimes,
@@ -64,25 +71,176 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
       );
 
       if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        final profile =
+        responseData['computed_metrics']['attention_label'] as String;
+        final metrics =
+        responseData['computed_metrics'] as Map<String, dynamic>;
+
+        await _generateLearningPlan(profile, childId);
+
         setState(() {
-          _isSaving = false;
-          _saveMessage = "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!";
+          _isSaving        = false;
+          _saveMessage     = "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!";
+          _profile         = profile;
+          _computedMetrics = metrics;
         });
         TaskStats.reset();
       } else {
         setState(() {
-          _isSaving = false;
+          _isSaving    = false;
           _saveMessage = "සේවාදායක දෝෂයක් (Status: ${response.statusCode})";
         });
       }
     } catch (e) {
       setState(() {
-        _isSaving = false;
+        _isSaving    = false;
         _saveMessage = "සම්බන්ධතා දෝෂයක් ඇත";
       });
     }
   }
 
+  Future<void> _generateLearningPlan(String profile, String childId) async {
+    final url = Uri.parse("${Config.baseUrl}/learning-plan/generate");
+    try {
+      await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "child_id":          childId,
+          "grade":             3,
+          "attention_profile": profile,
+        }),
+      );
+    } catch (e) {
+      debugPrint("Learning plan generation failed: $e");
+    }
+  }
+
+  // ── Teacher section ────────────────────────────────────────────────────────
+  Widget _buildTeacherSection() {
+    if (_computedMetrics == null) return const SizedBox.shrink();
+
+    final imp  = (_computedMetrics!['impulsivity_ratio'] as num).toDouble();
+    final inat = (_computedMetrics!['inattention_score'] as num).toDouble();
+    final acc  = (_computedMetrics!['overall_accuracy']  as num).toDouble();
+    final label = _computedMetrics!['attention_label'] as String? ?? '';
+
+    final impLevel  = imp  > 0.35 ? 'ඉහළ 🔴' : imp  > 0.2 ? 'මධ්‍යම 🟡' : 'පහළ 🟢';
+    final inatLevel = inat > 0.35 ? 'ඉහළ 🔴' : inat > 0.2 ? 'මධ්‍යම 🟡' : 'පහළ 🟢';
+
+    final strategies = _teacherStrategies(label);
+
+    return ExpansionTile(
+      leading: const Icon(Icons.school, color: Colors.teal),
+      title: const Text(
+        '👩‍🏫 ගුරුවරයා සඳහා',
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+      ),
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.teal.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.teal.withOpacity(0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _teacherRow('ශ්‍රේණිය',              'Grade 3'),
+              _teacherRow('අවධාන පැතිකඩ',          label),
+              _teacherRow('ඉක්මන් ප්‍රතිචාරය',     impLevel),
+              _teacherRow('අවධාන දුර්වලතා',        inatLevel),
+              _teacherRow('නිරවද්‍යතාව',           '${(acc * 100).round()}%'),
+              _teacherRow('ඉක්මන් ක්‍රියා ගණන',   '${TaskStats.totalPremature}'),
+              _teacherRow('වැරදි ප්‍රතිචාර ගණන',  '${TaskStats.totalWrong}'),
+
+              const Divider(height: 24),
+
+              const Text(
+                'නිර්දේශිත උපාය මාර්ග:',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.teal),
+              ),
+              const SizedBox(height: 8),
+              ...strategies.map((s) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ',
+                        style: TextStyle(color: Colors.teal)),
+                    Expanded(
+                      child: Text(s,
+                          style: const TextStyle(fontSize: 13)),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _teacherRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style:
+              const TextStyle(fontSize: 13, color: Colors.black54)),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  List<String> _teacherStrategies(String profile) {
+    switch (profile) {
+      case 'profile_a':
+        return [
+          'සාමාන්‍ය පන්ති ක්‍රමය ප්‍රමාණවත්',
+          'අභියෝගාත්මක කාර්යයන් ලබා දෙන්න',
+          'නිර්මාණශීලී ක්‍රියාකාරකම් දිරිමත් කරන්න',
+        ];
+      case 'profile_b':
+        return [
+          'කාර්යයන් විනාඩි 7 කොටස්වලට කඩා ලබා දෙන්න',
+          'ශ්‍රව්‍ය + දෘශ්‍ය ද්විත්ව ක්‍රමය භාවිතා කරන්න',
+          'ඉදිරිපස ආසනයක් ලබා දෙන්න',
+          'සෑම කාර්ය 2කට වරක් ප්‍රශංසා කරන්න',
+          'ශබ්ද රහිත පරිසරයක ඉගෙනීමට ඉඩ දෙන්න',
+        ];
+      case 'profile_c':
+        return [
+          'ප්‍රශ්නයට පිළිතුරු දීමට පෙර 3 ගණන් කිරීමට කියන්න',
+          'ඉක්මන් ප්‍රතිචාරවලට ලකුණු නොදෙන්න',
+          'ඉවසීම සඳහා ත්‍යාග ලබා දෙන්න',
+          'රතු/කොළ ක්‍රීඩාව දිනකට 5 min කරන්න',
+          'Chess, puzzles දිරිමත් කරන්න',
+        ];
+      case 'profile_d':
+        return [
+          'එකවර කාර්ය 1ක් පමණ ලබා දෙන්න',
+          'විනාඩි 5ට අඩු කාර්යයන් ලබා දෙන්න',
+          'ස්ටිකර් ත්‍යාග ක්‍රමයක් භාවිතා කරන්න',
+          'දෙමාපියන් සමඟ ගෙදර පුහුණුව ගැන කතා කරන්න',
+          'ළමා රෝගී විශේෂඥ ඇගයීමක් ගැන සලකා බලන්න',
+        ];
+      default:
+        return ['ගුරුවරයාගේ නිරීක්ෂණය නිතිපතා කරන්න'];
+    }
+  }
+
+  // ── Shared UI helpers ──────────────────────────────────────────────────────
   final Color primaryBg       = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
   final Color accentAmber     = const Color(0xFFFFB300);
@@ -120,7 +278,8 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
             value,
             style: TextStyle(
               fontSize: 18,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w700,
+              fontWeight:
+              isBold ? FontWeight.bold : FontWeight.w700,
               color: color,
             ),
           ),
@@ -132,6 +291,7 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
   Widget _buildDivider() =>
       Divider(height: 32, thickness: 1, color: Colors.grey[100]);
 
+  // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +314,7 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
         const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
         child: Column(
           children: [
+            // ── Trophy ──────────────────────────────────────────────────
             Stack(
               alignment: Alignment.center,
               children: [
@@ -175,10 +336,12 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
                     color: secondaryPurple)),
             const SizedBox(height: 8),
             const Text('ඔබේ අවධානය සහ හැසිරීම පිළිබඳ වාර්තාව',
-                style: TextStyle(fontSize: 16, color: Colors.black54)),
+                style:
+                TextStyle(fontSize: 16, color: Colors.black54)),
 
             const SizedBox(height: 30),
 
+            // ── Stats card ───────────────────────────────────────────────
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -199,7 +362,8 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
                     _buildResultRow(
                         icon: Icons.speed_rounded,
                         label: 'සමස්ත නිවැරදිතාව',
-                        value: '${overallAccuracy.toStringAsFixed(0)}%',
+                        value:
+                        '${overallAccuracy.toStringAsFixed(0)}%',
                         color: overallAccuracy >= 80
                             ? Colors.green
                             : Colors.orange),
@@ -233,6 +397,7 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
 
             const SizedBox(height: 30),
 
+            // ── Info banner ──────────────────────────────────────────────
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -249,6 +414,8 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
             ),
 
             const SizedBox(height: 20),
+
+            // ── Save status ──────────────────────────────────────────────
             if (_isSaving)
               const CircularProgressIndicator()
             else
@@ -259,14 +426,15 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
                           : Colors.red,
                       fontSize: 14)),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
 
+            // ── Action buttons ───────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, (route) => route.isFirst),
+                onPressed: () => Navigator.popUntil(
+                    context, (route) => route.isFirst),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: accentAmber,
                     shape: RoundedRectangleBorder(
@@ -278,7 +446,78 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
                         color: Colors.white)),
               ),
             ),
-            const SizedBox(height: 20),
+
+            if (!_isSaving && _profile != null) ...[
+
+              const SizedBox(height: 12),
+
+              // View learning plan
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Grade3LearningPlanPage(
+                        childId: Session.userId ?? "unknown",
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(Icons.auto_awesome,
+                      color: Colors.white),
+                  label: const Text(
+                    'ඉගෙනුම් සැලැස්ම බලන්න',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: secondaryPurple,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Start learning tasks
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LearningTaskHome(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.play_circle_fill,
+                      color: Colors.white),
+                  label: const Text(
+                    'ඉගෙනුම් කාර්යයන් ආරම්භ කරන්න',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ── Teacher section ────────────────────────────────────────
+              _buildTeacherSection(),
+            ],
+
+            const SizedBox(height: 30),
           ],
         ),
       ),

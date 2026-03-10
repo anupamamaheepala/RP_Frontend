@@ -28,9 +28,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // --- LOGIN LOGIC ---
   Future<void> _handleLogin() async {
-    // 1. Basic Validation
     if (_usernameController.text.trim().isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter username and password")),
@@ -41,8 +39,14 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 2. Send Credentials to Backend
       final url = Uri.parse("${Config.baseUrl}/auth/login");
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      debugPrint("🔵 [LOGIN] Attempting login...");
+      debugPrint("🔵 [LOGIN] URL: $url");
+      debugPrint("🔵 [LOGIN] Username: ${_usernameController.text.trim()}");
+      debugPrint("🔵 [LOGIN] Password length: ${_passwordController.text.length}");
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
@@ -52,11 +56,15 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
 
-      if (response.statusCode == 200) {
-        // 3. Success -> Parse Data
-        final data = jsonDecode(response.body);
+      debugPrint("🟡 [LOGIN] Status Code: ${response.statusCode}");
+      debugPrint("🟡 [LOGIN] Response Body: ${response.body}");
 
-        // 4. Save User Data Locally
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        debugPrint("🟢 [LOGIN] Success! user_id: ${data['user_id']}");
+        debugPrint("🟢 [LOGIN] Username: ${data['username']}");
+        debugPrint("🟢 [LOGIN] Grade: ${data['grade']}");
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_id', data['user_id']);
         await prefs.setString('username', data['username']);
@@ -65,32 +73,41 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setString('avatar_image', data['avatar_image'] ?? "plogo1");
         await Session.load();
 
+        debugPrint("🟢 [LOGIN] Session saved to SharedPreferences");
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login Successful! (සාර්ථකයි!)"), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text("Login Successful! (සාර්ථකයි!)"),
+              backgroundColor: Colors.green,
+            ),
           );
-
-          // 5. Navigate to Profile Page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const ProfilePage()),
           );
         }
       } else {
-        // 6. Handle Errors
+        debugPrint("🔴 [LOGIN] Failed with status: ${response.statusCode}");
+        debugPrint("🔴 [LOGIN] Error body: ${response.body}");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Login failed. Check username/password. (ඇතුල් වීමට නොහැක. නම හෝ මුරපදය පරීක්ෂා කරන්න.)"),
+            SnackBar(
+              content: Text("Login failed (${response.statusCode}): ${response.body}"),
               backgroundColor: Colors.red,
             ),
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint("🔴 [LOGIN] Exception caught: $e");
+      debugPrint("🔴 [LOGIN] StackTrace: $stackTrace");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Connection Error: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Connection Error: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -122,7 +139,6 @@ class _LoginPageState extends State<LoginPage> {
                 clipBehavior: Clip.none,
                 alignment: Alignment.topCenter,
                 children: [
-                  // --- White Card Container ---
                   Container(
                     margin: const EdgeInsets.only(top: 40),
                     padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
@@ -131,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(24.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withOpacity(0.1), // Soft purple shadow
+                          color: Colors.purple.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -215,7 +231,6 @@ class _LoginPageState extends State<LoginPage> {
                           'ගිණුමක් නොමැතිද? / Don\'t have an account?',
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
-
                         const SizedBox(height: 10),
 
                         SizedBox(
@@ -225,12 +240,13 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const SignupPage()),
+                                MaterialPageRoute(
+                                    builder: (context) => const SignupPage()),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEFEFEF), // Adjusted for light theme
-                              foregroundColor: Colors.purple, // Adjusted text color
+                              backgroundColor: const Color(0xFFEFEFEF),
+                              foregroundColor: Colors.purple,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
@@ -238,7 +254,8 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             child: const Text(
                               'ලියාපදිංචි වන්න',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -263,7 +280,8 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.vpn_key_rounded, color: Colors.white, size: 40),
+                        child: Icon(Icons.vpn_key_rounded,
+                            color: Colors.white, size: 40),
                       ),
                     ),
                   ),
