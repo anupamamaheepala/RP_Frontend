@@ -546,7 +546,7 @@ class _G3_L1_High_A1_AnimateState extends State<G3_L1_High_A1_Animate>
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              "Not quite — try again! You can replay the sound.",
+              "වැරදියි— නැවත උත්සාහ කරන්න! ඔබට ශබ්දය නැවත වාදනය කළ හැකිය.",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

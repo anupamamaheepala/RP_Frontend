@@ -10,19 +10,15 @@
 // }
 
 
-//ANUPAMA
-// class Config {
-//     static const baseUrl = "https://rp-backend-production-afe6.up.railway.app";
-//  }
+// //ANUPAMA
+//  class Config {
+//      static const baseUrl = "https://rp-backend-production-afe6.up.railway.app";
+//   }
 
-// //SADITH
-// class Config {
-//  static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
-// }
  // SADITH
-// class Config {
-//  static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
-// }
+//class Config {
+ //static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
+//}
 
 // //RASHINI
 // class Config {

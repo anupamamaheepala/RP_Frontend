@@ -148,11 +148,11 @@ class _G3_L1_ShortPhraseReading_A6State
             padding: const EdgeInsets.only(right: 12),
             child: Row(
               children: [
-                _buildBadge("High Risk", const Color(0xFFFF6B6B), Colors.white),
+                _buildBadge("ඉහළ අවදානම", const Color(0xFFFF6B6B), Colors.white),
                 const SizedBox(width: 6),
-                _buildBadge("Grade 3 · Level 1", const Color(0xFF4A90D9), Colors.white),
-                const SizedBox(width: 6),
-                _buildBadge("Module 4 — Final", const Color(0xFF7B61FF), Colors.white),
+                _buildBadge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFF4A90D9), Colors.white),
+                // const SizedBox(width: 6),
+                // _buildBadge("පැවරුම 6", const Color(0xFF7B61FF), Colors.white),
               ],
             ),
           ),
@@ -166,7 +166,7 @@ class _G3_L1_ShortPhraseReading_A6State
             children: [
               // Title
               const Text(
-                "Module 4 — Short Phrase Reading",
+                "පැවරුම 6 — කෙටි වාක්‍ය කියවීම",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -197,7 +197,7 @@ class _G3_L1_ShortPhraseReading_A6State
 
               // Phrase counter
               Text(
-                "Phrase ${_currentTaskIndex + 1} of ${_tasks.length}",
+                "වාක්‍ය ${_tasks.length} න් ${_currentTaskIndex + 1} වන වාක්‍යය",
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFF6B7280),
@@ -227,7 +227,7 @@ class _G3_L1_ShortPhraseReading_A6State
                       Text("🎉", style: TextStyle(fontSize: 16)),
                       SizedBox(width: 8),
                       Text(
-                        "You read a full phrase!",
+                        "ඔයා සම්පූර්ණ වාක්‍ය ඛණ්ඩයක් කියෙව්වා!",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -367,7 +367,7 @@ class _G3_L1_ShortPhraseReading_A6State
                         const Text("🎵", style: TextStyle(fontSize: 14)),
                         const SizedBox(width: 8),
                         Text(
-                          'Hear "${task['fullPhrase']}" again',
+                          '"${task['fullPhrase']}" - නැවත අසන්න',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -490,8 +490,8 @@ class _G3_L1_ShortPhraseReading_A6State
                       children: [
                         Text(
                           _currentTaskIndex < _tasks.length - 1
-                              ? "Next Phrase"
-                              : "Finish Activity",
+                              ? "ඊළඟ වාක්‍යය"
+                              : "ඊළඟ පැවරුම",
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,

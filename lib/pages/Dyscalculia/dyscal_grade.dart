@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dyscal_g03.dart';
-import 'dyscal_g04.dart';
-import 'dyscal_g05.dart';
-import 'dyscal_g06.dart';
-import 'dyscal_g07.dart';
+import 'Dyscal_Tasks/dyscal_g03.dart';
+import 'Dyscal_Tasks/dyscal_g04.dart';
+import 'Dyscal_Tasks/dyscal_g05.dart';
+import 'Dyscal_Tasks/dyscal_g06.dart';
+import 'Dyscal_Tasks/dyscal_g07.dart';
 import 'dyscalculia_page.dart'; // Added this import
 
 class DyscalGradePage extends StatelessWidget {

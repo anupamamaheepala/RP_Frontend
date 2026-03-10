@@ -79,11 +79,11 @@ class ReadingTaskResultPage extends StatelessWidget {
                       _gradientInfo("🎤 ඔබ කියවූ වාක්‍යය", transcript.isEmpty ? "-" : transcript),
                       const SizedBox(height: 18),
 
-                      _metric("WER", wer.toStringAsFixed(2), Icons.close, Colors.red),
+                      // _metric("WER", wer.toStringAsFixed(2), Icons.close, Colors.red),
+                      // const SizedBox(height: 10),
+                      // _metric("CER", cer.toStringAsFixed(2), Icons.text_fields, Colors.orange),
                       const SizedBox(height: 10),
-                      _metric("CER", cer.toStringAsFixed(2), Icons.text_fields, Colors.orange),
-                      const SizedBox(height: 10),
-                      _metric("Speed (WPS)", wps.toStringAsFixed(2), Icons.speed, Colors.purple),
+                      _metric("කියවීමේ වේගය (WPS)", wps.toStringAsFixed(2), Icons.speed, Colors.purple),
 
                       const SizedBox(height: 24),
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dyscal_detect_result.dart';
-import 'dyscal_improve_result.dart';
+import '../Dyscal_Improve/dyscal_improve_result.dart';
 
 class DyscalResultsPage extends StatelessWidget {
   const DyscalResultsPage({super.key});

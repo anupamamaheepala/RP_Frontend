@@ -225,11 +225,11 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Row(children: [
-              _badge("Low Risk",          const Color(0xFF22C55E), Colors.white),
+              _badge("අවම අවදානම",          const Color(0xFF22C55E), Colors.white),
               const SizedBox(width: 6),
-              _badge("Grade 3 · Level 1", const Color(0xFFF97316), Colors.white),
-              const SizedBox(width: 6),
-              _outlinedBadge("Module 1 of 4"),
+              _badge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFFF97316), Colors.white),
+              // const SizedBox(width: 6),
+              // _outlinedBadge("පැවරුම 4"),
             ]),
           ),
         ],
@@ -246,7 +246,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Reading with Understanding",
+            const Text("පැවරුම 4 - අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3)),
             const SizedBox(height: 10),
@@ -254,13 +254,13 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
               Row(children: const [
                 Text("✏️", style: TextStyle(fontSize: 14)),
                 SizedBox(width: 6),
-                Text("Finish the Story",
+                Text("කතාව අවසන් කරන්න",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                         color: Color(0xFF6B7280))),
               ]),
-              const Text("Activity 4 of 4",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280))),
+              // const Text("Activity 4 of 4",
+              //     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
+              //         color: Color(0xFF6B7280))),
             ]),
             const SizedBox(height: 8),
             _segmentedProgress(0, _stories.length),
@@ -292,17 +292,17 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                   borderRadius: BorderRadius.circular(20),
                   color: Colors.white,
                 ),
-                child: const Text(
-                    "Activity 4 of 4 · Comprehension · Inference",
-                    style: TextStyle(fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFF97316))),
+                // child: const Text(
+                //     "Activity 4 of 4 · Comprehension · Inference",
+                //     style: TextStyle(fontSize: 12,
+                //         fontWeight: FontWeight.w700,
+                //         color: Color(0xFFF97316))),
               ),
             ),
             const SizedBox(height: 16),
 
             const Center(
-              child: Text("Finish the Story",
+              child: Text("කතාව අවසන් කරන්න",
                   style: TextStyle(fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF1A1A2E))),
@@ -311,9 +311,9 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
 
             const Center(
               child: Text(
-                "You'll read a story starter. Then pick the best ending from three "
-                    "choices. Think about what makes sense given what happened — "
-                    "not just what sounds nice!",
+                "ඔබ කතාවේ ආරම්භකයක් කියවනු ඇත. ඉන්පසු විකල්ප තුනකින් හොඳම අවසානය තෝරන්න."
+                "සිදු වූ දෙය අනුව තේරුමක් ඇති දේ ගැන සිතා බලන්න.— "
+                    "හොඳ දේ විතරක් නෙවෙයි!",
                 style: TextStyle(fontSize: 14,
                     color: Color(0xFF6B7280), height: 1.6),
                 textAlign: TextAlign.center,
@@ -337,7 +337,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "The best ending follows logically from the story. Use clues in the text!",
+                    "හොඳම අවසානය කතාවෙන් තර්කානුකූලව පැමිණේ. පෙළෙහි ඉඟි භාවිතා කරන්න!",
                     style: TextStyle(fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF92400E)),
@@ -367,7 +367,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Text("Let's Go!",
+                      Text("අපි යමු!",
                           style: TextStyle(color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.w800)),
@@ -396,7 +396,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Reading with Understanding",
+            const Text("අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3)),
             const SizedBox(height: 10),
@@ -405,15 +405,15 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
               Row(children: const [
                 Text("✏️", style: TextStyle(fontSize: 14)),
                 SizedBox(width: 6),
-                Text("Finish the Story",
+                Text("කතාව අවසන් කරන්න",
                     style: TextStyle(fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF6B7280))),
               ]),
-              const Text("Activity 4 of 4",
-                  style: TextStyle(fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280))),
+              // const Text("Activity 4 of 4",
+              //     style: TextStyle(fontSize: 13,
+              //         fontWeight: FontWeight.w500,
+              //         color: Color(0xFF6B7280))),
             ]),
             const SizedBox(height: 8),
 
@@ -458,7 +458,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                           offset: const Offset(0, 3)),
                     ],
                   ),
-                  child: const Text("Story Starter",
+                  child: const Text("කතන්දර ආරම්භකයා",
                       style: TextStyle(color: Colors.white,
                           fontWeight: FontWeight.w700, fontSize: 14)),
                 ),
@@ -512,7 +512,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                       children: const [
                         Text("🔊", style: TextStyle(fontSize: 16)),
                         SizedBox(width: 8),
-                        Text("Read the story starter",
+                        Text("කතාවේ ආරම්භය කියවන්න",
                             style: TextStyle(color: Colors.white,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 15)),
@@ -521,7 +521,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text("Played ${_playCount}×",
+                Text("${_playCount}× වතාවක් වාදනය කළා",
                     style: const TextStyle(fontSize: 11,
                         color: Color(0xFF9CA3AF),
                         fontStyle: FontStyle.italic)),
@@ -534,7 +534,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
               Text("💬", style: TextStyle(fontSize: 16)),
               SizedBox(width: 8),
               Expanded(
-                child: Text("What happens next? Pick the best ending:",
+                child: Text("ඊළඟට මොකද වෙන්නේ? හොඳම අවසානය තෝරන්න:",
                     style: TextStyle(fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A2E))),
@@ -725,7 +725,7 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                                 Text("🎧",
                                     style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 8),
-                                Text("Read Full Story",
+                                Text("සම්පූර්ණ කතාව කියවන්න",
                                     style: TextStyle(fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         color: Color(0xFF16A34A))),
@@ -760,8 +760,8 @@ class _G3_L1_LOW_A4State extends State<G3_L1_LOW_A4> {
                   children: [
                     Text(
                       _storyIndex < _stories.length - 1
-                          ? "Next Story"
-                          : "Finish Activity",
+                          ? "ඊළඟ"
+                          : "ඊළඟ පැවරුම",
                       style: const TextStyle(fontSize: 17,
                           fontWeight: FontWeight.w700),
                     ),
