@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '/pages/Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
+import 'adhd/grade3/learning_tasks/adhd_progress_page.dart';
+
 import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
 import '/pages/Dysgraphia/dysgraphia_results_hub.dart';
 
@@ -30,7 +33,8 @@ class AllResultsPage extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -58,7 +62,8 @@ class AllResultsPage extends StatelessWidget {
             ),
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 20),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+            color: Colors.white, size: 20),
         onTap: onTap,
       ),
     );
@@ -94,7 +99,8 @@ class AllResultsPage extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
+                      icon: const Icon(Icons.arrow_back_ios,
+                          color: Colors.purple),
                       onPressed: () => Navigator.pop(context),
                     ),
                     const Expanded(
@@ -124,7 +130,10 @@ class AllResultsPage extends StatelessWidget {
                       titleSi: 'කියවීමේ දුෂ්කරතා ප්‍රතිඵල',
                       titleEn: 'Dyslexia Results',
                       icon: Icons.menu_book_rounded,
-                      colors: [Colors.purple.shade400, Colors.blue.shade400],
+                      colors: [
+                        Colors.purple.shade400,
+                        Colors.blue.shade400
+                      ],
                       onTap: () {
                         // TODO: Navigate to Dyslexia Results Fetch Page
                       },
@@ -133,7 +142,10 @@ class AllResultsPage extends StatelessWidget {
                       titleSi: 'ලිවීමේ දුෂ්කරතා ප්‍රතිඵල',
                       titleEn: 'Dysgraphia Results',
                       icon: Icons.drive_file_rename_outline_rounded,
-                      colors: [Colors.blue.shade400, Colors.teal.shade300],
+                      colors: [
+                        Colors.blue.shade400,
+                        Colors.teal.shade300
+                      ],
                       onTap: () {
                         Navigator.push(
                           context,
@@ -147,22 +159,35 @@ class AllResultsPage extends StatelessWidget {
                       titleSi: 'ගණනයේ දුෂ්කරතා ප්‍රතිඵල',
                       titleEn: 'Dyscalculia Results',
                       icon: Icons.calculate_rounded,
-                      colors: [Colors.green.shade400, Colors.teal.shade300],
+                      colors: [
+                        Colors.green.shade400,
+                        Colors.teal.shade300
+                      ],
                       onTap: () {
-                        // --- UPDATED NAVIGATION ---
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const DyscalResultsPage()),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const DyscalResultsPage()),
                         );
                       },
                     ),
+                    // ✅ Updated: navigates to AdhDProgressPage
                     _buildResultCard(
                       titleSi: 'අවධාන ඌණතා ප්‍රතිඵල',
-                      titleEn: 'ADHD Results',
+                      titleEn: 'ADHD Results & Progress',
                       icon: Icons.psychology_alt_rounded,
-                      colors: [Colors.deepPurple.shade400, Colors.indigo.shade400],
+                      colors: [
+                        Colors.deepPurple.shade400,
+                        Colors.indigo.shade400
+                      ],
                       onTap: () {
-                        // TODO: Navigate to ADHD Results Fetch Page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const AdhDProgressPage()),
+                        );
                       },
                     ),
                   ],

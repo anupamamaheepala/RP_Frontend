@@ -13,7 +13,6 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  // State variables to track selection and inputs
   int? selectedAge;
   int? selectedGrade;
 
@@ -31,22 +30,23 @@ class _SignupPageState extends State<SignupPage> {
     super.dispose();
   }
 
-  // --- SIGNUP LOGIC ---
   Future<void> _handleSignup() async {
-    // 1. Basic Validation
     if (_usernameController.text.trim().isEmpty ||
         _passwordController.text.isEmpty ||
         selectedAge == null ||
         selectedGrade == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields (කරුණාකර සියලුම විස්තර පුරවන්න)")),
+        const SnackBar(
+            content: Text(
+                "Please fill all fields (කරුණාකර සියලුම විස්තර පුරවන්න)")),
       );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match (මුරපද නොගැලපේ)")),
+        const SnackBar(
+            content: Text("Passwords do not match (මුරපද නොගැලපේ)")),
       );
       return;
     }
@@ -54,48 +54,66 @@ class _SignupPageState extends State<SignupPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 2. Send Data to Backend
       final url = Uri.parse("${Config.baseUrl}/auth/signup");
+      final body = jsonEncode({
+        "username": _usernameController.text.trim(),
+        "password": _passwordController.text,
+        "age": selectedAge,
+        "grade": selectedGrade,
+      });
+
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      debugPrint("🔵 [SIGNUP] Attempting signup...");
+      debugPrint("🔵 [SIGNUP] URL: $url");
+      debugPrint("🔵 [SIGNUP] Body: $body");
+      debugPrint("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "username": _usernameController.text.trim(),
-          "password": _passwordController.text,
-          "age": selectedAge,
-          "grade": selectedGrade,
-        }),
+        body: body,
       );
 
+      debugPrint("🟡 [SIGNUP] Status Code: ${response.statusCode}");
+      debugPrint("🟡 [SIGNUP] Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
-        // 3. Success -> Navigate to Login Page
+        debugPrint("🟢 [SIGNUP] Account created successfully!");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Account created! Please Login. (ගිණුම සාදන ලදී. කරුණාකර ඇතුල් වන්න.)"),
+              content: Text(
+                  "Account created! Please Login. (ගිණුම සාදන ලදී. කරුණාකර ඇතුල් වන්න.)"),
               backgroundColor: Colors.green,
             ),
           );
-
-          // Navigate to Login Page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
           );
         }
       } else {
-        // 4. Handle Backend Errors
-        final body = jsonDecode(response.body);
+        debugPrint("🔴 [SIGNUP] Failed with status: ${response.statusCode}");
+        debugPrint("🔴 [SIGNUP] Error body: ${response.body}");
+        final responseBody = jsonDecode(response.body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(body['detail'] ?? "Signup failed"), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(responseBody['detail'] ?? "Signup failed (${response.statusCode})"),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint("🔴 [SIGNUP] Exception caught: $e");
+      debugPrint("🔴 [SIGNUP] StackTrace: $stackTrace");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Connection Error: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Connection Error: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -122,12 +140,12 @@ class _SignupPageState extends State<SignupPage> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.topCenter,
                 children: [
-                  // --- White Card ---
                   Container(
                     margin: const EdgeInsets.only(top: 40),
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
@@ -136,7 +154,7 @@ class _SignupPageState extends State<SignupPage> {
                       borderRadius: BorderRadius.circular(24.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withOpacity(0.1), // Soft purple shadow
+                          color: Colors.purple.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -145,7 +163,6 @@ class _SignupPageState extends State<SignupPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Title Sinhala
                         const Text(
                           'ගිණුමක් සකසන්න',
                           style: TextStyle(
@@ -154,31 +171,26 @@ class _SignupPageState extends State<SignupPage> {
                             color: Color(0xFF2D3436),
                           ),
                         ),
-                        // Title English
                         const Text(
                           'Create an account',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                         const SizedBox(height: 20),
 
-                        // --- Username Field ---
                         _buildTextField(
                           controller: _usernameController,
                           icon: Icons.person_outline,
                           hintText: 'පරිශීලක නාමය (Username)',
                         ),
-
                         const SizedBox(height: 15),
 
-                        // --- Age Selection ---
                         const Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'වයස / Age 🎂',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -192,7 +204,9 @@ class _SignupPageState extends State<SignupPage> {
                                 width: 50,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.ageChipSelected : AppColors.ageChip,
+                                  color: isSelected
+                                      ? AppColors.ageChipSelected
+                                      : AppColors.ageChip,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 alignment: Alignment.center,
@@ -200,7 +214,9 @@ class _SignupPageState extends State<SignupPage> {
                                   age.toString(),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : Colors.black87,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                               ),
@@ -210,12 +226,13 @@ class _SignupPageState extends State<SignupPage> {
 
                         const SizedBox(height: 15),
 
-                        // --- Grade Selection ---
                         const Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'ශ්‍රේණිය / Grade 🎒',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -224,14 +241,18 @@ class _SignupPageState extends State<SignupPage> {
                           children: [3, 4, 5, 6, 7].map((grade) {
                             final isSelected = selectedGrade == grade;
                             return GestureDetector(
-                              onTap: () => setState(() => selectedGrade = grade),
+                              onTap: () =>
+                                  setState(() => selectedGrade = grade),
                               child: Container(
                                 width: 50,
                                 height: 40,
                                 decoration: BoxDecoration(
                                   color: _getGradeColor(grade),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null,
+                                  border: isSelected
+                                      ? Border.all(
+                                      color: Colors.black, width: 2.5)
+                                      : null,
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
@@ -249,7 +270,6 @@ class _SignupPageState extends State<SignupPage> {
 
                         const SizedBox(height: 20),
 
-                        // --- Password Field ---
                         _buildTextField(
                           controller: _passwordController,
                           icon: Icons.lock_outline,
@@ -258,17 +278,14 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         const SizedBox(height: 10),
 
-                        // --- Confirm Password Field ---
                         _buildTextField(
                           controller: _confirmPasswordController,
                           icon: Icons.lock_reset,
                           hintText: 'මුරපදය තහවුරු කරන්න',
                           isObscure: true,
                         ),
-
                         const SizedBox(height: 30),
 
-                        // --- Register Button ---
                         _isLoading
                             ? const CircularProgressIndicator()
                             : Container(
@@ -276,14 +293,18 @@ class _SignupPageState extends State<SignupPage> {
                           height: 55,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFF758C), Color(0xFFFF7EB3)],
+                              colors: [
+                                Color(0xFFFF758C),
+                                Color(0xFFFF7EB3)
+                              ],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFF758C).withOpacity(0.3),
+                                color: const Color(0xFFFF758C)
+                                    .withOpacity(0.3),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -295,7 +316,8 @@ class _SignupPageState extends State<SignupPage> {
                               onTap: _handleSignup,
                               borderRadius: BorderRadius.circular(30),
                               child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment:
+                                MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     'ලියාපදිංචි වන්න',
@@ -306,7 +328,8 @@ class _SignupPageState extends State<SignupPage> {
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Text('🚀', style: TextStyle(fontSize: 20)),
+                                  Text('🚀',
+                                      style: TextStyle(fontSize: 20)),
                                 ],
                               ),
                             ),
@@ -316,7 +339,6 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
 
-                  // --- Floating Icon ---
                   Positioned(
                     top: 0,
                     child: Container(
@@ -334,21 +356,18 @@ class _SignupPageState extends State<SignupPage> {
                         ],
                       ),
                       child: const Center(
-                        child: Icon(
-                          Icons.person_add,
-                          color: Colors.white,
-                          size: 40,
-                        ),
+                        child: Icon(Icons.person_add,
+                            color: Colors.white, size: 40),
                       ),
                     ),
                   ),
 
-                  // --- Back Button ---
                   Positioned(
                     top: 0,
                     left: 0,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.purple, size: 28), // Changed to purple for visibility
+                      icon: const Icon(Icons.arrow_back,
+                          color: Colors.purple, size: 28),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -361,7 +380,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // Helper: Get Color based on Grade
   Color _getGradeColor(int grade) {
     switch (grade) {
       case 3: return AppColors.grade3;
@@ -373,7 +391,6 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  // Helper: Build Text Field
   Widget _buildTextField({
     required TextEditingController controller,
     required IconData icon,
