@@ -15,7 +15,7 @@ class TaskResultPage extends StatefulWidget {
   final int retries;
   final int backtracks;
   final int skipped;
-  final int wrongCount; // <-- ADDED
+  final int wrongCount;
   final double totalCompletionTime;
 
   const TaskResultPage({
@@ -29,7 +29,7 @@ class TaskResultPage extends StatefulWidget {
     required this.retries,
     required this.backtracks,
     required this.skipped,
-    required this.wrongCount, // <-- ADDED
+    required this.wrongCount,
     required this.totalCompletionTime,
   });
 
@@ -39,7 +39,7 @@ class TaskResultPage extends StatefulWidget {
 
 class _TaskResultPageState extends State<TaskResultPage> {
   bool _isSaving = true;
-  String _saveMessage = "දත්ත සුරකිමින් පවතී... (Saving Data...)";
+  String _saveMessage = "AI ආකෘතිය දත්ත විශ්ලේෂණය කරයි... (Analyzing...)";
   String _riskLevel = "";
 
   @override
@@ -69,7 +69,7 @@ class _TaskResultPageState extends State<TaskResultPage> {
           "retries": widget.retries,
           "backtracks": widget.backtracks,
           "skipped_items": widget.skipped,
-          "wrong_count": widget.wrongCount, // <-- ADDED TO PAYLOAD
+          "wrong_count": widget.wrongCount,
           "completion_time": widget.totalCompletionTime,
         }),
       );
@@ -79,8 +79,7 @@ class _TaskResultPageState extends State<TaskResultPage> {
         if (mounted) {
           setState(() {
             _isSaving = false;
-            _saveMessage = "ප්‍රතිඵල සුරැකිණි! (Saved successfully!)";
-            _riskLevel = data['risk_level'] ?? "Pending";
+            _riskLevel = data['risk_level'] ?? "Unknown";
           });
         }
       } else {
@@ -139,28 +138,54 @@ class _TaskResultPageState extends State<TaskResultPage> {
   }
 
   Widget _buildPredictionCard() {
-    // Simplified card since ML is disabled
+    Color cardColor = Colors.grey;
+    IconData cardIcon = Icons.help_outline;
+    String titleSi = "ප්‍රතිඵලය නොදනී";
+    String titleEn = "Unknown Result";
+
+    if (_riskLevel == "No Dyscalculia") {
+      cardColor = Colors.green;
+      cardIcon = Icons.check_circle_outline;
+      titleSi = "ඩිස්කැල්කියුලියා තත්වයක් නොමැත";
+      titleEn = "No Dyscalculia Detected";
+    } else if (_riskLevel == "Mild Dyscalculia") {
+      cardColor = Colors.orange;
+      cardIcon = Icons.warning_amber_rounded;
+      titleSi = "සුළු ඩිස්කැල්කියුලියා තත්වයක්";
+      titleEn = "Mild Dyscalculia Detected";
+    } else if (_riskLevel == "Severe Dyscalculia") {
+      cardColor = Colors.red;
+      cardIcon = Icons.error_outline_rounded;
+      titleSi = "දැඩි ඩිස්කැල්කියුලියා තත්වයක්";
+      titleEn = "Severe Dyscalculia Detected";
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: cardColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.withOpacity(0.5), width: 2),
+        border: Border.all(color: cardColor.withOpacity(0.5), width: 2),
       ),
       child: Column(
         children: [
-          const Icon(Icons.cloud_done_rounded, color: Colors.blue, size: 50),
+          Icon(cardIcon, color: cardColor, size: 50),
           const SizedBox(height: 15),
           const Text(
-            "දත්ත සාර්ථකව සුරැකිණි",
-            style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+            "AI විශ්ලේෂණ ප්‍රතිඵලය:",
+            style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
           const SizedBox(height: 5),
           Text(
-            _riskLevel,
+            titleSi,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: Colors.black54),
+            style: TextStyle(fontSize: 18, color: cardColor, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            titleEn,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: cardColor.withOpacity(0.8), fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -244,13 +269,13 @@ class _TaskResultPageState extends State<TaskResultPage> {
                             const Divider(),
                             const SizedBox(height: 10),
                             _buildResultRow("Accuracy (නිරවද්‍යතාවය)", "${widget.accuracy} / 5", Icons.grade_rounded, Colors.orange),
-                            _buildResultRow("Wrong Count (වැරදි ප්‍රමාණය)", "${widget.wrongCount}", Icons.cancel_rounded, Colors.red), // <-- ADDED DISPLAY
-                            _buildResultRow("Avg Response Time", "${widget.avgResponseTime.toStringAsFixed(1)} sec", Icons.timer_rounded, Colors.blue),
-                            _buildResultRow("Avg Hesitation", "${widget.avgHesitationTime.toStringAsFixed(1)} sec", Icons.hourglass_empty_rounded, Colors.deepPurple),
+                            _buildResultRow("Wrong Count (වැරදි ප්‍රමාණය)", "${widget.wrongCount}", Icons.cancel_rounded, Colors.red),
+                            _buildResultRow("Avg Response Time", "${widget.avgResponseTime.toStringAsFixed(1)} s", Icons.timer_rounded, Colors.blue),
+                            _buildResultRow("Avg Hesitation", "${widget.avgHesitationTime.toStringAsFixed(1)} s", Icons.hourglass_empty_rounded, Colors.deepPurple),
                             _buildResultRow("Retries (නැවත උත්සාහයන්)", "${widget.retries}", Icons.refresh_rounded, Colors.green),
                             _buildResultRow("Backtracks (ආපසු යාම්)", "${widget.backtracks}", Icons.undo_rounded, Colors.brown),
                             _buildResultRow("Skipped (මඟ හැරිම්)", "${widget.skipped}", Icons.skip_next_rounded, Colors.grey),
-                            _buildResultRow("Total Time", "${widget.totalCompletionTime.toStringAsFixed(1)} sec", Icons.watch_later_rounded, Colors.purple),
+                            _buildResultRow("Total Time", "${widget.totalCompletionTime.toStringAsFixed(1)} s", Icons.watch_later_rounded, Colors.purple),
                           ],
                         ),
                       ),

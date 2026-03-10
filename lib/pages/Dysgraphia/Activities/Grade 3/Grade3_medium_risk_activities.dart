@@ -722,6 +722,10 @@ class _WordInContextActivityState extends State<WordInContextActivity>
   int _currentIndex = 0;
   List<List<Offset>> _strokes = [];
   bool _showReward = false;
+  bool _isRecognizing2 = false;
+  bool? _isCorrect2;
+  final mlkit.DigitalInkRecognizer _recognizer2 =
+  mlkit.DigitalInkRecognizer(languageCode: 'si');
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
@@ -739,31 +743,53 @@ class _WordInContextActivityState extends State<WordInContextActivity>
   @override
   void dispose() {
     _bounceController.dispose();
+    _recognizer2.close();
     super.dispose();
   }
 
   String get _currentWord => widget.words[_currentIndex];
   String get _currentEmoji => _wordEmojis[_currentWord] ?? '📝';
 
-  void _clearCanvas() => setState(() => _strokes = []);
+  void _clearCanvas() => setState(() { _strokes = []; _isCorrect2 = null; });
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_strokes.isEmpty) return;
-    setState(() => _showReward = true);
-    _bounceController.forward(from: 0);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      if (_currentIndex < widget.words.length - 1) {
-        setState(() {
-          _currentIndex++;
-          _strokes = [];
-          _showReward = false;
-        });
-        _bounceController.reset();
-      } else {
-        _showCompletionDialog();
+    setState(() => _isRecognizing2 = true);
+    try {
+      final ink = mlkit.Ink();
+      for (final stroke in _strokes) {
+        final points = stroke.map((o) => mlkit.StrokePoint(
+          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+        )).toList();
+        if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
       }
-    });
+      final candidates = await _recognizer2.recognize(ink);
+      final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
+      setState(() {
+        _isCorrect2 = recognized == _currentWord;
+        _isRecognizing2 = false;
+      });
+      if (_isCorrect2 == true) {
+        setState(() => _showReward = true);
+        _bounceController.forward(from: 0);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          if (_currentIndex < widget.words.length - 1) {
+            setState(() {
+              _currentIndex++;
+              _strokes = [];
+              _showReward = false;
+              _isCorrect2 = null;
+            });
+            _bounceController.reset();
+          } else {
+            _showCompletionDialog();
+          }
+        });
+      }
+    } catch (_) {
+      setState(() { _isCorrect2 = null; _isRecognizing2 = false; });
+    }
   }
 
   void _showCompletionDialog() {
@@ -941,48 +967,86 @@ class _WordInContextActivityState extends State<WordInContextActivity>
 
                       const SizedBox(height: 16),
 
-                      if (!_showReward)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _clearCanvas,
-                                icon: const Icon(Icons.refresh),
-                                label: const Text('මකන්න',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange.shade400,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
-                                ),
+                      if (!_showReward) ...[
+                        if (_isRecognizing2)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 12),
+                                Text('පරීක්ෂා කරමින්...', style: TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          if (_isCorrect2 == false)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red.shade300, width: 2),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Text('❌ වැරදියි! නැවත ලිවීමට උත්සාහ කරන්න.',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('හරි වචනය: $_currentWord',
+                                    style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: _strokes.isEmpty ? null : _submit,
-                                icon: const Icon(Icons.check_circle),
-                                label: const Text('හරි!',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _clearCanvas,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('මකන්න',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange.shade400,
+                                    foregroundColor: Colors.white,
+                                    padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14)),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _strokes.isEmpty || _isRecognizing2 ? null : _submit,
+                                  icon: const Icon(Icons.check_circle),
+                                  label: const Text('හරි!',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ],
                   ),
                 ),
@@ -1437,9 +1501,14 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
   List<String?> _dropZones = [];
   List<String> _availableParts = [];
   bool _wordBuilt = false;
+  bool _isWrongOrder = false;
   bool _writingPhase = false;
   List<List<Offset>> _strokes = [];
   bool _showFinalReward = false;
+  bool _isWritingRecognizing = false;
+  bool? _isWritingCorrect;
+  final mlkit.DigitalInkRecognizer _writingRecognizer =
+  mlkit.DigitalInkRecognizer(languageCode: 'si');
 
   // Split words into individual characters as "parts"
   static List<String> _splitWord(String word) {
@@ -1471,13 +1540,30 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
     _availableParts = List.from(parts)..shuffle();
     _dropZones = List.filled(parts.length, null);
     _wordBuilt = false;
+    _isWrongOrder = false;
     _writingPhase = false;
     _strokes = [];
     _showFinalReward = false;
+    _isWritingCorrect = null;
+  }
+
+  @override
+  void dispose() {
+    _writingRecognizer.close();
+    super.dispose();
   }
 
   bool get _isWordComplete =>
       _dropZones.every((z) => z != null) && !_dropZones.contains(null);
+
+  bool get _isArrangementCorrect {
+    final correct = _splitWord(widget.words[_currentIndex]);
+    if (_dropZones.length != correct.length) return false;
+    for (int i = 0; i < correct.length; i++) {
+      if (_dropZones[i] != correct[i]) return false;
+    }
+    return true;
+  }
 
   void _dropPart(String part, int zoneIndex) {
     // Return previous occupant to available
@@ -1486,7 +1572,10 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
       if (current != null) _availableParts.add(current);
       _availableParts.remove(part);
       _dropZones[zoneIndex] = part;
-      if (_isWordComplete) _wordBuilt = true;
+      if (_isWordComplete) {
+        _wordBuilt = true;
+        _isWrongOrder = !_isArrangementCorrect;
+      }
     });
   }
 
@@ -1497,23 +1586,42 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
       _availableParts.add(part);
       _dropZones[zoneIndex] = null;
       _wordBuilt = false;
+      _isWrongOrder = false;
     });
   }
 
-  void _submitWriting() {
+  Future<void> _submitWriting() async {
     if (_strokes.isEmpty) return;
-    setState(() => _showFinalReward = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      if (_currentIndex < widget.words.length - 1) {
-        setState(() {
-          _currentIndex++;
-          _initWord();
-        });
-      } else {
-        _showCompletionDialog();
+    final correctWord = widget.words[_currentIndex];
+    setState(() => _isWritingRecognizing = true);
+    try {
+      final ink = mlkit.Ink();
+      for (final stroke in _strokes) {
+        final points = stroke.map((o) => mlkit.StrokePoint(
+          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+        )).toList();
+        if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
       }
-    });
+      final candidates = await _writingRecognizer.recognize(ink);
+      final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
+      setState(() {
+        _isWritingCorrect = recognized == correctWord;
+        _isWritingRecognizing = false;
+      });
+      if (_isWritingCorrect == true) {
+        setState(() => _showFinalReward = true);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          if (_currentIndex < widget.words.length - 1) {
+            setState(() { _currentIndex++; _initWord(); });
+          } else {
+            _showCompletionDialog();
+          }
+        });
+      }
+    } catch (_) {
+      setState(() { _isWritingCorrect = null; _isWritingRecognizing = false; });
+    }
   }
 
   void _showCompletionDialog() {
@@ -1729,50 +1837,90 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
                         const SizedBox(height: 24),
 
                         if (_wordBuilt) ...[
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.green.shade300),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.check_circle,
-                                    color: Colors.green, size: 22),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '"$correctWord" — ශාබාස!',
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () =>
-                                  setState(() => _writingPhase = true),
-                              icon: const Icon(Icons.edit),
-                              label: const Text('දැන් ලිවීමට',
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding:
-                                const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                          if (_isWrongOrder) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red.shade300, width: 2),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Text('❌ අකුරු පිළිවෙල වැරදියි! නැවත සාදන්න.',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('හරි වචනය: $correctWord',
+                                    style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () => setState(() => _initWord()),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('නැවත සාදන්න',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.green.shade300),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.check_circle,
+                                      color: Colors.green, size: 22),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '"$correctWord" — ශාබාස!',
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    setState(() => _writingPhase = true),
+                                icon: const Icon(Icons.edit),
+                                label: const Text('දැන් ලිවීමට',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14)),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ] else ...[
                         // Writing phase
@@ -1860,52 +2008,90 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
 
                         const SizedBox(height: 16),
 
-                        if (!_showFinalReward)
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () =>
-                                      setState(() => _strokes = []),
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('මකන්න',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange.shade400,
-                                    foregroundColor: Colors.white,
-                                    padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(14)),
-                                  ),
+                        if (!_showFinalReward) ...[
+                          if (_isWritingRecognizing)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(width: 12),
+                                  Text('පරීක්ෂා කරමින්...', style: TextStyle(fontSize: 15)),
+                                ],
+                              ),
+                            )
+                          else ...[
+                            if (_isWritingCorrect == false)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.red.shade300, width: 2),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const Text('❌ වැරදියි! නැවත ලිවීමට උත්සාහ කරන්න.',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text('හරි වචනය: ${widget.words[_currentIndex]}',
+                                      style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed:
-                                  _strokes.isEmpty ? null : _submitWriting,
-                                  icon: const Icon(Icons.check_circle),
-                                  label: const Text('හරි!',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-                                    padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(14)),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () =>
+                                        setState(() { _strokes = []; _isWritingCorrect = null; }),
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('මකන්න',
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange.shade400,
+                                      foregroundColor: Colors.white,
+                                      padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(14)),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                    _strokes.isEmpty || _isWritingRecognizing ? null : _submitWriting,
+                                    icon: const Icon(Icons.check_circle),
+                                    label: const Text('හරි!',
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(14)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
                       ],
                     ],
                   ),

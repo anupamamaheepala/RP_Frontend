@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'Activities/Grade 3/Grade3_high_risk_activities.dart';
-import 'Activities/Grade 3/Grade3_medium_risk_activities.dart';
-import 'Activities/Grade 3/Grade3_low_risk_activities.dart';
 
 class DysgraphiaResultsPage extends StatefulWidget {
   final int grade;
@@ -271,83 +268,7 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
     );
   }
 
-  // ── TEMPORARY TEST SECTION ─────────────────────────────────────────────────
-  Widget _buildTestSection() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade300, width: 2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.science, color: Colors.grey.shade600, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  '🧪 පරීක්ෂණ — ඉවත් කරන්න',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildTestButton(
-              label: '🔴 High Risk ක්‍රියාකාරකම් (Grade 3)',
-              color: Colors.red.shade400,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const Grade3HighRiskPage())),
-            ),
-            const SizedBox(height: 8),
-            _buildTestButton(
-              label: '🟠 Medium Risk ක්‍රියාකාරකම් (Grade 3)',
-              color: Colors.orange.shade400,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const Grade3MediumRiskPage())),
-            ),
-            const SizedBox(height: 8),
-            _buildTestButton(
-              label: '🟡 Low Risk ක්‍රියාකාරකම් (Grade 3)',
-              color: Colors.teal.shade400,
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const Grade3LowRiskPage())),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTestButton({
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 2,
-        ),
-        child: Text(label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
-  // ── END TEMPORARY TEST SECTION ─────────────────────────────────────────────
+  // ── END REMOVED TEST SECTION ───────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -572,10 +493,6 @@ class _DysgraphiaResultsPageState extends State<DysgraphiaResultsPage>
                       ),
 
                       const SizedBox(height: 16),
-
-                      // ── TEMPORARY TEST BUTTONS ──────────────────────────────
-                      _buildTestSection(),
-                      // ── END TEMPORARY TEST BUTTONS ─────────────────────────
 
                       const SizedBox(height: 16),
 
