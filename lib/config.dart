@@ -1,10 +1,5 @@
 
 // DEV
-// //ANUPAMA
-// class Config {
-//    static const baseUrl = "https://rp-backend-production-afe6.up.railway.app";
-// }
-
 // class Config {
 //  static const baseUrl = "https://rp-backend-production-a809.up.railway.app";
 // }
@@ -15,10 +10,6 @@
      static const baseUrl = "https://rp-backend-production-afe6.up.railway.app";
   }
 
-// //SADITH
-// class Config {
-//  static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
-// }
  // SADITH
 //class Config {
  //static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
