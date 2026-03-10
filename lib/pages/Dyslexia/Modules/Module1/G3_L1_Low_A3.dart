@@ -21,37 +21,37 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
   // ── All stories in Sinhala ────────────────────────────────
   final List<Map<String, dynamic>> _stories = [
     {
-      "title": "The Rainy Day",
+      "title": "වැසි දිනය",
       "titleSinhala": "වැසි දිනය",
       "titleEmoji": "🌧️",
       "sentences": [
-        {"text": "උදේ බිරු බැස්සා.",         "emoji": "🌅"},
-        {"text": "දවල් වැකෙන් වික වලාකුළු ආවා.", "emoji": "☁️"},
-        {"text": "රාත්‍රියේ හද වැස්සක් ඇද හැළුණා.", "emoji": "🌧️"},
-        {"text": "පසු දා උදේ ගස් ලස්සනව බිටිය.",  "emoji": "🌿"},
+        {"text": "උදේ හිරු බැස ගියා.",         "emoji": "🌅"},
+        {"text": "දවල් විටින් විට වලාකුළු ආවා.", "emoji": "☁️"},
+        {"text": "රාත්‍රියේ හොද වැස්සක් ඇද හැළුණා.", "emoji": "🌧️"},
+        {"text": "පසු දා උදේ ගස් ලස්සනට තිබුණා.",  "emoji": "🌿"},
       ],
       "correctOrder": [0, 1, 2, 3],
     },
     {
-      "title": "The Little Bird",
+      "title": "කුඩා කුරුල්ලා",
       "titleSinhala": "කුඩා කුරුල්ලා",
       "titleEmoji": "🐦",
       "sentences": [
-        {"text": "කුරුල්ලෙකු කූඩුවේ බිත්තරයක් දැම්මා.",  "emoji": "🥚"},
+        {"text": "කුරුල්ලෙකු කූඩුවේ බිත්තරයක් දැමුවා.",  "emoji": "🥚"},
         {"text": "බිත්තරයෙන් පැටවෙකු ඉපදුනා.",          "emoji": "🐣"},
-        {"text": "පැටවා ඉගෙන ගෙන පළවෙනි වතාවට නැඟිලා.", "emoji": "🪺"},
+        {"text": "පැටවා ඉගෙන ගෙන පළවෙනි වතාවට නැගිට්ටා.", "emoji": "🪺"},
         {"text": "ඉගිලිලා ගිහිල්ලා නිදහස් වෙලා ජීවත් වෙන්න ගත්තා.", "emoji": "🐦"},
       ],
       "correctOrder": [0, 1, 2, 3],
     },
     {
-      "title": "The Lost Puppy",
+      "title": "නැති වූ බල්ලා",
       "titleSinhala": "නැති වූ බල්ලා",
       "titleEmoji": "🐶",
       "sentences": [
         {"text": "කුඩා බල්ලෙකු ගෙදරින් ගිහිල්ලා.",      "emoji": "🐕"},
-        {"text": "ඌ නගරය තුළ රවටෙන්නට පටන් ගත්තා.",    "emoji": "🏙️"},
-        {"text": "ළමයෙකු ඌව හොයාගෙන ආදරෙන් ඔක්කෝම කෙළ.", "emoji": "👦"},
+        {"text": "ඌ නගරය තුළ රැවටෙන්න පටන් ගත්තා.",    "emoji": "🏙️"},
+        {"text": "ළමයෙකු ඌව හොයාගෙන ආදරෙන් බලා ගත්තා.", "emoji": "👦"},
         {"text": "අවසානයේ ඌ ගෙදරට ආවා.",               "emoji": "🏠"},
       ],
       "correctOrder": [0, 1, 2, 3],
@@ -186,11 +186,11 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Row(children: [
-              _badge("Low Risk",          const Color(0xFF22C55E), Colors.white),
+              _badge("අවම අවදානම",          const Color(0xFF22C55E), Colors.white),
               const SizedBox(width: 6),
-              _badge("Grade 3 · Level 1", const Color(0xFFF97316), Colors.white),
+              _badge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFFF97316), Colors.white),
               const SizedBox(width: 6),
-              _outlinedBadge("Module 1 of 4"),
+              _outlinedBadge("පැවරුම 3"),
             ]),
           ),
         ],
@@ -207,7 +207,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Reading with Understanding",
+            const Text("අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3)),
             const SizedBox(height: 10),
@@ -215,13 +215,13 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
               Row(children: const [
                 Text("🧩", style: TextStyle(fontSize: 14)),
                 SizedBox(width: 6),
-                Text("Story Sequencer",
+                Text("කතන්දර අනුක්‍රමිකයා",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                         color: Color(0xFF6B7280))),
               ]),
-              const Text("Activity 3 of 4",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280))),
+              // const Text("Activity 3 of 4",
+              //     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
+              //         color: Color(0xFF6B7280))),
             ]),
             const SizedBox(height: 8),
             _segmentedProgress(0, _stories.length),
@@ -243,24 +243,24 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
             const SizedBox(height: 24),
 
             // Activity tag
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFF97316), width: 1.5),
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.white,
-                ),
-                child: const Text("Activity 3 of 4 · Comprehension · Narrative",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                        color: Color(0xFFF97316))),
-              ),
-            ),
+            // Center(
+            //   child: Container(
+            //     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+            //     decoration: BoxDecoration(
+            //       border: Border.all(color: const Color(0xFFF97316), width: 1.5),
+            //       borderRadius: BorderRadius.circular(20),
+            //       color: Colors.white,
+            //     ),
+            //     child: const Text("Activity 3 of 4 · Comprehension · Narrative",
+            //         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+            //             color: Color(0xFFF97316))),
+            //   ),
+            // ),
             const SizedBox(height: 16),
 
             // Title
             const Center(
-              child: Text("Story Sequencer",
+              child: Text("කතන්දර අනුක්‍රමිකයා",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900,
                       color: Color(0xFF1A1A2E))),
             ),
@@ -269,9 +269,9 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
             // Description
             const Center(
               child: Text(
-                "Four sentence cards are shuffled out of order. Tap them one by "
-                    "one to build a story that makes sense from beginning to end. Listen "
-                    "to each card to help you decide!",
+                "වාක්‍ය කාඩ්පත් හතරක් පිළිවෙලට නැති ලෙස මාරු කර ඇත. Tap them one by "
+                    "ආරම්භයේ සිට අවසානය දක්වා තේරුමක් ඇති කතාවක් ගොඩනැගීමට ඒවා එකින් එක තට්ටු කරන්න"
+                    ,
                 style: TextStyle(fontSize: 14, color: Color(0xFF6B7280),
                     height: 1.6),
                 textAlign: TextAlign.center,
@@ -293,7 +293,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Think: what had to happen first? What comes last? Stories have a logical order!",
+                    "හිතන්න: මුලින්ම සිදුවිය යුතුව තිබුණේ කුමක්ද? අන්තිමට සිදුවන්නේ කුමක්ද? කතන්දරවලට තාර්කික අනුපිළිවෙලක් තිබෙනවා!",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                         color: Color(0xFF92400E)),
                   ),
@@ -319,7 +319,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                   ),
                   child: Row(mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Text("Let's Go!",
+                        Text("අපි යමු!",
                             style: TextStyle(color: Colors.white,
                                 fontSize: 18, fontWeight: FontWeight.w800)),
                         SizedBox(width: 8),
@@ -347,7 +347,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Reading with Understanding",
+            const Text("අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3)),
             const SizedBox(height: 10),
@@ -356,20 +356,20 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
               Row(children: const [
                 Text("🧩", style: TextStyle(fontSize: 14)),
                 SizedBox(width: 6),
-                Text("Story Sequencer",
+                Text("කතන්දර අනුක්‍රමිකයා",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                         color: Color(0xFF6B7280))),
               ]),
-              const Text("Activity 3 of 4",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280))),
+              // const Text("Activity 3 of 4",
+              //     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500,
+              //         color: Color(0xFF6B7280))),
             ]),
             const SizedBox(height: 8),
 
             _segmentedProgress(_storyIndex + 1, _stories.length),
             const SizedBox(height: 14),
 
-            Text("Story ${_storyIndex + 1} of ${_stories.length}",
+            Text("කතන්දර ${_stories.length} න් ${_storyIndex + 1}",
                 style: const TextStyle(fontSize: 13,
                     color: Color(0xFF6B7280), fontWeight: FontWeight.w500)),
             const SizedBox(height: 12),
@@ -399,7 +399,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
             const SizedBox(height: 8),
 
             const Center(
-              child: Text("Tap the sentences in the correct order to tell the story!",
+              child: Text("කතාව කියන්න නිවැරදි අනුපිළිවෙලට වාක්‍ය තට්ටු කරන්න!",
                   style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   textAlign: TextAlign.center),
             ),
@@ -465,7 +465,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                                 color: _isCorrectOrder
                                     ? const Color(0xFF15803D)
                                     : const Color(0xFF1A1A2E)))
-                            : Text("Tap a card below...",
+                            : Text("පහත කාඩ්පතක් තට්ටු කරන්න...",
                             style: const TextStyle(fontSize: 14,
                                 color: Color(0xFFFBBF24),
                                 fontStyle: FontStyle.italic)),
@@ -502,7 +502,7 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "That order didn't tell a proper story — try again! Listen to each card to help you decide.",
+                      "ඒ ඇණවුම නිසි කතාවක් කිව්වේ නැහැ — නැවත උත්සාහ කරන්න! ඔබට තීරණය කිරීමට උපකාර කිරීමට එක් එක් කාඩ්පතට සවන් දෙන්න.",
                       style: TextStyle(fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFFDC2626)),
@@ -534,14 +534,14 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                         Icon(Icons.check_box_rounded,
                             color: Color(0xFF22C55E), size: 22),
                         SizedBox(width: 8),
-                        Text("You told the story correctly!",
+                        Text("ඔයා කතාව හරියටම කිව්වා!",
                             style: TextStyle(fontSize: 15,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF15803D))),
                       ]),
                   const SizedBox(height: 6),
                   const Text(
-                      "Now read the whole story aloud from beginning to end!",
+                      "දැන් මුළු කතාවම මුල ඉඳන් අගට ශබ්ද නඟා කියවන්න!",
                       style: TextStyle(fontSize: 12,
                           color: Color(0xFF6B7280)),
                       textAlign: TextAlign.center),
@@ -680,8 +680,8 @@ class _G3_L1_LOW_A3State extends State<G3_L1_LOW_A3> {
                     children: [
                       Text(
                         _storyIndex < _stories.length - 1
-                            ? "Next Story"
-                            : "Finish Activity",
+                            ? "ඊළඟ කතන්දර"
+                            : "ඊළඟ පැවරුම",
                         style: const TextStyle(fontSize: 17,
                             fontWeight: FontWeight.w700),
                       ),

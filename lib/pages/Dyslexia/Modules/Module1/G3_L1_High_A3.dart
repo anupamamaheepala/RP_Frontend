@@ -213,7 +213,7 @@ class _G3_L1_High_A3_MissingLetterState
             children: [
               // Title
               const Text(
-                "පැවරුම 3 — Letter & Sound Recognition",
+                "පැවරුම 3 —  ශබ්ද හඳුනාගැනීම",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,

@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../config.dart';
 import 'dyslexia_read_session_page.dart';
 import 'learning_paths_page.dart';
 
@@ -15,6 +20,63 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
     required this.tier,
     required this.sessionPayload,
   });
+
+  // Add this function inside _DyslexiaLevelDetailsPageState or your Stateless helper
+  Future<void> _handleDetectDyslexia(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id') ?? "";
+
+    // Show Loading
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator())
+    );
+
+    try {
+      final response = await http.get(Uri.parse(
+          "${Config.baseUrl}/dyslexia/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
+      ));
+      final data = jsonDecode(response.body);
+
+      Navigator.pop(context); // Close loading
+
+      if (data["is_locked"] == true) {
+        // SHOW ALERT: Must finish Learning Path first
+        _showLockedDialog(context);
+      } else {
+        // PROCEED: Navigate to the task
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level),
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      // Handle error...
+    }
+  }
+
+  void _showLockedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("කාර්යය අගුළු දමා ඇත", textAlign: TextAlign.center),
+        content: const Text(
+          "මෙම මට්ටම සඳහා පවරා ඇති සියලුම ඉගෙනුම් ක්‍රියාකාරකම් ඔබ අවසන් කළ යුතුය. ඉන්පසු ඔබට නැවත පරීක්ෂණයක් කළ හැකිය.",
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("හරි"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +205,7 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
     );
   }
 }
+
 
 class _OptionCard extends StatelessWidget {
   final String sinhalaText;

@@ -22,11 +22,26 @@ import 'Modules/Module1/G3_L1_Medium_A2.dart';
 import 'Modules/Module1/G3_L1_Medium_A3.dart';
 import 'Modules/Module1/G3_L1_Medium_A4.dart';
 import 'Modules/Module1/G3_L1_Medium_A5.dart';
+import 'Modules/Module1/G3_L2_High_A1.dart';
+import 'Modules/Module1/G3_L2_High_A2.dart';
+import 'Modules/Module1/G3_L2_High_A3.dart';
 import 'Modules/Module1/G3_L2_Medium_A2.dart';
 import 'Modules/Module1/G3_L2_Medium_A3.dart';
 import 'Modules/Module1/G3_L2_Medium_A4.dart';
 import 'Modules/Module1/G3_L2_Medium_A5.dart';
+import 'Modules/Module1/G3_L3_High_A1.dart';
+import 'Modules/Module1/G3_L3_High_A2.dart';
+import 'Modules/Module1/G3_L4_High_A1.dart';
+import 'Modules/Module1/G3_L4_High_A2.dart';
 import 'Modules/Module1/G3_l2_Medium_A1.dart';
+import 'Modules/Module1/G4_L1_High_A1.dart';
+import 'Modules/Module1/G4_L1_High_A2.dart';
+import 'Modules/Module1/G7_L1_High_A1.dart';
+import 'Modules/Module1/G7_L1_High_A2.dart';
+import 'Modules/Module1/G7_L2_High_A1.dart';
+import 'Modules/Module1/G7_L2_High_A2.dart';
+import 'Modules/Module1/G7_L3_High_A1.dart';
+import 'Modules/Module1/G7_L3_High_A2.dart';
 import 'Modules/learning_progress_session_page.dart';
 
 class ModuleActivityPage extends StatefulWidget {
@@ -39,9 +54,11 @@ class ModuleActivityPage extends StatefulWidget {
     required this.sessionPayload,
   });
 
+
   @override
   _ModuleActivityPageState createState() => _ModuleActivityPageState();
 }
+
 
 class _ModuleActivityPageState extends State<ModuleActivityPage> {
   late List<bool> _activityCompletionStatus;
@@ -212,6 +229,68 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
       }
     }
 
+    ////GRADE 3 LEVEL 2 LOW
+    if (grade == 3 && level == 2 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 3 LEVEL 2 HIGH
+    else if (grade == 3 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableBridgeActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SoundSwapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPuzzleBuilderActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
     //GRADE 3 LEVEL 2 MEDIUM
     else if (grade == 3 && level == 2 && risk == "MEDIUM") {
       switch (activityIndex) {
@@ -244,10 +323,69 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
       }
     }
 
+//GRADE 3 LEVEL 3 LOW
+//     if (grade == 3 && level == 3 && risk == "LOW") {
+//       switch (activityIndex) {
+//         case 0:
+//           result = await Navigator.push(context, MaterialPageRoute(
+//             builder: (_) => const ExpressionReaderActivity(),
+//           ));
+//           break;
+//         case 1:
+//           result = await Navigator.push(context, MaterialPageRoute(
+//             builder: (_) => const G3_L1_LOW_A2(),
+//           ));
+//           break;
+//         case 2:
+//           result = await Navigator.push(context, MaterialPageRoute(
+//             builder: (_) => const G3_L1_LOW_A3(),
+//           ));
+//           break;
+//         case 3:
+//           result = await Navigator.push(context, MaterialPageRoute(
+//             builder: (_) => const G3_L1_LOW_A4(),
+//           ));
+//           break;
+//       }
+//     }
 
-
-    //TEST
-    else if (grade == 3 && level == 2 && risk == "HIGH") {
+    //GRADE 3 LEVEL 3 HIGH
+    else if (grade == 3 && level == 3 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L3_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L3_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+    //GRADE 3 LEVEL 3 MEDIUM
+    else if (grade == 3 && level == 3 && risk == "MEDIUM") {
       switch (activityIndex) {
         case 0:
           result = await Navigator.push(context, MaterialPageRoute(
@@ -275,6 +413,1644 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           ));
           break;
 
+      }
+    }
+
+    ////GRADE 3 LEVEL 4 LOW
+    if (grade == 3 && level == 4 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 3 LEVEL 4 HIGH
+    else if (grade == 3 && level == 4 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L4_High_A1 (),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L4_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 3 LEVEL 4 MEDIUM
+    else if (grade == 3 && level == 4 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+//--------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------GRADE 4--------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
+    //GRADE 4 LEVEL 1 LOW
+    if (grade == 4 && level == 1 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 1 HIGH
+    else if (grade == 4 && level == 1 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G4_L1_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G4_L1_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 1 MEDIUM
+    else if (grade == 3 && level == 1 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 4 LEVEL 2 LOW
+    if (grade == 4 && level == 2 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 2 HIGH
+    else if (grade == 4 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 2 MEDIUM
+    else if (grade == 4 && level == 2 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+//GRADE 4 LEVEL 3 LOW
+    if (grade == 4 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 3 HIGH
+    else if (grade == 4 && level == 3 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+    //GRADE 4 LEVEL 3 MEDIUM
+    else if (grade == 4 && level == 3 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 4 LEVEL 4 LOW
+    if (grade == 4 && level == 4 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 4 HIGH
+    else if (grade == 4 && level == 4 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 4 LEVEL 4 MEDIUM
+    else if (grade == 4 && level == 4 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+    //--------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------GRADE 5--------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
+    //GRADE 5 LEVEL 1 LOW
+    if (grade == 5 && level == 1 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 1 HIGH
+    else if (grade == 5 && level == 1 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 1 MEDIUM
+    else if (grade == 5 && level == 1 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 5 LEVEL 2 LOW
+    if (grade == 5 && level == 2 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 2 HIGH
+    else if (grade == 5 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 2 MEDIUM
+    else if (grade == 5 && level == 2 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+//GRADE 5 LEVEL 3 LOW
+    if (grade == 5 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 3 HIGH
+    else if (grade == 5 && level == 3 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+    //GRADE 5 LEVEL 3 MEDIUM
+    else if (grade == 5 && level == 3 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 5 LEVEL 4 LOW
+    if (grade == 5 && level == 4 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 4 HIGH
+    else if (grade == 5 && level == 4 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 5 LEVEL 4 MEDIUM
+    else if (grade == 5 && level == 4 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+
+    //--------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------GRADE 6--------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
+    //GRADE 6 LEVEL 1 LOW
+    if (grade == 6 && level == 1 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 1 HIGH
+    else if (grade == 6 && level == 1 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 1 MEDIUM
+    else if (grade == 6 && level == 1 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 6 LEVEL 2 LOW
+    if (grade == 6 && level == 2 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 2 HIGH
+    else if (grade == 6 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 2 MEDIUM
+    else if (grade == 6 && level == 2 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+//GRADE 6 LEVEL 3 LOW
+    if (grade == 6 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 3 HIGH
+    else if (grade == 6 && level == 3 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+    //GRADE 6 LEVEL 3 MEDIUM
+    else if (grade == 6 && level == 3 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 6 LEVEL 4 LOW
+    if (grade == 6 && level == 4 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 4 HIGH
+    else if (grade == 6 && level == 4 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 6 LEVEL 4 MEDIUM
+    else if (grade == 6 && level == 4 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+    //--------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------------GRADE 7--------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------
+    //GRADE 7 LEVEL 1 LOW
+    if (grade == 7 && level == 1 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 1 HIGH
+    else if (grade == 7 && level == 1 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L1_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L1_High_A2 (),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 1 MEDIUM
+    else if (grade == 7 && level == 1 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 7 LEVEL 2 LOW
+    if (grade == 7 && level == 2 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 2 HIGH
+    else if (grade == 7 && level == 2 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L2_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L2_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 2 MEDIUM
+    else if (grade == 7 && level == 2 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+//GRADE 7 LEVEL 3 LOW
+    if (grade == 7 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 3 HIGH
+    else if (grade == 7 && level == 3 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L3_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L3_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+    //GRADE 7 LEVEL 3 MEDIUM
+    else if (grade == 7 && level == 3 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordChainActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SyllableTapActivity(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PictureSentenceMatchActivity(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const SentenceRepairActivity(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const MyTurnToReadActivity(),
+          ));
+          break;
+
+      }
+    }
+
+    ////GRADE 7 LEVEL 4 LOW
+    if (grade == 7 && level == 4 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 4 HIGH
+    else if (grade == 7 && level == 4 && risk == "HIGH") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A1_Animate(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A2_Repeat(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+        case 5:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+          ));
+          break;
+      }
+    }
+
+    //GRADE 7 LEVEL 4 MEDIUM
+    else if (grade == 7 && level == 4 && risk == "MEDIUM") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const WordPickerActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A4(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L2_MEDIUM_A5(),
+          ));
+          break;
+
+      }
+    }
+
+
+    //TEST
+    else if (grade == 3 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L3_High_A1(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G7_L3_High_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+          ));
+          break;
+        case 4:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_SyllableBlending_A5(),
+          ));
+          break;
+
 
         case 6:
           result = await Navigator.push(context, MaterialPageRoute(
@@ -287,7 +2063,7 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     }else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Learning path not implemented yet."),
+          content: Text("ඉගෙනුම් මාර්ගය තවමත් ක්‍රියාත්මක කර නැත."),
           backgroundColor: Colors.red,
         ),
       );
@@ -308,6 +2084,59 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
         return 'මධ්‍යම අවදානම';
       default:
         return risk ?? '';
+    }
+  }
+
+  Future<void> _finishModule() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("පරිශීලක හැඳුනුම්පත සොයාගත නොහැක.")),
+      );
+      return;
+    }
+
+    // 1. Show a loading indicator while the backend updates
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // 2. Notify backend that this module is done
+      final response = await http.post(
+        Uri.parse("${Config.baseUrl}/dyslexia/learning/complete-module"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": userId,
+          "grade": widget.sessionPayload["grade"],
+          "level": widget.sessionPayload["level"],
+          "module_number": widget.moduleNumber,
+        }),
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading indicator
+
+      final data = jsonDecode(response.body);
+      if (data["ok"] == true) {
+        // 3. Go back to DyslexiaLevelDetailsPage
+        // The lock will now be open because is_completed is True in MongoDB
+        Navigator.pop(context);
+      } else {
+        throw Exception("ප්‍රගතිය යාවත්කාලීන කිරීමට අසමත් විය");
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading indicator if open
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("දෝෂයක් සිදුවිය. නැවත උත්සාහ කරන්න.")),
+        );
+      }
+      print("Error finishing module: $e");
     }
   }
 
@@ -465,10 +2294,11 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
               ),
 
               // Finish Module Button
+              // Update your button's onTap here
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: _finishModule, // <--- Change this from () => Navigator.pop(context)
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 16),

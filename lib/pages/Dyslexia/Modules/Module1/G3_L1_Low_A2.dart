@@ -19,13 +19,13 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
   // ── Original content unchanged ────────────────────────────
   final List<Map<String, dynamic>> _tasks = [
     {
-      "sentence": "අමිම පොත්ක් කටව.",
+      "sentence": "අම්මා පොතක් කනවා.",
       "wrongWord": "කටව",
-      "correctAnswer": "කියව",
-      "options": ["කටව", "කියව", "ගෙව"],
-      "clue": "You eat food 🍚 — but what do you do with a book 📚?",
-      "fixedSentence": "අමිම පොත්ක් කියව.",
-      "fixedTranslation": "Read the book.",
+      "correctAnswer": "කියවනවා",
+      "options": ["කටව", "කියවනවා", "කනවා"],
+      "clue": "ඔයා කෑම කනවා 🍚 — නමුත් පොතක් අරන් මොකද කරන්නේ 📚?",
+      "fixedSentence": "අම්මා පොතක් කියවනවා",
+      "fixedTranslation": "Mother Read the book.",
       "emoji": "📚",
     },
     {
@@ -33,20 +33,20 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
       "wrongWord": "ගැවා",
       "correctAnswer": "නෑවා",
       "options": ["ගැවා", "නෑවා", "ගියා"],
-      "clue": "In a pond 🏊 — do you swim, paint, or just go?",
+      "clue": "පොකුණක 🏊 — ඔයා පීනනවද, තීන්ත ගානවද, නැත්නම් නිකම්ම යනවද?",
       "fixedSentence": "ලමයා නෙළම් පොකුණේ නෑවා.",
       "fixedTranslation": "The child swam in the lotus pond.",
       "emoji": "🏊",
     },
     {
-      "sentence": "අයියා ගමනක් ගිය.",
+      "sentence": "අයියා බත් ගිය.",
       "wrongWord": "ගිය",
-      "correctAnswer": "ගියෙ",
-      "options": ["ගිය", "ගියෙ", "ගෙය"],
-      "clue": "Where do you go when you're traveling? 🚗",
+      "correctAnswer": "කනවා",
+      "options": ["එනවා", "යනවා", "කනවා"],
+      "clue": "අපිට බත් තියෙද්දි අපි මොකද කරන්නේ? 🍚",
       "fixedSentence": "අයියා ගමනක් ගියෙ.",
       "fixedTranslation": "Brother went on a journey.",
-      "emoji": "🚗",
+      "emoji": "🍚",
     },
   ];
 
@@ -117,11 +117,11 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Row(children: [
-              _badge("Low Risk",          const Color(0xFF22C55E), Colors.white),
+              _badge("අවම අවදානම",          const Color(0xFF22C55E), Colors.white),
               const SizedBox(width: 6),
-              _badge("Grade 3 · Level 1", const Color(0xFFF97316), Colors.white),
-              const SizedBox(width: 6),
-              _outlinedBadge("Module 1 of 4"),
+              _badge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFFF97316), Colors.white),
+              // const SizedBox(width: 6),
+              // _outlinedBadge("පැවරුම 2"),
             ]),
           ),
         ],
@@ -135,7 +135,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
 
               // Title
               const Text(
-                "Reading with Understanding",
+                "පැවරුම 2- අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3),
               ),
@@ -148,15 +148,15 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                   Row(children: const [
                     Text("🔍", style: TextStyle(fontSize: 14)),
                     SizedBox(width: 6),
-                    Text("Sentence Detective",
+                    Text("වාක්‍ය පරීක්ෂක",
                         style: TextStyle(fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF6B7280))),
                   ]),
-                  const Text("Activity 2 of 4",
-                      style: TextStyle(fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF6B7280))),
+                  // const Text("Activity 2 of 4",
+                  //     style: TextStyle(fontSize: 13,
+                  //         fontWeight: FontWeight.w500,
+                  //         color: Color(0xFF6B7280))),
                 ],
               ),
               const SizedBox(height: 8),
@@ -199,7 +199,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                         child: Row(mainAxisSize: MainAxisSize.min, children: const [
                           Text("📍", style: TextStyle(fontSize: 14)),
                           SizedBox(width: 6),
-                          Text("Find the wrong word!",
+                          Text("වැරදි වචනය සොයා ගන්න!",
                               style: TextStyle(color: Colors.white,
                                   fontWeight: FontWeight.w700, fontSize: 13)),
                         ]),
@@ -282,7 +282,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            "Clue: ${task['clue']}",
+                            "ඉඟිය: ${task['clue']}",
                             style: const TextStyle(fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF065F46)),
@@ -313,7 +313,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                           children: const [
                             Text("🔊", style: TextStyle(fontSize: 16)),
                             SizedBox(width: 8),
-                            Text("Listen to the broken sentence",
+                            Text("කැඩුණු වාක්‍යයට සවන් දෙන්න.",
                                 style: TextStyle(color: Colors.white,
                                     fontWeight: FontWeight.w700, fontSize: 15)),
                           ],
@@ -323,7 +323,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                     const SizedBox(height: 6),
                     Center(
                       child: Text(
-                        "Played ${_playCount}×",
+                        "${_playCount}× වන වතාව",
                         style: const TextStyle(fontSize: 11,
                             color: Color(0xFF9CA3AF),
                             fontStyle: FontStyle.italic),
@@ -339,7 +339,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                 Text("↘", style: TextStyle(fontSize: 14,
                     color: Color(0xFF6B7280))),
                 SizedBox(width: 6),
-                Text("Replace the red word with:",
+                Text("රතු වචනය ආදේශ කරන්න:",
                     style: TextStyle(fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A2E))),
@@ -464,8 +464,8 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                         const SizedBox(width: 8),
                         Text(
                           _isCorrectAnswer
-                              ? "Great job! The correct sentence is:"
-                              : "Not quite! The correct sentence is:",
+                              ? "නියම වැඩක්! නිවැරදි වාක්‍යය:"
+                              : "වැරදියි! නිවැරදි වාක්‍යය:",
                           style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -484,10 +484,10 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                       const SizedBox(height: 4),
 
                       // English translation
-                      Text(task["fixedTranslation"] as String,
-                          style: const TextStyle(fontSize: 13,
-                              color: Color(0xFF6B7280),
-                              fontStyle: FontStyle.italic)),
+                      // Text(task["fixedTranslation"] as String,
+                      //     style: const TextStyle(fontSize: 13,
+                      //         color: Color(0xFF6B7280),
+                      //         fontStyle: FontStyle.italic)),
                       const SizedBox(height: 8),
 
                       // Clue reminder
@@ -518,7 +518,7 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                                 Text("🎧",
                                     style: TextStyle(fontSize: 14)),
                                 SizedBox(width: 8),
-                                Text("Hear correct sentence",
+                                Text("නිවැරදි වාක්‍ය අසන්න",
                                     style: TextStyle(fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         color: Color(0xFF16A34A))),
@@ -553,8 +553,8 @@ class _G3_L1_LOW_A2State extends State<G3_L1_LOW_A2> {
                     children: [
                       Text(
                         _currentCaseIndex < _tasks.length - 1
-                            ? "Next Case"
-                            : "Finish Activity",
+                            ? "ඊළඟ"
+                            : "ඊළඟ පැවරුම",
                         style: const TextStyle(fontSize: 17,
                             fontWeight: FontWeight.w700),
                       ),

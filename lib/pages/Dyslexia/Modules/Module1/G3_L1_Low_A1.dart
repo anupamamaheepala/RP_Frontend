@@ -135,19 +135,20 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
         _selectedEmotion  = '';
         _modelPlayCount   = 0;
       } else {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text("Activity Completed"),
-            content: const Text("You have finished all sentences!"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
+        Navigator.pop(context, true);
+        // showDialog(
+        //   context: context,
+        //   builder: (ctx) => AlertDialog(
+        //     title: const Text("Activity Completed"),
+        //     content: const Text("You have finished all sentences!"),
+        //     actions: [
+        //       TextButton(
+        //         onPressed: () => Navigator.pop(ctx),
+        //         child: const Text("OK"),
+        //       ),
+        //     ],
+        //   ),
+        // );
       }
     });
   }
@@ -174,11 +175,11 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Row(children: [
-              _badge("Low Risk",         const Color(0xFF22C55E), Colors.white),
+              _badge("අවම අවදානම",         const Color(0xFF22C55E), Colors.white),
               const SizedBox(width: 6),
-              _badge("Grade 3 · Level 1", const Color(0xFFF97316), Colors.white),
-              const SizedBox(width: 6),
-              _outlinedBadge("Module 1 of 4"),
+              _badge("ශ්‍රේණිය 3 · මට්ටම 1", const Color(0xFFF97316), Colors.white),
+              // const SizedBox(width: 6),
+              // _outlinedBadge("පැවරුම 1"),
             ]),
           ),
         ],
@@ -192,7 +193,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
 
               // Title
               const Text(
-                "Reading with Understanding",
+                "පැවරුම 1 - අවබෝධයෙන් කියවීම",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E), letterSpacing: -0.3),
               ),
@@ -205,15 +206,15 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                   Row(children: const [
                     Text("📖", style: TextStyle(fontSize: 14)),
                     SizedBox(width: 6),
-                    Text("Expression Reader",
+                    Text("ප්‍රකාශන කියවන්නා",
                         style: TextStyle(fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF6B7280))),
                   ]),
-                  const Text("Activity 1 of 4",
-                      style: TextStyle(fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF6B7280))),
+                  // const Text("Activity 1 of 4",
+                  //     style: TextStyle(fontSize: 13,
+                  //         fontWeight: FontWeight.w500,
+                  //         color: Color(0xFF6B7280))),
                 ],
               ),
               const SizedBox(height: 8),
@@ -222,7 +223,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
               const SizedBox(height: 14),
 
               Text(
-                "Sentence ${_currentSentenceIndex + 1} of ${_tasks.length}",
+                "වාක්‍ය ${_tasks.length} න් ${_currentSentenceIndex + 1} වාක්‍යය",
                 style: const TextStyle(fontSize: 13,
                     color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
               ),
@@ -254,7 +255,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Text(eEmoji, style: const TextStyle(fontSize: 16)),
                       const SizedBox(width: 6),
-                      Text("$eLabel — read with this feeling!",
+                      Text("$eLabel — මේ හැඟීමෙන් කියවන්න!",
                           style: const TextStyle(color: Colors.white,
                               fontWeight: FontWeight.w700, fontSize: 13)),
                     ]),
@@ -308,7 +309,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
               const SizedBox(height: 20),
 
               // ── Step 1 ────────────────────────────────────
-              const Text("Step 1: Hear the model read it",
+              const Text("පියවර 1: ආකෘතිය එය කියවන ආකාරය අසන්න",
                   style: TextStyle(fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1A1A2E))),
@@ -333,8 +334,8 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                       const SizedBox(width: 8),
                       Text(
                         _modelPlayCount > 1
-                            ? "Hear model again"
-                            : "Hear Model Read",
+                            ? "ආයෙත් අහන්න"
+                            : "ආකෘතිය කියවීමට සවන් දෙන්න",
                         style: const TextStyle(fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFF97316)),
@@ -346,7 +347,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
               const SizedBox(height: 20),
 
               // ── Step 2 — original emotion choices ─────────
-              const Text("Step 2 — Which emotion matches this sentence?",
+              const Text("පියවර 2 — මෙම වාක්‍යයට ගැලපෙන හැඟීම් මොනවාද?",
                   style: TextStyle(fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF1A1A2E))),
@@ -437,7 +438,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                   child: Row(children: const [
                     Text("🎉", style: TextStyle(fontSize: 18)),
                     SizedBox(width: 8),
-                    Text("Correct! 🎉",
+                    Text("නිවැරදියි! 🎉",
                         style: TextStyle(fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF16A34A))),
@@ -460,7 +461,7 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "Not quite — try again! You can replay the sound.",
+                        "වැරදියි— නැවත උත්සාහ කරන්න! ඔබට ශබ්දය නැවත වාදනය කළ හැකිය.",
                         style: TextStyle(fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFFDC2626)),
@@ -492,8 +493,8 @@ class _ExpressionReaderActivityState extends State<ExpressionReaderActivity> {
                     children: [
                       Text(
                         _currentSentenceIndex < _tasks.length - 1
-                            ? "Next Sentence"
-                            : "Finish Activity",
+                            ? "ඊළඟ"
+                            : "ඊළඟ පැවරුම",
                         style: const TextStyle(
                             fontSize: 17, fontWeight: FontWeight.w700),
                       ),
