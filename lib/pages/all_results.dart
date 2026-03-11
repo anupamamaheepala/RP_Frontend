@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
 import '/pages/Dysgraphia/dysgraphia_results_hub.dart';
+import 'Dyslexia/Learning Path/dyslexia_progress_result_details_page.dart';
 
 class AllResultsPage extends StatelessWidget {
   const AllResultsPage({super.key});
@@ -126,7 +127,12 @@ class AllResultsPage extends StatelessWidget {
                       icon: Icons.menu_book_rounded,
                       colors: [Colors.purple.shade400, Colors.blue.shade400],
                       onTap: () {
-                        // TODO: Navigate to Dyslexia Results Fetch Page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DyslexiaResultsPage(),
+                          ),
+                        );
                       },
                     ),
                     _buildResultCard(

@@ -35,7 +35,7 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
 
     try {
       final response = await http.get(Uri.parse(
-          "${Config.baseUrl}/dyslexia/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
+          "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
       ));
       final data = jsonDecode(response.body);
 
@@ -142,7 +142,31 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
                 const SizedBox(height: 32),
                 // Tasks Card - Purple to Blue gradient
                 Center(
-                  child: _OptionCard(
+                  // child: _OptionCard(
+                  //   sinhalaText: 'කියවීමේ දුෂ්කරතා හඳුනාගැනීම',
+                  //   englishText: 'Detect Dyslexia',
+                  //   icon: Icons.task_alt_rounded,
+                  //   gradient: const LinearGradient(
+                  //     begin: Alignment.topLeft,
+                  //     end: Alignment.bottomRight,
+                  //     colors: [
+                  //       Color(0xFF9B7FD4),
+                  //       Color(0xFF7B9FE8),
+                  //     ],
+                  //   ),
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => DyslexiaReadSessionPage(
+                  //           grade: grade,
+                  //           level: level,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  child:_OptionCard(
                     sinhalaText: 'කියවීමේ දුෂ්කරතා හඳුනාගැනීම',
                     englishText: 'Detect Dyslexia',
                     icon: Icons.task_alt_rounded,
@@ -155,15 +179,7 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
                       ],
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DyslexiaReadSessionPage(
-                            grade: grade,
-                            level: level,
-                          ),
-                        ),
-                      );
+                      _handleDetectDyslexia(context);
                     },
                   ),
                 ),
