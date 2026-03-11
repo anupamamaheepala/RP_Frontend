@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
 import '/profile.dart';
-import 'dyscal_special_task.dart';
+import 'dyscal_special_task_g03.dart';
 
 class DyscalImprovePage extends StatefulWidget {
   const DyscalImprovePage({super.key});
@@ -56,7 +56,6 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
         _tasksCompleted = stateData['tasks_completed'];
 
         if (_tasksCompleted > 0 && _tasksCompleted % 5 == 0) {
-          // FIX 1: Turn off the loading spinner before showing the dialog
           setState(() => _isLoading = false);
           _showSpecialTaskDialog();
           return;
@@ -256,8 +255,6 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
             onPressed: () {
               Navigator.pop(context);
-
-              // FIX 2: UNCOMMENTED THE NAVIGATION CODE!
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const DyscalSpecialTaskPage())
@@ -273,77 +270,94 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8EC5FC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () => Navigator.pop(context)),
-        title: const Text('දියුණු කිරීම (Improve)', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.purple))
-          : _questions.isEmpty
-          ? const Center(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Text(
-            "ගැටළු සොයාගත නොහැක. (No questions found in the database.)",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, color: Colors.black54),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.purple.shade50, Colors.blue.shade50],
           ),
         ),
-      )
-          : Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Level: ${_currentLevel.toUpperCase()}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("Question: ${_currentQuestionIndex + 1} / ${_questions.length}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ],
-            ),
-            const SizedBox(height: 30),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [const BoxShadow(color: Colors.black12, blurRadius: 10)]),
-              child: Column(
-                children: [
-                  Text(
-                    _questions[_currentQuestionIndex]['question'],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 30),
-                  TextField(
-                    controller: _answerController,
-                    onChanged: _onInputChanged,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: "පිළිතුර (Answer)",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                      onPressed: _checkAnswer,
-                      child: const Text("පරීක්ෂා කරන්න (Check)", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                  )
-                ],
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () => Navigator.pop(context)),
+                title: const Text('දියුණු කිරීම (Improve)', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                centerTitle: true,
               ),
-            ),
-          ],
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: Colors.purple))
+                    : _questions.isEmpty
+                    ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text(
+                      "ගැටළු සොයාගත නොහැක. (No questions found in the database.)",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 18, color: Colors.black54),
+                    ),
+                  ),
+                )
+                    : SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(color: Colors.purple.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Column(
+                            children: [
+                              Text("ප්‍රශ්නය ${_currentQuestionIndex + 1} / ${_questions.length} - Level: ${_currentLevel.toUpperCase()}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                              const SizedBox(height: 10),
+                              Text(
+                                _questions[_currentQuestionIndex]['question'],
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        TextField(
+                          controller: _answerController,
+                          onChanged: _onInputChanged,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            hintText: "පිළිතුර (Answer)",
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                            onPressed: _checkAnswer,
+                            icon: const Icon(Icons.check, color: Colors.white),
+                            label: const Text("පරීක්ෂා කරන්න (Check)", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

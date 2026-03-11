@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'grade3_results_page.dart';
 import 'grade3_success_page.dart';
 import 'grade3_results_page.dart';
 import 'task_stats.dart';
@@ -9,51 +8,48 @@ class Grade3Task3MatchDrag extends StatefulWidget {
   const Grade3Task3MatchDrag({super.key});
 
   @override
-  _Grade3Task3MatchDragState createState() => _Grade3Task3MatchDragState();
+  State<Grade3Task3MatchDrag> createState() => _Grade3Task3MatchDragState();
 }
 
 class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
+
   final List<Map<String, dynamic>> items = [
-    {'name': 'ඇපල්',      'type': 'fruit',   'image': Icons.apple},
-    {'name': 'කෙසෙල්',     'type': 'fruit',   'image': Icons.breakfast_dining},
+    {'name': 'ඇපල්', 'type': 'fruit', 'image': Icons.apple},
+    {'name': 'කෙසෙල්', 'type': 'fruit', 'image': Icons.breakfast_dining},
     {'name': 'මෝටර් රථය', 'type': 'vehicle', 'image': Icons.directions_car},
-    {'name': 'බල්ලා',      'type': 'animal',  'image': Icons.pets},
-    {'name': 'බස් රථය',   'type': 'vehicle', 'image': Icons.directions_bus},
-    {'name': 'පූසා',       'type': 'animal',  'image': Icons.pets},
+    {'name': 'බල්ලා', 'type': 'animal', 'image': Icons.pets},
+    {'name': 'බස් රථය', 'type': 'vehicle', 'image': Icons.directions_bus},
+    {'name': 'පූසා', 'type': 'animal', 'image': Icons.pets},
   ];
 
   Map<String, List<String>> categories = {
     'පලතුරු': [],
-    'සතුන්':  [],
-    'වාහන':   [],
+    'සතුන්': [],
+    'වාහන': [],
   };
 
   int correctDrops = 0;
   int wrongDrops   = 0;
 
-  // ── NEW ──────────────────────────────────────────────────────────────────
   final Map<String, DateTime> _dragStartTimes = {};
   final List<int> _responseTimesMs = [];
-  // ─────────────────────────────────────────────────────────────────────────
 
   final Color primaryBg       = const Color(0xFFF8FAFF);
   final Color secondaryPurple = const Color(0xFF6741D9);
   final Color accentAmber     = const Color(0xFFFFB300);
 
-  // ── NEW: called when drag begins ─────────────────────────────────────────
   void _onDragStarted(String itemName) {
     _dragStartTimes[itemName] = DateTime.now();
   }
 
   void _onAccept(String itemName, String category) {
-    final item =
-    items.firstWhere((i) => i['name'] == itemName, orElse: () => {});
+    final item = items.firstWhere((i) => i['name'] == itemName, orElse: () => {});
     if (item.isEmpty) return;
 
-    // ── NEW: record drag→drop latency ──
     if (_dragStartTimes.containsKey(itemName)) {
       _responseTimesMs.add(
-          DateTime.now().difference(_dragStartTimes[itemName]!).inMilliseconds);
+        DateTime.now().difference(_dragStartTimes[itemName]!).inMilliseconds,
+      );
       _dragStartTimes.remove(itemName);
     }
 
@@ -81,7 +77,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                 'correct':           correctDrops,
                 'premature':         0,
                 'wrong':             wrongDrops,
-                'response_times_ms': List<int>.from(_responseTimesMs), // ── NEW
+                'response_times_ms': List<int>.from(_responseTimesMs),
               },
               nextPage: const Grade3ResultsPage(),
             ),
@@ -95,8 +91,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
         SnackBar(
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           content: Text('අපොයි! $itemName, $category කාණ්ඩයට අයිති නැහැ.'),
           duration: const Duration(seconds: 2),
         ),
@@ -117,8 +112,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
         ),
         title: Text(
           'පියවර 3: නිවැරදි පෙට්ටියට දමමු',
-          style:
-          TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold),
+          style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -129,9 +123,10 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
               'පින්තූර නිවැරදි කාණ්ඩය වෙත ඇදගෙන යන්න!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: secondaryPurple),
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: secondaryPurple,
+              ),
             ),
           ),
           Expanded(
@@ -146,8 +141,9 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                       borderRadius: BorderRadius.circular(25),
                       boxShadow: [
                         BoxShadow(
-                            color: secondaryPurple.withOpacity(0.05),
-                            blurRadius: 15)
+                          color: secondaryPurple.withOpacity(0.05),
+                          blurRadius: 15,
+                        ),
                       ],
                     ),
                     child: ListView.builder(
@@ -159,14 +155,14 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Draggable<String>(
                             data: item['name'] as String,
-                            onDragStarted: () =>          // ── NEW
-                            _onDragStarted(item['name'] as String),
-                            feedback:
-                            _buildItemCard(item, isDragging: true),
+                            onDragStarted: () =>
+                                _onDragStarted(item['name'] as String),
+                            feedback: _buildItemCard(item, isDragging: true),
                             childWhenDragging: Opacity(
                               opacity: 0.3,
                               child: _buildItemCard(item),
                             ),
+
                             child: _buildItemCard(item),
                           ),
                         );
@@ -201,17 +197,21 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                               boxShadow: [
                                 if (isHovering)
                                   BoxShadow(
-                                      color: accentAmber.withOpacity(0.2),
-                                      blurRadius: 10)
+                                    color: accentAmber.withOpacity(0.2),
+                                    blurRadius: 10,
+                                  ),
                               ],
                             ),
                             child: Column(
                               children: [
-                                Text(category,
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: secondaryPurple)),
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: secondaryPurple,
+                                  ),
+                                ),
                                 const Divider(height: 20),
                                 Wrap(
                                   spacing: 8,
@@ -221,14 +221,18 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
                                     label: Text(name),
                                     backgroundColor: Colors.green[50],
                                     side: const BorderSide(
-                                        color: Colors.green,
-                                        width: 0.5),
+                                      color: Colors.green,
+                                      width: 0.5,
+                                    ),
                                   ))
                                       .toList(),
                                 ),
                                 if (categories[category]!.isEmpty)
-                                  Icon(_getCategoryIcon(category),
-                                      color: Colors.black12, size: 40),
+                                  Icon(
+                                    _getCategoryIcon(category),
+                                    color: Colors.black12,
+                                    size: 40,
+                                  ),
                               ],
                             ),
                           );
@@ -245,8 +249,7 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
     );
   }
 
-  Widget _buildItemCard(Map<String, dynamic> item,
-      {bool isDragging = false}) {
+  Widget _buildItemCard(Map<String, dynamic> item, {bool isDragging = false}) {
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -255,30 +258,34 @@ class _Grade3Task3MatchDragState extends State<Grade3Task3MatchDrag> {
         decoration: BoxDecoration(
           color: isDragging ? accentAmber : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border:
-          Border.all(color: accentAmber.withOpacity(0.3), width: 2),
+          border: Border.all(color: accentAmber.withOpacity(0.3), width: 2),
           boxShadow: [
             BoxShadow(
               color: isDragging
                   ? accentAmber.withOpacity(0.4)
                   : Colors.black.withOpacity(0.05),
               blurRadius: 10,
-            )
+            ),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(item['image'],
-                size: 45,
-                color: isDragging ? Colors.white : secondaryPurple),
+            Icon(
+              item['image'],
+              size: 45,
+              color: isDragging ? Colors.white : secondaryPurple,
+            ),
             const SizedBox(height: 8),
-            Text(item['name'],
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDragging ? Colors.white : Colors.black87)),
+            Text(
+              item['name'],
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDragging ? Colors.white : Colors.black87,
+              ),
+            ),
           ],
         ),
       ),

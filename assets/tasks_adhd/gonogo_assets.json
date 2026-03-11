@@ -1,0 +1,14 @@
+{
+  "animals": [
+    {"id": "dog", "emoji": "🐕", "isGo": true},
+    {"id": "bird", "emoji": "🐦", "isGo": true},
+    {"id": "cow", "emoji": "🐄", "isGo": true},
+    {"id": "elephant", "emoji": "🐘", "isGo": true},
+    {"id": "rabbit", "emoji": "🐇", "isGo": true},
+    {"id": "monkey", "emoji": "🐒", "isGo": true},
+    {"id": "cat", "emoji": "🐈", "isGo": false},
+    {"id": "frog", "emoji": "🐸", "isGo": false},
+    {"id": "snake", "emoji": "🐍", "isGo": false},
+    {"id": "spider", "emoji": "🕷️", "isGo": false}
+  ]
+}

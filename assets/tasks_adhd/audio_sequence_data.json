@@ -1,0 +1,44 @@
+{
+  "stories": [
+    {
+      "audio": "sounds/lplans/story_1.wav",
+      "items": [
+        {"emoji": "☀️", "label": "අවදි වුණා"},
+        {"emoji": "🍚", "label": "කෑම කෑවා"},
+        {"emoji": "🏫", "label": "පාසල් ගියා"}
+      ]
+    },
+    {
+      "audio": "sounds/lplans/story_2.wav",
+      "items": [
+        {"emoji": "🌧️", "label": "වැස්ස ආවා"},
+        {"emoji": "☂️", "label": "කුඩය ගත්තා"},
+        {"emoji": "🏠", "label": "ගෙදර ආවා"}
+      ]
+    },
+    {
+      "audio": "sounds/lplans/story_3.wav",
+      "items": [
+        {"emoji": "🌳", "label": "ගහ ළඟට ගියා"},
+        {"emoji": "🍎", "label": "ඇපල් කෑවා"},
+        {"emoji": "😊", "label": "සතුටු වුණා"}
+      ]
+    },
+    {
+      "audio": "sounds/lplans/story_4.wav",
+      "items": [
+        {"emoji": "🌱", "label": "ඇටයක් සිටෙව්වා"},
+        {"emoji": "💧", "label": "වතුර දැමුවා"},
+        {"emoji": "🌻", "label": "මලක් පිපුණා"}
+      ]
+    },
+    {
+      "audio": "sounds/lplans/story_5.wav",
+      "items": [
+        {"emoji": "🥚", "label": "බිත්තරය තිබුණා"},
+        {"emoji": "🐣", "label": "පැටියා ආවා"},
+        {"emoji": "🐥", "label": "කෑම කෑවා"}
+      ]
+    }
+  ]
+}

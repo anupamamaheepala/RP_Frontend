@@ -1,0 +1,19 @@
+{
+  "shapes": [
+    {"emoji": "🔴", "key": "red_circle"},
+    {"emoji": "🔵", "key": "blue_circle"},
+    {"emoji": "🟡", "key": "yellow_circle"},
+    {"emoji": "🟢", "key": "green_circle"},
+    {"emoji": "🟣", "key": "purple_circle"},
+    {"emoji": "🔷", "key": "blue_diamond"},
+    {"emoji": "🔶", "key": "orange_diamond"},
+    {"emoji": "⭐", "key": "star"},
+    {"emoji": "❤️", "key": "heart"},
+    {"emoji": "🌙", "key": "moon"},
+    {"emoji": "⬛", "key": "black_square"},
+    {"emoji": "⬜", "key": "white_square"},
+    {"emoji": "🔺", "key": "red_triangle"},
+    {"emoji": "🔻", "key": "red_triangle_down"},
+    {"emoji": "💠", "key": "diamond_shape"}
+  ]
+}

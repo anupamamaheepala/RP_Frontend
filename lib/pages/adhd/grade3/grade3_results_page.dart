@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../utils/sessions.dart';
 import 'task_stats.dart';
 import '../../../config.dart';
+import 'learning_tasks/learning_task_home.dart';
 
 class Grade3ResultsPage extends StatefulWidget {
   const Grade3ResultsPage({super.key});
@@ -12,8 +14,21 @@ class Grade3ResultsPage extends StatefulWidget {
 }
 
 class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
+  // ── State ─────────────────────────────────────────────────────────────────
   bool _isSaving = true;
-  String _saveMessage = "ප්‍රතිඵල සුරකිමින්...";
+  String _saveMessage = "ප්‍රතිඵල සුරැකෙමින් පවතී...";
+  String? _profile;
+  Map<String, dynamic>? _computedMetrics;
+
+  // ── Theme Constants ──────────────────────────────────────────────────────
+  final Color primaryBg       = const Color(0xFFF8FAFF);
+  final Color secondaryPurple = const Color(0xFF6741D9);
+  final Color accentAmber     = const Color(0xFFFFB300);
+
+  // Gradients matching your project theme
+  final List<Color> greenGrad  = [const Color(0xFF56AB2F), const Color(0xFFA8E063)];
+  final List<Color> amberGrad  = [const Color(0xFFF2994A), const Color(0xFFF2C94C)];
+  final List<Color> purpleGrad = [const Color(0xFF8E2DE2), const Color(0xFF4A00E0)];
 
   int get totalActions =>
       TaskStats.totalCorrect + TaskStats.totalWrong + TaskStats.totalPremature;
@@ -25,11 +40,11 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
 
   String get attentionLevel {
     if (TaskStats.totalPremature >= 8 || TaskStats.totalWrong >= 10) {
-      return "අවධානය වැඩිදියුණු කිරීම අවශ්‍යයි";
+      return "අවධානය වර්ධනය කරගත යුතුයි";
     } else if (TaskStats.totalPremature >= 5 || TaskStats.totalWrong >= 6) {
-      return "මධ්‍යම අවධානය";
+      return "මධ්‍යස්ථ අවධානයක්";
     } else {
-      return "ඉතා හොඳ අවධානය!";
+      return "ඉතා හොඳ අවධානයක්!";
     }
   }
 
@@ -39,16 +54,19 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
     _submitResultsToBackend();
   }
 
+  // ── Logic ──────────────────────────────────────────────────────
   Future<void> _submitResultsToBackend() async {
-    final url = Uri.parse("${Config.baseUrl}/adhd/submit-results");
+    final url     = Uri.parse("${Config.baseUrl}/adhd/submit-results");
+    final childId = Session.userId ?? "unknown";
 
     final payload = {
-      "grade":            3,
-      "total_correct":    TaskStats.totalCorrect,
-      "total_premature":  TaskStats.totalPremature,
-      "total_wrong":      TaskStats.totalWrong,
-      "overall_accuracy": overallAccuracy,
-      "timestamp":        DateTime.now().toIso8601String(),
+      "grade":             3,
+      "total_correct":     TaskStats.totalCorrect,
+      "total_premature":   TaskStats.totalPremature,
+      "total_wrong":       TaskStats.totalWrong,
+      "overall_accuracy":  overallAccuracy,
+      "timestamp":         DateTime.now().toIso8601String(),
+      "child_id":          childId,
       "task_response_times": {
         "task1": TaskStats.task1ResponseTimes,
         "task2": TaskStats.task2ResponseTimes,
@@ -64,63 +82,55 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
       );
 
       if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
         setState(() {
-          _isSaving = false;
-          _saveMessage = "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!";
+          _isSaving        = false;
+          _saveMessage     = "ප්‍රතිඵල සාර්ථකව සුරකින ලදී!";
+          _profile         = responseData['computed_metrics']['attention_label'] as String;
+          _computedMetrics = responseData['computed_metrics'] as Map<String, dynamic>;
         });
         TaskStats.reset();
       } else {
         setState(() {
-          _isSaving = false;
-          _saveMessage = "සේවාදායක දෝෂයක් (Status: ${response.statusCode})";
+          _isSaving    = false;
+          _saveMessage = "දෝෂයකි (Error: ${response.statusCode})";
         });
       }
     } catch (e) {
       setState(() {
-        _isSaving = false;
-        _saveMessage = "සම්බන්ධතා දෝෂයක් ඇත";
+        _isSaving    = false;
+        _saveMessage = "සම්බන්ධතා දෝෂයක් පවතී";
       });
     }
   }
 
-  final Color primaryBg       = const Color(0xFFF8FAFF);
-  final Color secondaryPurple = const Color(0xFF6741D9);
-  final Color accentAmber     = const Color(0xFFFFB300);
+  // ── UI Components ─────────────────────────────────────────────────────────
 
-  Widget _buildResultRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    bool isBold = false,
-  }) {
+  Widget _buildResultRow({required IconData icon, required String label, required String value, required Color color}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 26),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w500),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w700,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
@@ -128,9 +138,6 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
       ),
     );
   }
-
-  Widget _buildDivider() =>
-      Divider(height: 32, thickness: 1, color: Colors.grey[100]);
 
   @override
   Widget build(BuildContext context) {
@@ -140,146 +147,139 @@ class _Grade3ResultsPageState extends State<Grade3ResultsPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: secondaryPurple),
-          onPressed: () =>
-              Navigator.popUntil(context, (route) => route.isFirst),
+          icon: Icon(Icons.close_rounded, color: secondaryPurple, size: 28),
+          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
         ),
-        title: Text('ප්‍රතිඵල සටහන',
-            style: TextStyle(
-                color: secondaryPurple, fontWeight: FontWeight.bold)),
+        title: Text('ප්‍රතිඵල වාර්තාව', style: TextStyle(color: secondaryPurple, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         child: Column(
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                    width: 150,
-                    height: 150,
-                    decoration: BoxDecoration(
-                        color: accentAmber.withOpacity(0.1),
-                        shape: BoxShape.circle)),
-                Icon(Icons.emoji_events_rounded,
-                    size: 100, color: accentAmber),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text('ඔබ හොඳින් කළා!',
-                style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: secondaryPurple)),
-            const SizedBox(height: 8),
-            const Text('ඔබේ අවධානය සහ හැසිරීම පිළිබඳ වාර්තාව',
-                style: TextStyle(fontSize: 16, color: Colors.black54)),
-
-            const SizedBox(height: 30),
-
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(
-                      color: secondaryPurple.withOpacity(0.1))),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    _buildResultRow(
-                        icon: Icons.task_alt_rounded,
-                        label: 'සම්පූර්ණ කළ ක්‍රියාකාරකම්',
-                        value: '3 / 3',
-                        color: Colors.blue),
-                    _buildDivider(),
-                    _buildResultRow(
-                        icon: Icons.speed_rounded,
-                        label: 'සමස්ත නිවැරදිතාව',
-                        value: '${overallAccuracy.toStringAsFixed(0)}%',
-                        color: overallAccuracy >= 80
-                            ? Colors.green
-                            : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(
-                        icon: Icons.bolt_rounded,
-                        label: 'ක්ෂණික ප්‍රතිචාර (Impulsivity)',
-                        value: '${TaskStats.totalPremature}',
-                        color: TaskStats.totalPremature > 5
-                            ? Colors.red
-                            : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(
-                        icon: Icons.visibility_off_rounded,
-                        label: 'අවධානය ගිලිහී යාම් (Inattention)',
-                        value: '${TaskStats.totalWrong}',
-                        color: TaskStats.totalWrong > 6
-                            ? Colors.red
-                            : Colors.orange),
-                    _buildDivider(),
-                    _buildResultRow(
-                        icon: Icons.psychology_rounded,
-                        label: 'අවධානය මට්ටම',
-                        value: attentionLevel,
-                        color: secondaryPurple,
-                        isBold: true),
-                  ],
+            // ── Hero Section ──────────────────────────────────────────
+            Container(
+              height: 130,
+              width: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [accentAmber.withOpacity(0.3), Colors.transparent],
                 ),
               ),
+              child: Icon(Icons.emoji_events_rounded, size: 90, color: accentAmber),
             ),
+            const SizedBox(height: 10),
+            Text('විශිෂ්ටයි!', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: secondaryPurple)),
+            const Text('ඔබේ අද දවසේ ප්‍රගතිය මෙන්න', style: TextStyle(fontSize: 15, color: Colors.black45, fontWeight: FontWeight.w600)),
 
             const SizedBox(height: 30),
 
+            // ── Main Stats Card ──────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                  color: accentAmber.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Text(
-                'ඔබේ ප්‍රතිඵල අනුව, අපි ඔබට ගැලපෙන විශේෂ ඉගෙනුම් සැලැස්මක් සකස් කරන්නෙමු!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: secondaryPurple,
-                    fontWeight: FontWeight.w500),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildResultRow(icon: Icons.check_circle_rounded, label: 'සම්පූර්ණ කළ ප්‍රමාණය', value: '3 / 3', color: Colors.blue),
+                  const Divider(height: 10, color: Color(0xFFF1F4F8)),
+                  _buildResultRow(icon: Icons.speed_rounded, label: 'නිරවද්‍යතාව', value: '${overallAccuracy.toStringAsFixed(0)}%', color: Colors.green),
+                  const Divider(height: 10, color: Color(0xFFF1F4F8)),
+                  _buildResultRow(icon: Icons.bolt_rounded, label: 'ආවේගශීලී බව', value: '${TaskStats.totalPremature}', color: Colors.orange),
+                  const Divider(height: 10, color: Color(0xFFF1F4F8)),
+                  _buildResultRow(icon: Icons.visibility_off_rounded, label: 'අවධානය ගිලිහී යාම්', value: '${TaskStats.totalWrong}', color: Colors.redAccent),
+
+                  const SizedBox(height: 20),
+
+                  // ── Attention Level (Only Value Displayed Here) ──
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [secondaryPurple.withOpacity(0.1), secondaryPurple.withOpacity(0.05)]),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: secondaryPurple.withOpacity(0.1)),
+                    ),
+                    child: Text(
+                      attentionLevel,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: secondaryPurple,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
+
+            // ── Save status indicator ──
             if (_isSaving)
               const CircularProgressIndicator()
             else
-              Text(_saveMessage,
-                  style: TextStyle(
-                      color: _saveMessage.contains("සාර්ථක")
-                          ? Colors.green
-                          : Colors.red,
-                      fontSize: 14)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                  const SizedBox(width: 6),
+                  Text(_saveMessage, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
+                ],
+              ),
+
+            const SizedBox(height: 30),
+
+            // ── Action Buttons ──────────────────────────────────────────
+            _buildActionButton(
+              label: 'ක්‍රියාකාරකම් අරඹන්න',
+              icon: Icons.play_circle_fill_rounded,
+              gradient: greenGrad,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LearningTaskHome())),
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildActionButton(
+              label: 'මුල් තිරයට යන්න',
+              icon: Icons.home_rounded,
+              gradient: amberGrad,
+              onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
+            ),
 
             const SizedBox(height: 40),
-
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, (route) => route.isFirst),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: accentAmber,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20))),
-                child: const Text('මුල් පිටුවට ආපසු',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({required String label, required IconData icon, required List<Color> gradient, required VoidCallback onTap}) {
+    return Container(
+      width: double.infinity,
+      height: 60,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: gradient),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: gradient.last.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))
+        ],
+      ),
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: Colors.white, size: 24),
+        label: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
       ),
     );

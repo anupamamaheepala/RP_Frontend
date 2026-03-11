@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
+import '/profile.dart';
 
 class DyscalImproveResultPage extends StatefulWidget {
   const DyscalImproveResultPage({super.key});
@@ -187,7 +188,34 @@ class _DyscalImproveResultPageState extends State<DyscalImproveResultPage> {
             else
               ..._historyList.asMap().entries.map((entry) => _buildHistoryCard(entry.value, entry.key)),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
+
+            // --- BACK TO PROFILE BUTTON ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                        (route) => false,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    "පැතිකඩට ආපසු යන්න (Back to Profile)",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
