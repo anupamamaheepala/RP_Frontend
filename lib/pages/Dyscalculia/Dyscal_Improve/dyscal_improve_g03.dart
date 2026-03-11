@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
 import '/profile.dart';
-import 'dyscal_special_task.dart';
+import 'dyscal_special_task_g03.dart';
 
 class DyscalImprovePage extends StatefulWidget {
   const DyscalImprovePage({super.key});
