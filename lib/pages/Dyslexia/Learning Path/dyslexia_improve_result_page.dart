@@ -6,14 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../config.dart';
 import '../Core/dyslexia_result.dart';
 
-class DyslexiaDetectResultPage extends StatefulWidget {
-  const DyslexiaDetectResultPage({super.key});
+class DyslexiaImproveResultPage extends StatefulWidget {
+  const DyslexiaImproveResultPage({super.key});
 
   @override
-  State<DyslexiaDetectResultPage> createState() => _DyslexiaDetectResultPageState();
+  State<DyslexiaImproveResultPage> createState() => _DyslexiaImproveResultPageState();
 }
 
-class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
+class _DyslexiaImproveResultPageState extends State<DyslexiaImproveResultPage> {
   List<DyslexiaResult> results = [];
   bool loading = true;
   String? error;
@@ -38,13 +38,13 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
       }
 
       final response = await http.get(
-        Uri.parse("${Config.baseUrl}/dyslexia/history?user_id=$userId&session_type=detection"),
+        Uri.parse("${Config.baseUrl}/dyslexia/history?user_id=$userId&session_type=improvement"),
       );
 
       final data = jsonDecode(response.body);
 
       if (data["ok"] != true) {
-        throw Exception("Failed to load detection results");
+        throw Exception("Failed to load improvement results");
       }
 
       final list = data["sessions"] as List;
@@ -77,11 +77,11 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
   String _riskText(String riskLevel) {
     switch (riskLevel) {
       case "LOW":
-        return "අවම ඩිස්ලෙක්සියා අවදානමක්";
+        return "දියුණු වූ කියවීමේ තත්ත්වයක්";
       case "MEDIUM":
-        return "මධ්‍යම ඩිස්ලෙක්සියා අවදානමක්";
+        return "මධ්‍යම මට්ටමේ අවදානම තවම පවතී";
       case "HIGH":
-        return "ඉහළ ඩිස්ලෙක්සියා අවදානමක්";
+        return "තවදුරටත් වැඩි අවදානමක් පවතී";
       default:
         return "අවදානම තීරණය කළ නොහැක";
     }
@@ -140,7 +140,7 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
           const Divider(height: 18),
           Row(
             children: [
-              Icon(Icons.analytics_outlined, color: color),
+              Icon(Icons.menu_book_rounded, color: color),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -159,7 +159,7 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
             children: [
               _metric("${r.accuracy.toStringAsFixed(1)}%", "Accuracy"),
               _metric(r.riskLevel, "Risk"),
-              _metric("${r.totalTimeSeconds}s", "Time"),
+              _metric(r.avgWordsPerSecond.toStringAsFixed(2), "WPS"),
             ],
           ),
         ],
@@ -179,7 +179,7 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
           ),
           const Expanded(
             child: Text(
-              "කියවීමේ දුෂ්කරතා හඳුනාගැනීමේ ප්‍රතිඵල",
+              "කියවීමේ හැකියා දියුණු කිරීමේ ප්‍රතිඵල",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20,
@@ -200,7 +200,7 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.purple.shade50, Colors.blue.shade50],
+            colors: [Colors.orange.shade50, Colors.pink.shade50],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -223,7 +223,7 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
               else if (results.isEmpty)
                   const Expanded(
                     child: Center(
-                      child: Text("ප්‍රතිඵල නොමැත"),
+                      child: Text("දියුණු කිරීමේ ප්‍රතිඵල නොමැත"),
                     ),
                   )
                 else

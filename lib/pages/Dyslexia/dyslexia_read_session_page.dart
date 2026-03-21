@@ -43,11 +43,13 @@ class SentenceAttempt {
 class DyslexiaReadSessionPage extends StatefulWidget {
   final int grade;
   final int level;
+  final String sessionType;
 
   const DyslexiaReadSessionPage({
     super.key,
     required this.grade,
     required this.level,
+    this.sessionType = "detection",
   });
 
   @override
@@ -288,6 +290,7 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
     double avgCER = _mean(_attempts.map((a) => _toDouble(a.metrics?["cer"])).toList());
     double avgWPS = _mean(_attempts.map((a) => _toDouble(a.metrics?["words_per_second"])).toList());
 
+
     // Combine incorrect words across attempts
     final incorrectWordsAll = <String>[];
     for (final a in _attempts) {
@@ -335,6 +338,7 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
       "user_id": _userId ?? "",
       "grade": widget.grade,
       "level": widget.level,
+      "session_type": widget.sessionType,
       "total_words": totalWords,
       "total_correct": totalCorrect,
       "total_time_seconds": totalTimeSeconds,

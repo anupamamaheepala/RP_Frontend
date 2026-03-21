@@ -22,40 +22,94 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
   });
 
   // Add this function inside _DyslexiaLevelDetailsPageState or your Stateless helper
+  // Future<void> _handleDetectDyslexia(BuildContext context) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final userId = prefs.getString('user_id') ?? "";
+  //
+  //   // Show Loading
+  //   showDialog(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (_) => const Center(child: CircularProgressIndicator())
+  //   );
+  //
+  //   try {
+  //     final response = await http.get(Uri.parse(
+  //         "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
+  //     ));
+  //     final data = jsonDecode(response.body);
+  //
+  //     Navigator.pop(context); // Close loading
+  //
+  //     if (data["is_locked"] == true) {
+  //       // SHOW ALERT: Must finish Learning Path first
+  //       _showLockedDialog(context);
+  //     } else {
+  //       // PROCEED: Navigate to the task
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level,sessionType: "detection",),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     Navigator.pop(context);
+  //     // Handle error...
+  //   }
+  // }
   Future<void> _handleDetectDyslexia(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('user_id') ?? "";
 
-    // Show Loading
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator())
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
-      final response = await http.get(Uri.parse(
+      // 1️⃣ Check lock status
+      final lockRes = await http.get(Uri.parse(
           "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
       ));
-      final data = jsonDecode(response.body);
 
-      Navigator.pop(context); // Close loading
+      final lockData = jsonDecode(lockRes.body);
 
-      if (data["is_locked"] == true) {
-        // SHOW ALERT: Must finish Learning Path first
+      if (lockData["is_locked"] == true) {
+        Navigator.pop(context);
         _showLockedDialog(context);
-      } else {
-        // PROCEED: Navigate to the task
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level),
-          ),
-        );
+        return;
       }
+
+      // 2️⃣ Check if already attempted before
+      final attemptRes = await http.get(Uri.parse(
+          "${Config.baseUrl}/dyslexia/has-attempt?user_id=$userId&grade=$grade&level=$level"
+      ));
+
+      final attemptData = jsonDecode(attemptRes.body);
+
+      Navigator.pop(context);
+
+      // ⭐ Decide session type here
+      final String sessionType =
+      attemptData["has_attempt"] == true ? "improvement" : "detection";
+
+      // 3️⃣ Navigate with correct type
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DyslexiaReadSessionPage(
+            grade: grade,
+            level: level,
+            sessionType: sessionType,
+          ),
+        ),
+      );
+
     } catch (e) {
       Navigator.pop(context);
-      // Handle error...
+      print(e);
     }
   }
 

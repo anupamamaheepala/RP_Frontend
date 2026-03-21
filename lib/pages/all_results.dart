@@ -139,7 +139,10 @@ class AllResultsPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const DyslexiaResultsPage(),
+                            builder: (context) => const DyslexiaResultsPage(
+                              // grade: selectedGrade,
+                              // level: selectedLevel,
+                            ),
                           ),
                         );
                       },

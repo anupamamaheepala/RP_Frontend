@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'dyslexia_result_page.dart';
+import 'dyslexia_improve_result_page.dart';
 
 class DyslexiaResultsPage extends StatelessWidget {
   const DyslexiaResultsPage({super.key});
@@ -91,16 +92,16 @@ class DyslexiaResultsPage extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2))
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    )
                   ],
                 ),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Colors.purple),
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
                       onPressed: () => Navigator.pop(context),
                     ),
                     const Expanded(
@@ -108,9 +109,10 @@ class DyslexiaResultsPage extends StatelessWidget {
                         'ඩිස්ලෙක්සියා ප්‍රතිඵල',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 40),
@@ -136,8 +138,8 @@ class DyslexiaResultsPage extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                  const DyslexiaDetectResultPage()),
+                                builder: (context) => const DyslexiaDetectResultPage(),
+                              ),
                             );
                           },
                         ),
@@ -152,12 +154,12 @@ class DyslexiaResultsPage extends StatelessWidget {
                             Colors.pink.shade300
                           ],
                           onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //       builder: (context) =>
-                            //       const DyslexiaImproveResultPage()),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DyslexiaImproveResultPage(),
+                              ),
+                            );
                           },
                         ),
                       ],

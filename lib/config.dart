@@ -1,8 +1,8 @@
 
 // DEV
-class Config {
- static const baseUrl = "https://rp-backend-production-a809.up.railway.app";
-}
+// class Config {
+//  static const baseUrl = "https://rp-backend-production-a809.up.railway.app";
+// }
 
 
 // ANUPAMA
@@ -11,9 +11,9 @@ class Config {
 //   }
 
  // SADITH
-// class Config {
-//  static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
-// }
+class Config {
+ static const baseUrl = "https://rp-backend-production-c169.up.railway.app";
+}
 
 // //RASHINI
 // class Config {
