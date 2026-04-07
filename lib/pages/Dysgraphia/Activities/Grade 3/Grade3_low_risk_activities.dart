@@ -4,6 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '/config.dart';
+import '/utils/sessions.dart';
 
 // Grade 3 data
 const List<Map<String, String>> _confusablePairs = [
@@ -32,9 +36,10 @@ const List<String> _grade3SentenceCompletions = [
 // Words with one wrong letter for Spot and Fix
 const List<Map<String, dynamic>> _spotFixData = [
   {'correct': 'මල', 'wrong': 'මළ', 'wrongLetterIndex': 1},
-  {'correct': 'ගස', 'wrong': 'ගස', 'wrongLetterIndex': -1}, // control — same
+  {'correct': 'රට', 'wrong': 'රඨ', 'wrongLetterIndex': -1}, // control — same
+  {'correct': 'අම්මා', 'wrong': 'අම්ම', 'wrongLetterIndex': 3},
   {'correct': 'පත', 'wrong': 'බත', 'wrongLetterIndex': 0},
-  {'correct': 'අම්මා', 'wrong': 'අම්ම', 'wrongLetterIndex': 4},
+
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -309,6 +314,31 @@ class _ConfusablePairsActivityState extends State<ConfusablePairsActivity> {
   bool? _isCorrect;
   final mlkit.DigitalInkRecognizer _recognizer1 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount1 = 0;
+  final DateTime _sessionStart1 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart1).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'low',
+          'activity_name': 'confusable_pairs',
+          'activity_label': 'සමාන අකුරු',
+          'total_items': _confusablePairs.length,
+          'correct_count': _correctCount1,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   Map<String, String> get _pair => _confusablePairs[_pairIndex];
 
@@ -364,6 +394,7 @@ class _ConfusablePairsActivityState extends State<ConfusablePairsActivity> {
           setState(() { _strokes = []; _isCorrect = null; _step++; });
         } else {
           setState(() { _strokes = []; _isCorrect = null; _step = 0; });
+          _correctCount1++;
           _nextPair();
         }
       }
@@ -387,6 +418,7 @@ class _ConfusablePairsActivityState extends State<ConfusablePairsActivity> {
   }
 
   void _showResults() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -742,6 +774,31 @@ class _BeatYourTimeActivityState extends State<BeatYourTimeActivity> {
   bool? _isCorrect2;
   final mlkit.DigitalInkRecognizer _recognizer2 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _improvedCount = 0;
+  final DateTime _sessionStart2 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart2).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'low',
+          'activity_name': 'beat_your_time',
+          'activity_label': 'වේගය අභිෂ්ඨ',
+          'total_items': widget.words.length,
+          'correct_count': _improvedCount,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   String get _currentWord => widget.words[_currentIndex];
 
@@ -807,6 +864,9 @@ class _BeatYourTimeActivityState extends State<BeatYourTimeActivity> {
   }
 
   void _nextWord() {
+    if (_firstTime != null && _secondTime != null && _secondTime! < _firstTime!) {
+      _improvedCount++;
+    }
     if (_currentIndex < widget.words.length - 1) {
       setState(() {
         _currentIndex++;
@@ -823,6 +883,7 @@ class _BeatYourTimeActivityState extends State<BeatYourTimeActivity> {
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -994,7 +1055,7 @@ class _BeatYourTimeActivityState extends State<BeatYourTimeActivity> {
                           child: Column(
                             children: [
                               Text(
-                                faster ? '🚀 වේගවත් වුණා!' : '💪 ගොඩ!',
+                                faster ? '🚀 වේගවත් වුණා!' : '💪 හොඳයි!',
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -1107,7 +1168,7 @@ class _BeatYourTimeActivityState extends State<BeatYourTimeActivity> {
                                     textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 4),
-                                  Text('හරි වඩනය: $_currentWord',
+                                  Text('හරි වචනය: $_currentWord',
                                     style: TextStyle(fontSize: 14, color: Colors.red.shade700),
                                   ),
                                 ],
@@ -1236,6 +1297,31 @@ class _SentenceCompletionActivityState
 
   final mlkit.DigitalInkRecognizer _recognizer3 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount3 = 0;
+  final DateTime _sessionStart3 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart3).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'low',
+          'activity_name': 'sentence_completion',
+          'activity_label': 'වාක්‍ය සම්පූර්ණ කිරීම',
+          'total_items': _verbSentences.length,
+          'correct_count': _correctCount3,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   void _clearCanvas() => setState(() { _strokes = []; _isCorrect3 = null; });
 
@@ -1257,6 +1343,7 @@ class _SentenceCompletionActivityState
       if (correct) {
         await Future.delayed(const Duration(milliseconds: 800));
         if (!mounted) return;
+        _correctCount3++;
         setState(() => _writingDone = true);
       }
     } catch (_) {
@@ -1279,6 +1366,7 @@ class _SentenceCompletionActivityState
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1774,6 +1862,30 @@ class _SpotAndFixActivityState extends State<SpotAndFixActivity> {
   bool? _isCorrect4;
   final mlkit.DigitalInkRecognizer _recognizer4 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  final DateTime _sessionStart4 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart4).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'low',
+          'activity_name': 'spot_and_fix',
+          'activity_label': 'දෝෂය සොයා නිවැරදි කරන්න',
+          'total_items': _spotFixData.length,
+          'correct_count': _score,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   Map<String, dynamic> get _current => _spotFixData[_currentIndex];
   String get _wrongWord => _current['wrong'] as String;
@@ -1859,6 +1971,7 @@ class _SpotAndFixActivityState extends State<SpotAndFixActivity> {
   }
 
   void _showResults() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -2118,7 +2231,7 @@ class _SpotAndFixActivityState extends State<SpotAndFixActivity> {
                               Text('✅',
                                   style: TextStyle(fontSize: 56)),
                               Text(
-                                'ශාබාස!',
+                                'හොඳයි!',
                                 style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
