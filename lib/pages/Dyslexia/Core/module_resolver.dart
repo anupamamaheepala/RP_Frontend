@@ -545,36 +545,36 @@ class ModuleResolver {
         },
       );
     }
-    //Grade 7 Level 4
-    else if (grade == 7 && level == 4 && risk == "HIGH") {
+    //Grade 7 Level 3
+    else if (grade == 7 && level == 3 && risk == "HIGH") {
       return ModuleActivityPage(
         moduleNumber: 1,
         sessionPayload: {
           "grade": 7,
-          "level": 4,
+          "level": 3,
           "riskLevel": "HIGH",
         },
       );
-    } else if (grade == 7 && level == 4 && risk == "LOW") {
+    } else if (grade == 7 && level == 3 && risk == "LOW") {
       return ModuleActivityPage(
         moduleNumber: 1,
         sessionPayload: {
           "grade": 7,
-          "level": 4,
+          "level": 3,
           "riskLevel": "LOW",
         },
       );
-    }else if (grade == 7 && level == 4 && risk == "MEDIUM") {
+    }else if (grade == 7 && level == 3 && risk == "MEDIUM") {
       return ModuleActivityPage(
         moduleNumber: 1,
         sessionPayload: {
           "grade": 7,
-          "level": 4,
+          "level": 3,
           "riskLevel": "MEDIUM",
         },
       );
     }
-    //Grade 7 Level 1
+    //Grade 7 Level 4
     else if (grade == 7 && level == 4 && risk == "HIGH") {
       return ModuleActivityPage(
         moduleNumber: 1,

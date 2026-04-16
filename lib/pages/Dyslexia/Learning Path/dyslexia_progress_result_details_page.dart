@@ -1,7 +1,10 @@
+//Learning Path/dyslexia_progress_result_details_page.dart
+
 import 'package:flutter/material.dart';
 
 import 'dyslexia_result_page.dart';
 import 'dyslexia_improve_result_page.dart';
+import 'dyslexia_dashboard_page.dart';
 
 class DyslexiaResultsPage extends StatelessWidget {
   const DyslexiaResultsPage({super.key});
@@ -162,6 +165,26 @@ class DyslexiaResultsPage extends StatelessWidget {
                             );
                           },
                         ),
+                        const SizedBox(height: 30),
+
+                        _buildSquareButton(
+                          context: context,
+                          titleSi: 'ප්‍රගති හා හැසිරීම් Dashboard',
+                          titleEn: 'Progress Dashboard',
+                          icon: Icons.dashboard_rounded,
+                          gradientColors: [
+                            Colors.green.shade400,
+                            Colors.teal.shade400
+                          ],
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DyslexiaDashboardPage(),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -174,3 +197,4 @@ class DyslexiaResultsPage extends StatelessWidget {
     );
   }
 }
+
