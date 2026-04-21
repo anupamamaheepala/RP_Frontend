@@ -6,14 +6,14 @@ import '/config.dart';
 import '/profile.dart';
 import 'dyscal_special_task_g03.dart';
 
-class DyscalImprovePage extends StatefulWidget {
-  const DyscalImprovePage({super.key});
+class DyscalImproveG03Page extends StatefulWidget {
+  const DyscalImproveG03Page({super.key});
 
   @override
-  State<DyscalImprovePage> createState() => _DyscalImprovePageState();
+  State<DyscalImproveG03Page> createState() => _DyscalImproveG03PageState();
 }
 
-class _DyscalImprovePageState extends State<DyscalImprovePage> {
+class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
   bool _isLoading = true;
   String _currentLevel = "easy";
   int _tasksCompleted = 0;
@@ -52,6 +52,14 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
 
       if (stateRes.statusCode == 200) {
         final stateData = jsonDecode(stateRes.body);
+
+        // --- STRICT CHECK: BLOCK IF NO DETECTION ---
+        if (stateData['ok'] == false && stateData['error'] == 'not_detected') {
+          setState(() => _isLoading = false);
+          _showAccessDeniedDialog();
+          return;
+        }
+
         _currentLevel = stateData['level'];
         _tasksCompleted = stateData['tasks_completed'];
 
@@ -267,6 +275,51 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
     );
   }
 
+  void _showAccessDeniedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Column(
+          children: [
+            Icon(Icons.lock_outline, size: 50, color: Colors.redAccent),
+            SizedBox(height: 10),
+            Text(
+              "ප්‍රවේශය නැත\n(Access Denied)",
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        content: const Text(
+          "ඔබ මුලින්ම හඳුනාගැනීමේ පරීක්ෂණය සම්පූර්ණ කළ යුතුය.\n(You must complete the detection test first.)",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))
+              ),
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                        (route) => false
+                );
+              },
+              child: const Text("පැතිකඩට යන්න (Go to Profile)", style: TextStyle(color: Colors.white, fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -285,7 +338,7 @@ class _DyscalImprovePageState extends State<DyscalImprovePage> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () => Navigator.pop(context)),
-                title: const Text('දියුණු කිරීම (Improve)', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                title: const Text('දියුණු කිරීම - 3 ශ්‍රේණිය', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
                 centerTitle: true,
               ),
               Expanded(

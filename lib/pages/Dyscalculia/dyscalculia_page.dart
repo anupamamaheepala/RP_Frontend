@@ -174,7 +174,7 @@ class DyscalculiaPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const DyscalImprovePage(),
+                                  builder: (context) => const DyscalImproveG03Page(),
                                 ),
                               );
                             },
