@@ -15,57 +15,76 @@ class DysgraphiaLearningPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.purple.shade50, Colors.blue.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.purple.shade100,
+              Colors.blue.shade50,
+              Colors.white,
+            ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Header
+              // Stylish Header
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+                      color: Colors.purple.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.purple),
-                      onPressed: () => Navigator.pop(context),
+                    CircleAvatar(
+                      backgroundColor: Colors.purple.shade50,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.purple),
+                        onPressed: () => Navigator.pop(context),
+                      ),
                     ),
                     Expanded(
                       child: Column(
                         children: [
                           const Text(
                             'ලිවීමේ දුෂ්කරතා',
-                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900, // Fixed from .black
                               color: Colors.purple,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          Text(
-                            'ශ්‍රේණිය $grade',
-                            style: TextStyle(
-                              fontSize: 14,
+                          Container(
+                            margin: const EdgeInsets.only(top: 4), // Fixed from .top
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            decoration: BoxDecoration(
                               color: Colors.purple.shade400,
-                              fontWeight: FontWeight.w600,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'ශ්‍රේණිය $grade',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 40),
                   ],
                 ),
               ),
@@ -76,35 +95,27 @@ class DysgraphiaLearningPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Detect card
-                      _buildCard(
+                      _buildMainCategoryCard(
                         context: context,
-                        icon: Icons.search_rounded,
+                        icon: Icons.psychology_outlined,
                         title: 'දුෂ්කරතා හඳුනාගැනීම',
                         subtitle: 'Detect Dysgraphia',
-                        gradientColors: [Colors.purple.shade400, Colors.blue.shade400],
+                        gradientColors: [Colors.indigo.shade400, Colors.purple.shade400],
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => DysgraphiaSelectionPage(grade: grade),
-                          ),
+                          MaterialPageRoute(builder: (_) => DysgraphiaSelectionPage(grade: grade)),
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-
-                      // Improve card
-                      _buildCard(
+                      const SizedBox(height: 25),
+                      _buildMainCategoryCard(
                         context: context,
-                        icon: Icons.trending_up_rounded,
+                        icon: Icons.auto_graph_rounded,
                         title: 'හැකියාවන් දියුණු කිරීම',
                         subtitle: 'Improve Writing Skills',
-                        gradientColors: [Colors.orange.shade400, Colors.pink.shade400],
+                        gradientColors: [Colors.orange.shade400, Colors.deepOrange.shade600],
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => DysgraphiaImprovePage(grade: grade),
-                          ),
+                          MaterialPageRoute(builder: (_) => DysgraphiaImprovePage(grade: grade)),
                         ),
                       ),
                     ],
@@ -118,7 +129,7 @@ class DysgraphiaLearningPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCard({
+  Widget _buildMainCategoryCard({
     required BuildContext context,
     required IconData icon,
     required String title,
@@ -126,55 +137,42 @@ class DysgraphiaLearningPage extends StatelessWidget {
     required List<Color> gradientColors,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(32),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+        padding: const EdgeInsets.all(30),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: gradientColors,
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight
           ),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
               color: gradientColors.last.withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              blurRadius: 15,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.25),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 52, color: Colors.white),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+              child: Icon(icon, size: 45, color: Colors.white),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
+                title,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)
             ),
-            const SizedBox(height: 6),
             Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.85),
-                fontWeight: FontWeight.w500,
-              ),
+                subtitle,
+                style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9))
             ),
           ],
         ),
@@ -183,129 +181,158 @@ class DysgraphiaLearningPage extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// IMPROVE PAGE — activity selector by risk level
-// ─────────────────────────────────────────────────────────────────────────────
-
 class DysgraphiaImprovePage extends StatelessWidget {
   final int grade;
-
   const DysgraphiaImprovePage({super.key, required this.grade});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.orange.shade50, Colors.pink.shade50],
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -50,
+            right: -50,
+            child: CircleAvatar(radius: 100, backgroundColor: Colors.orange.shade50),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.orange),
+          Positioned(
+            bottom: -30,
+            left: -30,
+            child: CircleAvatar(radius: 80, backgroundColor: Colors.pink.shade50),
+          ),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey.shade100,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black87),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          const Text(
-                            'හැකියාවන් දියුණු කිරීම',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          Text(
-                            'ශ්‍රේණිය $grade',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.orange.shade400,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'අවදානම් මට්ටම තෝරන්න:',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black54,
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(28, 10, 28, 5),
+                  child: Text(
+                    "අභ්‍යාස තෝරන්න",
+                    style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black87
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 28),
+                  child: Text(
+                      "ඔබේ දරුවාට ගැළපෙන මට්ටම තෝරාගන්න",
+                      style: TextStyle(color: Colors.black45, fontSize: 15)
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
-                      _buildRiskButton(
+                      _buildColorfulRiskCard(
                         context: context,
-                        emoji: '🔴',
-                        label: 'ඉහළ අවදානම',
-                        sublabel: 'High Risk',
+                        title: 'ඉහළ අවදානම',
+                        subtitle: 'High Priority',
+                        icon: Icons.favorite_rounded,
                         color: Colors.red.shade400,
                         onTap: () => _navigate(context, 'high'),
                       ),
-                      const SizedBox(height: 16),
-                      _buildRiskButton(
+                      const SizedBox(height: 18),
+                      _buildColorfulRiskCard(
                         context: context,
-                        emoji: '🟠',
-                        label: 'මධ්‍යම අවදානම',
-                        sublabel: 'Medium Risk',
-                        color: Colors.orange.shade400,
+                        title: 'මධ්‍යම අවදානම',
+                        subtitle: 'Intermediate',
+                        icon: Icons.star_rounded,
+                        color: Colors.amber.shade700,
                         onTap: () => _navigate(context, 'medium'),
                       ),
-                      const SizedBox(height: 16),
-                      _buildRiskButton(
+                      const SizedBox(height: 18),
+                      _buildColorfulRiskCard(
                         context: context,
-                        emoji: '🟡',
-                        label: 'අඩු අවදානම',
-                        sublabel: 'Low Risk',
-                        color: Colors.teal.shade400,
+                        title: 'අඩු අවදානම',
+                        subtitle: 'Beginner / Easy',
+                        icon: Icons.wb_sunny_rounded,
+                        color: Colors.lightGreen.shade600,
                         onTap: () => _navigate(context, 'low'),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorfulRiskCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  height: 60,
+                  width: 60,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(icon, color: color, size: 30),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          title,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                          subtitle,
+                          style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13)
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400),
+              ],
+            ),
           ),
         ),
       ),
@@ -313,20 +340,12 @@ class DysgraphiaImprovePage extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, String riskLevel) {
-    // Only Grade 3 activities exist so far — extend this switch as more grades are added
     if (grade == 3) {
       Widget page;
       switch (riskLevel) {
-        case 'high':
-          page = const Grade3HighRiskPage();
-          break;
-        case 'medium':
-          page = const Grade3MediumRiskPage();
-          break;
-        case 'low':
-        default:
-          page = const Grade3LowRiskPage();
-          break;
+        case 'high': page = const Grade3HighRiskPage(); break;
+        case 'medium': page = const Grade3MediumRiskPage(); break;
+        case 'low': default: page = const Grade3LowRiskPage(); break;
       }
       Navigator.push(context, MaterialPageRoute(builder: (_) => page));
     } else {
@@ -337,46 +356,5 @@ class DysgraphiaImprovePage extends StatelessWidget {
         ),
       );
     }
-  }
-
-  Widget _buildRiskButton({
-    required BuildContext context,
-    required String emoji,
-    required String label,
-    required String sublabel,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          elevation: 4,
-        ),
-        child: Row(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(sublabel,
-                    style: TextStyle(
-                        fontSize: 13, color: Colors.white.withOpacity(0.85))),
-              ],
-            ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 18),
-          ],
-        ),
-      ),
-    );
   }
 }

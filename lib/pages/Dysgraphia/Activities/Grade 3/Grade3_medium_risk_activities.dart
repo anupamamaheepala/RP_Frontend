@@ -4,6 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '/config.dart';
+import '/utils/sessions.dart';
 
 // Grade 3 data
 const List<String> _grade3Letters = ['ක', 'ග', 'ත', 'ද', 'ප', 'බ', 'ම', 'ය'];
@@ -298,6 +302,31 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
   // ML Kit
   final mlkit.DigitalInkRecognizer _recognizer =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount1 = 0;
+  final DateTime _sessionStart1 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart1).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'medium',
+          'activity_name': 'free_copy',
+          'activity_label': 'නිදහස් පිටපත',
+          'total_items': widget.letters.length,
+          'correct_count': _correctCount1,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   @override
   void dispose() {
@@ -363,6 +392,7 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
       return;
     }
 
+    _correctCount1++;
     setState(() => _showCelebration = true);
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
@@ -380,6 +410,7 @@ class _FreeCopyActivityState extends State<FreeCopyActivity> {
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -726,6 +757,31 @@ class _WordInContextActivityState extends State<WordInContextActivity>
   bool? _isCorrect2;
   final mlkit.DigitalInkRecognizer _recognizer2 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount2 = 0;
+  final DateTime _sessionStart2 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart2).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'medium',
+          'activity_name': 'word_in_context',
+          'activity_label': 'පින්තූරයෙන් ලිවීම',
+          'total_items': widget.words.length,
+          'correct_count': _correctCount2,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
@@ -770,6 +826,7 @@ class _WordInContextActivityState extends State<WordInContextActivity>
         _isRecognizing2 = false;
       });
       if (_isCorrect2 == true) {
+        _correctCount2++;
         setState(() => _showReward = true);
         _bounceController.forward(from: 0);
         Future.delayed(const Duration(seconds: 2), () {
@@ -793,6 +850,7 @@ class _WordInContextActivityState extends State<WordInContextActivity>
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1083,6 +1141,30 @@ class _MyBestOneActivityState extends State<MyBestOneActivity> {
   int? _selectedBest;
   bool _submitted = false;
   int _starsEarned = 0;
+  final DateTime _sessionStart3 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart3).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'medium',
+          'activity_name': 'my_best_one',
+          'activity_label': 'හොඳම ලිවීම',
+          'total_items': widget.letters.length + widget.words.length,
+          'correct_count': _starsEarned,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   List<String> get _items =>
       _useLetters ? widget.letters : widget.words;
@@ -1134,6 +1216,7 @@ class _MyBestOneActivityState extends State<MyBestOneActivity> {
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1509,6 +1592,31 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
   bool? _isWritingCorrect;
   final mlkit.DigitalInkRecognizer _writingRecognizer =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount4 = 0;
+  final DateTime _sessionStart4 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart4).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'medium',
+          'activity_name': 'drag_and_build',
+          'activity_label': 'වචන සාදමු',
+          'total_items': widget.words.length,
+          'correct_count': _correctCount4,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   // Split words into individual characters as "parts"
   static List<String> _splitWord(String word) {
@@ -1609,6 +1717,7 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
         _isWritingRecognizing = false;
       });
       if (_isWritingCorrect == true) {
+        _correctCount4++;
         setState(() => _showFinalReward = true);
         Future.delayed(const Duration(seconds: 2), () {
           if (!mounted) return;
@@ -1625,6 +1734,7 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1890,7 +2000,7 @@ class _DragAndBuildActivityState extends State<DragAndBuildActivity> {
                                       color: Colors.green, size: 22),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '"$correctWord" — ශාබාස!',
+                                    '"$correctWord" — හොඳයි!',
                                     style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import 'adhd/grade3/learning_tasks/adhd_progress_page.dart';
 
 import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
 import '/pages/Dysgraphia/dysgraphia_results_hub.dart';
+import 'Dyslexia/Learning Path/dyslexia_progress_result_details_page.dart';
 
 class AllResultsPage extends StatelessWidget {
   const AllResultsPage({super.key});
@@ -135,7 +136,15 @@ class AllResultsPage extends StatelessWidget {
                         Colors.blue.shade400
                       ],
                       onTap: () {
-                        // TODO: Navigate to Dyslexia Results Fetch Page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DyslexiaResultsPage(
+                              // grade: selectedGrade,
+                              // level: selectedLevel,
+                            ),
+                          ),
+                        );
                       },
                     ),
                     _buildResultCard(

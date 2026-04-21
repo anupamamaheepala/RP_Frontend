@@ -5,6 +5,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '/config.dart';
+import '/utils/sessions.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ENTRY POINT — Hub page shown to High Risk Grade 3 students
@@ -293,6 +297,31 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   bool? _isCorrect;
   final mlkit.DigitalInkRecognizer _recognizer =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount1 = 0;
+  final DateTime _sessionStart1 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart1).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'high',
+          'activity_name': 'ghost_trace',
+          'activity_label': 'අකුරු හඹා යන්න',
+          'total_items': widget.letters.length,
+          'correct_count': _correctCount1,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   @override
   void initState() {
@@ -393,6 +422,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
       setState(() { _isCorrect = null; _isRecognizing = false; });
     }
     // Correct (or catch fallthrough) — celebrate and advance
+    _correctCount1++;
     setState(() => _showCelebration = true);
     _celebrationController.forward().then((_) {
       _celebrationController.reset();
@@ -413,6 +443,7 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -916,6 +947,30 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   List<Offset> _drawnPath    = [];    // raw finger path for display
   static const double _hitRadius = 60.0; // generous hit radius
   final GlobalKey _dotCanvasKey = GlobalKey();
+  final DateTime _sessionStart2 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart2).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'high',
+          'activity_name': 'dot_to_dot',
+          'activity_label': 'ලකුණු සම්බන්ධ කරන්න',
+          'total_items': _shapes.length,
+          'correct_count': _shapes.length,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   // Each shape: name (Sinhala), emoji, and dot positions (normalized 0–1, canvas 300×300)
   static const List<Map<String, dynamic>> _shapes = [
@@ -1032,6 +1087,7 @@ class _DotToDotActivityState extends State<DotToDotActivity> {
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1450,6 +1506,30 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
   bool _answered = false;
   int _score = 0;
   late AnimationController _shakeController;
+  final DateTime _sessionStart3 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart3).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'high',
+          'activity_name': 'which_one_is_right',
+          'activity_label': 'නිවැරදි අකුර කුමක්ද',
+          'total_items': widget.letters.length,
+          'correct_count': _score,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   // Distorted versions for each vowel (wrong options shown alongside correct)
   static const Map<String, List<String>> _options = {
@@ -1505,6 +1585,7 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
   }
 
   void _showResults() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1648,7 +1729,7 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
                       const SizedBox(height: 12),
                       // Question
                       Text(
-                        'මේ අකුරු අතරෙන් "$_currentLetter" කොයිද?',
+                        'මේ අකුරු අතරෙන් "$_currentLetter" කුමක්ද?',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -1750,8 +1831,8 @@ class _WhichOneIsRightActivityState extends State<WhichOneIsRightActivity>
                             ),
                             child: Text(
                               _selectedIndex == _correctAnswerIndex
-                                  ? '🎉 නිවැරදියි! ඉතා හොඳ!'
-                                  : '💡 හරි අකුර: $_currentLetter — ශ්‍රේණිය ${_correctAnswerIndex + 1}',
+                                  ? '🎉 නිවැරදියි! ඉතා හොඳයි!'
+                                  : '💡 හරි අකුර: $_currentLetter',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1799,6 +1880,31 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
   bool? _isCorrect4;
   final mlkit.DigitalInkRecognizer _recognizer4 =
   mlkit.DigitalInkRecognizer(languageCode: 'si');
+  int _correctCount4 = 0;
+  final DateTime _sessionStart4 = DateTime.now();
+
+  Future<void> _submitSession() async {
+    try {
+      final userId = Session.userId;
+      if (userId == null || userId.isEmpty) return;
+      final dur = DateTime.now().difference(_sessionStart4).inSeconds.toDouble();
+      await http.post(
+        Uri.parse('${Config.baseUrl}/dysgraphia-improvement/submit-session'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'grade': 3,
+          'risk_level': 'high',
+          'activity_name': 'watch_and_copy',
+          'activity_label': 'බලා ලියන්න',
+          'total_items': widget.letters.length,
+          'correct_count': _correctCount4,
+          'duration_seconds': dur,
+        }),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+  }
+
 
   late AnimationController _progressController;
 
@@ -1862,6 +1968,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
       if (_currentIndex < widget.letters.length - 1) {
         setState(() {
           _currentIndex++;
+          _correctCount4++;
           _isWatching = true;
           _strokes = [];
           _isCorrect4 = null;
@@ -1874,6 +1981,7 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
   }
 
   void _showCompletionDialog() {
+    _submitSession();
     showDialog(
       context: context,
       barrierDismissible: false,
