@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import '/theme.dart';
-import 'Dyscal_Improve/dyscal_improve_g03.dart';
 
 class DyscalculiaPage extends StatelessWidget {
-  final Widget targetDetectPage; // Added to store the specific grade page
+  final Widget targetDetectPage;
+  final Widget targetImprovePage; // NEW: Added to store the specific improve page
 
-  const DyscalculiaPage({super.key, required this.targetDetectPage}); // Updated constructor
+  const DyscalculiaPage({
+    super.key,
+    required this.targetDetectPage,
+    required this.targetImprovePage, // NEW: Updated constructor
+  });
 
   Widget _buildSquareButton({
     required BuildContext context,
@@ -39,7 +43,6 @@ class DyscalculiaPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Translucent Icon Container
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -91,7 +94,6 @@ class DyscalculiaPage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // HEADER
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -125,8 +127,6 @@ class DyscalculiaPage extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // BODY CONTENT
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(
@@ -136,8 +136,6 @@ class DyscalculiaPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 10),
-
-                          // Button 1: Detect Dyscalculia (Purple Theme)
                           _buildSquareButton(
                             context: context,
                             titleSi: 'දුෂ්කරතා හඳුනාගැනිම',
@@ -148,7 +146,6 @@ class DyscalculiaPage extends StatelessWidget {
                               Colors.blue.shade400
                             ],
                             onTap: () {
-                              // NOW ROUTES TO THE PASSED GRADE SPECIFIC PAGE
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -157,10 +154,7 @@ class DyscalculiaPage extends StatelessWidget {
                               );
                             },
                           ),
-
                           const SizedBox(height: 30),
-
-                          // Button 2: Improve Skills (Orange/Pink Theme for contrast)
                           _buildSquareButton(
                             context: context,
                             titleSi: 'හැකියාවන් දියුණු කිරීම',
@@ -171,15 +165,15 @@ class DyscalculiaPage extends StatelessWidget {
                               Colors.pink.shade300
                             ],
                             onTap: () {
+                              // NOW ROUTES TO THE PASSED GRADE SPECIFIC IMPROVE PAGE
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const DyscalImproveG03Page(),
+                                  builder: (context) => targetImprovePage,
                                 ),
                               );
                             },
                           ),
-
                           const SizedBox(height: 20),
                         ],
                       ),

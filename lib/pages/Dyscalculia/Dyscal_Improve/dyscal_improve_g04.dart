@@ -4,16 +4,16 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
 import '/profile.dart';
-import 'dyscal_special_task_g03.dart';
+import 'dyscal_special_task_g04.dart';
 
-class DyscalImproveG03Page extends StatefulWidget {
-  const DyscalImproveG03Page({super.key});
+class DyscalImproveG04Page extends StatefulWidget {
+  const DyscalImproveG04Page({super.key});
 
   @override
-  State<DyscalImproveG03Page> createState() => _DyscalImproveG03PageState();
+  State<DyscalImproveG04Page> createState() => _DyscalImproveG04PageState();
 }
 
-class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
+class _DyscalImproveG04PageState extends State<DyscalImproveG04Page> {
   bool _isLoading = true;
   String _currentLevel = "easy";
   int _tasksCompleted = 0;
@@ -51,7 +51,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
         return;
       }
 
-      final stateUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-state/$userId/3");
+      final stateUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-state/$userId/4");
       final stateRes = await http.get(stateUrl);
 
       if (stateRes.statusCode == 200) {
@@ -83,7 +83,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
 
   Future<void> _fetchQuestions() async {
     try {
-      final qUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-questions/3/$_currentLevel");
+      final qUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-questions/4/$_currentLevel");
       final qRes = await http.get(qUrl);
 
       if (qRes.statusCode == 200) {
@@ -182,7 +182,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
       final url = Uri.parse("${Config.baseUrl}/dyscalculia/submit-learning-task");
       final body = {
         "user_id": userId,
-        "grade": 3,
+        "grade": 4,
         "accuracy": _accuracy,
         "wrong_count": _wrongCount,
         "hesitation_time_avg": _totalHesitation / _questions.length,
@@ -268,7 +268,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
               Navigator.pop(context);
               Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const DyscalSpecialTaskPage())
+                  MaterialPageRoute(builder: (context) => const DyscalSpecialTaskG04Page())
               );
             },
             child: const Text("ආරම්භ කරන්න (Start Special Task)", style: TextStyle(color: Colors.white)),
@@ -341,7 +341,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () => Navigator.pop(context)),
-                title: const Text('දියුණු කිරීම - 3 ශ්‍රේණිය', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                title: const Text('දියුණු කිරීම - 4 ශ්‍රේණිය', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
                 centerTitle: true,
               ),
               Expanded(
@@ -386,7 +386,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
                         TextField(
                           controller: _answerController,
                           onChanged: _onInputChanged,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                           decoration: InputDecoration(

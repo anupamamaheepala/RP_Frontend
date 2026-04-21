@@ -3,20 +3,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
-import '/profile.dart';
-import 'dyscal_special_task_g03.dart';
+import 'dyscal_improve_result.dart';
 
-class DyscalImproveG03Page extends StatefulWidget {
-  const DyscalImproveG03Page({super.key});
+class DyscalSpecialTaskG04Page extends StatefulWidget {
+  const DyscalSpecialTaskG04Page({super.key});
 
   @override
-  State<DyscalImproveG03Page> createState() => _DyscalImproveG03PageState();
+  State<DyscalSpecialTaskG04Page> createState() => _DyscalSpecialTaskG04PageState();
 }
 
-class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
+class _DyscalSpecialTaskG04PageState extends State<DyscalSpecialTaskG04Page> {
   bool _isLoading = true;
-  String _currentLevel = "easy";
-  int _tasksCompleted = 0;
   List<dynamic> _questions = [];
 
   int _currentQuestionIndex = 0;
@@ -36,54 +33,13 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
   @override
   void initState() {
     super.initState();
-    _initLearningPath();
+    _fetchSpecialQuestions();
   }
 
-  Future<void> _initLearningPath() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchSpecialQuestions() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getString('user_id') ?? "";
-
-      if (userId.isEmpty) {
-        setState(() => _isLoading = false);
-        _showAccessDeniedDialog();
-        return;
-      }
-
-      final stateUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-state/$userId/3");
-      final stateRes = await http.get(stateUrl);
-
-      if (stateRes.statusCode == 200) {
-        final stateData = jsonDecode(stateRes.body);
-
-        if (stateData['ok'] == false) {
-          setState(() => _isLoading = false);
-          _showAccessDeniedDialog();
-          return;
-        }
-
-        _currentLevel = stateData['level'];
-        _tasksCompleted = stateData['tasks_completed'];
-
-        if (_tasksCompleted > 0 && _tasksCompleted % 5 == 0) {
-          setState(() => _isLoading = false);
-          _showSpecialTaskDialog();
-          return;
-        }
-
-        _fetchQuestions();
-      } else {
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _fetchQuestions() async {
-    try {
-      final qUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-questions/3/$_currentLevel");
+      // Fetching Grade 4 Medium Questions
+      final qUrl = Uri.parse("${Config.baseUrl}/dyscalculia/learning-questions/4/medium");
       final qRes = await http.get(qUrl);
 
       if (qRes.statusCode == 200) {
@@ -157,7 +113,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
         _answerController.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('වැරදියි, නැවත උත්සාහ කරන්න (Incorrect, try again)'), backgroundColor: Colors.red),
+        const SnackBar(content: Text('වැරදියි, නැවත උත්සාහ කරන්න (Incorrect)'), backgroundColor: Colors.red),
       );
     }
   }
@@ -169,27 +125,28 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
         _startQuestionTimer();
       });
     } else {
-      _submitTaskMetrics();
+      _submitToMLModel();
     }
   }
 
-  Future<void> _submitTaskMetrics() async {
+  Future<void> _submitToMLModel() async {
     setState(() => _isLoading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('user_id') ?? "";
 
-      final url = Uri.parse("${Config.baseUrl}/dyscalculia/submit-learning-task");
+      final url = Uri.parse("${Config.baseUrl}/dyscalculia/submit-special-task");
       final body = {
         "user_id": userId,
-        "grade": 3,
+        "grade": 4, // Grade 4 logic mapping
+        "task_number": 99,
         "accuracy": _accuracy,
-        "wrong_count": _wrongCount,
-        "hesitation_time_avg": _totalHesitation / _questions.length,
         "response_time_avg": _totalTime / _questions.length,
+        "hesitation_time_avg": _totalHesitation / _questions.length,
         "retries": _totalRetries,
         "backtracks": 0,
         "skipped_items": 0,
+        "wrong_count": _wrongCount,
         "completion_time": _totalTime,
       };
 
@@ -197,7 +154,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        _showResultDialog(data['action'], data['message'], data['next_level']);
+        _showFinalEvaluationDialog(data['risk_level']);
       } else {
         setState(() => _isLoading = false);
       }
@@ -206,79 +163,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
     }
   }
 
-  void _showResultDialog(String action, String message, String nextLevel) {
-    IconData icon = Icons.star;
-    Color color = Colors.blue;
-
-    if (action == "Promote") {
-      icon = Icons.trending_up; color = Colors.green;
-    } else if (action == "Regress") {
-      icon = Icons.trending_down; color = Colors.orange;
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Column(
-          children: [
-            Icon(icon, size: 50, color: color),
-            const SizedBox(height: 10),
-            Text(action, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ProfilePage()), (route) => false);
-            },
-            child: const Text("නතර කරන්න (Stop)", style: TextStyle(color: Colors.red)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-            onPressed: () {
-              Navigator.pop(context);
-              _initLearningPath();
-            },
-            child: const Text("ඊළඟ (Next)", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSpecialTaskDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Icon(Icons.analytics, size: 50, color: Colors.purple),
-        content: const Text(
-          "ඔබ අදියර 5ක් සම්පූර්ණ කර ඇත! ඔබේ ප්‍රගතිය පරීක්ෂා කිරීමට විශේෂ ඇගයීමක් සඳහා කාලයයි.\n(You completed 5 stages! Time for a special evaluation.)",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DyscalSpecialTaskPage())
-              );
-            },
-            child: const Text("ආරම්භ කරන්න (Start Special Task)", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAccessDeniedDialog() {
+  void _showFinalEvaluationDialog(String riskLevel) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -286,37 +171,23 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Column(
           children: [
-            Icon(Icons.lock_outline, size: 50, color: Colors.redAccent),
+            Icon(Icons.emoji_events, size: 50, color: Colors.orange),
             SizedBox(height: 10),
-            Text(
-              "ප්‍රවේශය නැත\n(Access Denied)",
-              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
+            Text("ඇගයීම සම්පූර්ණයි!", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
           ],
         ),
-        content: const Text(
-          "ඔබ මුලින්ම හඳුනාගැනීමේ පරීක්ෂණය සම්පූර්ණ කළ යුතුය.\n(You must complete the detection test first.)",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+        content: Text(
+            "ඔබගේ වත්මන් තත්වය:\n(Your current status:)\n\n$riskLevel",
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
         ),
         actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))
-              ),
-              onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfilePage()),
-                        (route) => false
-                );
-              },
-              child: const Text("පැතිකඩට යන්න (Go to Profile)", style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const DyscalImproveResultPage()), (route) => false);
+            },
+            child: const Text("ප්‍රතිඵල බලන්න (View Results)", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -340,9 +211,9 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
               AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.purple), onPressed: () => Navigator.pop(context)),
-                title: const Text('දියුණු කිරීම - 3 ශ්‍රේණිය', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                title: const Text('විශේෂ ඇගයීම - 4 ශ්‍රේණිය', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
                 centerTitle: true,
+                automaticallyImplyLeading: false,
               ),
               Expanded(
                 child: _isLoading
@@ -352,7 +223,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
                   child: Padding(
                     padding: EdgeInsets.all(20.0),
                     child: Text(
-                      "ගැටළු සොයාගත නොහැක. (No questions found in the database.)",
+                      "ගැටළු සොයාගත නොහැක. (No questions found.)",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18, color: Colors.black54),
                     ),
@@ -372,7 +243,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
                           ),
                           child: Column(
                             children: [
-                              Text("ප්‍රශ්නය ${_currentQuestionIndex + 1} / ${_questions.length} - Level: ${_currentLevel.toUpperCase()}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                              Text("ප්‍රශ්නය ${_currentQuestionIndex + 1} / ${_questions.length}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
                               const SizedBox(height: 10),
                               Text(
                                 _questions[_currentQuestionIndex]['question'],
@@ -386,7 +257,7 @@ class _DyscalImproveG03PageState extends State<DyscalImproveG03Page> {
                         TextField(
                           controller: _answerController,
                           onChanged: _onInputChanged,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                           decoration: InputDecoration(

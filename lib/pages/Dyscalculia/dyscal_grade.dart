@@ -4,7 +4,13 @@ import 'Dyscal_Tasks/dyscal_g04.dart';
 import 'Dyscal_Tasks/dyscal_g05.dart';
 import 'Dyscal_Tasks/dyscal_g06.dart';
 import 'Dyscal_Tasks/dyscal_g07.dart';
-import 'dyscalculia_page.dart'; // Added this import
+
+// NEW IMPORTS FOR IMPROVE PAGES
+import 'Dyscal_Improve/dyscal_improve_g03.dart';
+import 'Dyscal_Improve/dyscal_improve_g04.dart';
+// Note: You will need to import g05, g06, g07 here once we create them!
+
+import 'dyscalculia_page.dart';
 
 class DyscalGradePage extends StatelessWidget {
   const DyscalGradePage({super.key});
@@ -88,7 +94,6 @@ class DyscalGradePage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // HEADER
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -122,9 +127,7 @@ class DyscalGradePage extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 12),
-
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -136,10 +139,7 @@ class DyscalGradePage extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // GRADE CARDS (Now pushing to DyscalculiaPage with the target task)
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -149,31 +149,46 @@ class DyscalGradePage extends StatelessWidget {
                         grade: 3,
                         gradientColors: [Colors.purple.shade400, Colors.blue.shade400],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG03Page()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
+                          targetDetectPage: DyscalG03Page(),
+                          targetImprovePage: DyscalImproveG03Page(), // Grade 3 Dynamic
+                        ))),
                       ),
                       _buildGradeCard(
                         grade: 4,
                         gradientColors: [Colors.blue.shade400, Colors.teal.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG04Page()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
+                          targetDetectPage: DyscalG04Page(),
+                          targetImprovePage: DyscalImproveG04Page(), // Grade 4 Dynamic
+                        ))),
                       ),
                       _buildGradeCard(
                         grade: 5,
                         gradientColors: [Colors.green.shade400, Colors.teal.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG05Page()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
+                          targetDetectPage: DyscalG05Page(),
+                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 5 Improve Page - Coming Soon"))), // Placeholder
+                        ))),
                       ),
                       _buildGradeCard(
                         grade: 6,
                         gradientColors: [Colors.orange.shade400, Colors.pink.shade300],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG06Page()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
+                          targetDetectPage: DyscalG06Page(),
+                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 6 Improve Page - Coming Soon"))), // Placeholder
+                        ))),
                       ),
                       _buildGradeCard(
                         grade: 7,
                         gradientColors: [Colors.deepPurple.shade400, Colors.indigo.shade400],
                         context: context,
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(targetDetectPage: DyscalG07Page()))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
+                          targetDetectPage: DyscalG07Page(),
+                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 7 Improve Page - Coming Soon"))), // Placeholder
+                        ))),
                       ),
                     ],
                   ),

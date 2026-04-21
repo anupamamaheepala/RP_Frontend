@@ -108,6 +108,9 @@ class _DyscalImproveResultPageState extends State<DyscalImproveResultPage> {
     Color actionColor = Colors.blue;
     IconData actionIcon = Icons.remove;
 
+    // Extract grade from backend item, fallback to 3 for older DB entries
+    int grade = item['grade'] ?? 3;
+
     if (action == "Promote") {
       actionColor = Colors.green;
       actionIcon = Icons.arrow_upward;
@@ -129,7 +132,7 @@ class _DyscalImproveResultPageState extends State<DyscalImproveResultPage> {
           child: Icon(actionIcon, color: actionColor),
         ),
         title: Text(
-          "Level: ${item['level_played']} ➔ ${item['next_level']}",
+          "Grade $grade | Level: ${item['level_played']} ➔ ${item['next_level']}",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text("Accuracy: ${item['accuracy']}/5 | Retries: ${item['retries']}"),
