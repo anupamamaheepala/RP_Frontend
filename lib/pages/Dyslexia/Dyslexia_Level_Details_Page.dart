@@ -21,43 +21,101 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
     required this.sessionPayload,
   });
 
-  // Add this function inside _DyslexiaLevelDetailsPageState or your Stateless helper
   Future<void> _handleDetectDyslexia(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('user_id') ?? "";
 
-    // Show Loading
+    // 🔵 Loading
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator())
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
-      final response = await http.get(Uri.parse(
-          "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
-      ));
-      final data = jsonDecode(response.body);
+      // 1️⃣ Check if user already attempted before
+      final hasAttemptRes = await http.get(
+        Uri.parse(
+          "${Config.baseUrl}/dyslexia/has-attempt?user_id=$userId&grade=$grade&level=$level",
+        ),
+      );
 
-      Navigator.pop(context); // Close loading
+      final hasAttemptData = jsonDecode(hasAttemptRes.body);
+      final hasAttempt = hasAttemptData["has_attempt"] == true;
 
-      if (data["is_locked"] == true) {
-        // SHOW ALERT: Must finish Learning Path first
+      // 2️⃣ Check lock status
+      final lockRes = await http.get(
+        Uri.parse(
+          "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level",
+        ),
+      );
+
+      final lockData = jsonDecode(lockRes.body);
+      final isLocked = lockData["is_locked"] == true;
+
+      Navigator.pop(context); // close loader
+
+      // 🔴 If locked → show message
+      if (isLocked) {
         _showLockedDialog(context);
-      } else {
-        // PROCEED: Navigate to the task
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level,sessionType: "improvement",),
-          ),
-        );
+        return;
       }
+
+      // ✅ Decide session type
+      final sessionType = hasAttempt ? "improvement" : "detection";
+
+      // 🚀 Navigate with correct sessionType
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DyslexiaReadSessionPage(
+            grade: grade,
+            level: level,
+            sessionType: sessionType,
+          ),
+        ),
+      );
     } catch (e) {
       Navigator.pop(context);
-      // Handle error...
     }
   }
+  // Add this function inside _DyslexiaLevelDetailsPageState or your Stateless helper
+  // Future<void> _handleDetectDyslexia(BuildContext context) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final userId = prefs.getString('user_id') ?? "";
+  //
+  //   // Show Loading
+  //   showDialog(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (_) => const Center(child: CircularProgressIndicator())
+  //   );
+  //
+  //   try {
+  //     final response = await http.get(Uri.parse(
+  //         "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
+  //     ));
+  //     final data = jsonDecode(response.body);
+  //
+  //     Navigator.pop(context); // Close loading
+  //
+  //     if (data["is_locked"] == true) {
+  //       // SHOW ALERT: Must finish Learning Path first
+  //       _showLockedDialog(context);
+  //     } else {
+  //       // PROCEED: Navigate to the task
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level,sessionType: "improvement",),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     Navigator.pop(context);
+  //     // Handle error...
+  //   }
+  // }
 
   void _showLockedDialog(BuildContext context) {
     showDialog(

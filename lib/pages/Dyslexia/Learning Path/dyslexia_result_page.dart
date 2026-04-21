@@ -1,3 +1,5 @@
+//dyslexia_result_page.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -27,6 +29,9 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
   }
 
   Future<void> loadResults() async {
+    setState(() {
+      loading = true;   // 🔥 ADD THIS LINE
+    });
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString("user_id");
@@ -510,11 +515,20 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
       return const Center(child: Text("ප්‍රතිඵල නොමැත"));
     }
 
-    return ListView.builder(
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        return _resultCard(results[index]);
-      },
+    // return ListView.builder(
+    //   itemCount: results.length,
+    //   itemBuilder: (context, index) {
+    //     return _resultCard(results[index]);
+    //   },
+    // );
+    return RefreshIndicator(
+      onRefresh: loadResults, // 🔥 THIS WILL REFRESH DATA FROM API
+      child: ListView.builder(
+        itemCount: results.length,
+        itemBuilder: (context, index) {
+          return _resultCard(results[index]);
+        },
+      ),
     );
   }
 
@@ -777,7 +791,17 @@ class _DyslexiaDetectResultPageState extends State<DyslexiaDetectResultPage> {
             style: TextStyle(color: Colors.purple),
           ),
           iconTheme: const IconThemeData(color: Colors.purple),
-
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.purple),
+              onPressed: () {
+                setState(() {
+                  loading = true;
+                });
+                loadResults();   // 🔥 reload API
+              },
+            )
+          ],
           // ✅ THIS IS IMPORTANT
           bottom: const TabBar(
             labelColor: Colors.purple,
