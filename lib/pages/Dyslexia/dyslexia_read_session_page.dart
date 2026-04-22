@@ -1,3 +1,4 @@
+// Dyslexia/dyslexia_read_session_page.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -243,7 +244,8 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
       throw Exception(data["error"]?.toString() ?? "Analyze failed");
     }
 
-    return (data["metrics"] as Map<String, dynamic>);
+    //return (data["metrics"] as Map<String, dynamic>);
+    return data;
   }
 
   // ============ FINAL SESSION UPLOAD ============
@@ -409,8 +411,16 @@ class _DyslexiaReadSessionPageState extends State<DyslexiaReadSessionPage> {
       setState(() => _error = null);
 
       // analyze current audio to get transcript/wer/cer/incorrect words/etc.
-      final metrics = await _analyzeCurrentSentence();
-      _attempts[_currentIndex].metrics = metrics;
+      // final metrics = await _analyzeCurrentSentence();
+      // _attempts[_currentIndex].metrics = metrics;
+      final result = await _analyzeCurrentSentence();
+
+// store metrics
+      _attempts[_currentIndex].metrics = result["metrics"];
+
+// 🔥 STORE XAI + TRANSCRIPT
+      _attempts[_currentIndex].metrics!["transcript"] = result["transcript"];
+      _attempts[_currentIndex].metrics!["xai_feedback"] = result["xai_feedback"];
 
       // navigate to per sentence result page
       final isLast = _currentIndex == _taskCount - 1;

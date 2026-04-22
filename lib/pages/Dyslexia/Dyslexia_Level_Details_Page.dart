@@ -21,6 +21,64 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
     required this.sessionPayload,
   });
 
+  Future<void> _handleDetectDyslexia(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id') ?? "";
+
+    // 🔵 Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // 1️⃣ Check if user already attempted before
+      final hasAttemptRes = await http.get(
+        Uri.parse(
+          "${Config.baseUrl}/dyslexia/has-attempt?user_id=$userId&grade=$grade&level=$level",
+        ),
+      );
+
+      final hasAttemptData = jsonDecode(hasAttemptRes.body);
+      final hasAttempt = hasAttemptData["has_attempt"] == true;
+
+      // 2️⃣ Check lock status
+      final lockRes = await http.get(
+        Uri.parse(
+          "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level",
+        ),
+      );
+
+      final lockData = jsonDecode(lockRes.body);
+      final isLocked = lockData["is_locked"] == true;
+
+      Navigator.pop(context); // close loader
+
+      // 🔴 If locked → show message
+      if (isLocked) {
+        _showLockedDialog(context);
+        return;
+      }
+
+      // ✅ Decide session type
+      final sessionType = hasAttempt ? "improvement" : "detection";
+
+      // 🚀 Navigate with correct sessionType
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DyslexiaReadSessionPage(
+            grade: grade,
+            level: level,
+            sessionType: sessionType,
+          ),
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context);
+    }
+  }
   // Add this function inside _DyslexiaLevelDetailsPageState or your Stateless helper
   // Future<void> _handleDetectDyslexia(BuildContext context) async {
   //   final prefs = await SharedPreferences.getInstance();
@@ -49,7 +107,7 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
   //       Navigator.push(
   //         context,
   //         MaterialPageRoute(
-  //           builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level,sessionType: "detection",),
+  //           builder: (_) => DyslexiaReadSessionPage(grade: grade, level: level,sessionType: "improvement",),
   //         ),
   //       );
   //     }
@@ -58,60 +116,6 @@ class DyslexiaLevelDetailsPage extends StatelessWidget {
   //     // Handle error...
   //   }
   // }
-  Future<void> _handleDetectDyslexia(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id') ?? "";
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      // 1️⃣ Check lock status
-      final lockRes = await http.get(Uri.parse(
-          "${Config.baseUrl}/dyslexia/check-task-lock?user_id=$userId&grade=$grade&level=$level"
-      ));
-
-      final lockData = jsonDecode(lockRes.body);
-
-      if (lockData["is_locked"] == true) {
-        Navigator.pop(context);
-        _showLockedDialog(context);
-        return;
-      }
-
-      // 2️⃣ Check if already attempted before
-      final attemptRes = await http.get(Uri.parse(
-          "${Config.baseUrl}/dyslexia/has-attempt?user_id=$userId&grade=$grade&level=$level"
-      ));
-
-      final attemptData = jsonDecode(attemptRes.body);
-
-      Navigator.pop(context);
-
-      // ⭐ Decide session type here
-      final String sessionType =
-      attemptData["has_attempt"] == true ? "improvement" : "detection";
-
-      // 3️⃣ Navigate with correct type
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DyslexiaReadSessionPage(
-            grade: grade,
-            level: level,
-            sessionType: sessionType,
-          ),
-        ),
-      );
-
-    } catch (e) {
-      Navigator.pop(context);
-      print(e);
-    }
-  }
 
   void _showLockedDialog(BuildContext context) {
     showDialog(
