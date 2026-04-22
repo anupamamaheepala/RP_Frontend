@@ -17,11 +17,11 @@ class DyslexiaResultsPage extends StatelessWidget {
     required List<Color> gradientColors,
     required VoidCallback onTap,
   }) {
+    final double buttonWidth = MediaQuery.of(context).size.width * 0.5;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 220,
-        height: 270,
+        width: buttonWidth,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -38,37 +38,43 @@ class DyslexiaResultsPage extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 60, color: Colors.white),
+              child: Icon(icon, size: 40, color: Colors.white),
             ),
-            const SizedBox(height: 20),
-            Text(
-              titleSi,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    titleSi,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    titleEn,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 5),
-            Text(
-              titleEn,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.white70,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18),
           ],
         ),
       ),
@@ -89,6 +95,7 @@ class DyslexiaResultsPage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
+              // Header
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -122,20 +129,22 @@ class DyslexiaResultsPage extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Buttons fill remaining space
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSquareButton(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _buildSquareButton(
                           context: context,
                           titleSi: 'කියවීමේ දුෂ්කරතා හඳුනාගැනීමේ ප්‍රතිඵල',
                           titleEn: 'Detection Results',
                           icon: Icons.analytics_rounded,
                           gradientColors: [
                             Colors.purple.shade400,
-                            Colors.blue.shade400
+                            Colors.blue.shade400,
                           ],
                           onTap: () {
                             Navigator.push(
@@ -146,15 +155,17 @@ class DyslexiaResultsPage extends StatelessWidget {
                             );
                           },
                         ),
-                        const SizedBox(height: 30),
-                        _buildSquareButton(
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: _buildSquareButton(
                           context: context,
                           titleSi: 'කියවීමේ හැකියා දියුණු කිරීමේ ප්‍රතිඵල',
                           titleEn: 'Improvement Results',
                           icon: Icons.menu_book_rounded,
                           gradientColors: [
                             Colors.orange.shade400,
-                            Colors.pink.shade300
+                            Colors.pink.shade300,
                           ],
                           onTap: () {
                             Navigator.push(
@@ -165,16 +176,17 @@ class DyslexiaResultsPage extends StatelessWidget {
                             );
                           },
                         ),
-                        const SizedBox(height: 30),
-
-                        _buildSquareButton(
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: _buildSquareButton(
                           context: context,
                           titleSi: 'ප්‍රගති හා හැසිරීම් Dashboard',
                           titleEn: 'Progress Dashboard',
                           icon: Icons.dashboard_rounded,
                           gradientColors: [
                             Colors.green.shade400,
-                            Colors.teal.shade400
+                            Colors.teal.shade400,
                           ],
                           onTap: () {
                             Navigator.push(
@@ -185,8 +197,8 @@ class DyslexiaResultsPage extends StatelessWidget {
                             );
                           },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -197,4 +209,3 @@ class DyslexiaResultsPage extends StatelessWidget {
     );
   }
 }
-
