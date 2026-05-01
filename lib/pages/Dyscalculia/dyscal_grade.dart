@@ -5,11 +5,12 @@ import 'Dyscal_Tasks/dyscal_g05.dart';
 import 'Dyscal_Tasks/dyscal_g06.dart';
 import 'Dyscal_Tasks/dyscal_g07.dart';
 
-// IMPROVE PAGES
+// IMPROVE PAGES - ALL GRADES
 import 'Dyscal_Improve/dyscal_improve_g03.dart';
 import 'Dyscal_Improve/dyscal_improve_g04.dart';
-import 'Dyscal_Improve/dyscal_improve_g05.dart';  // NEW
-// Note: g06, g07 improve pages still need to be created
+import 'Dyscal_Improve/dyscal_improve_g05.dart';
+import 'Dyscal_Improve/dyscal_improve_g06.dart';
+import 'Dyscal_Improve/dyscal_improve_g07.dart';
 
 import 'dyscalculia_page.dart';
 
@@ -170,7 +171,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG05Page(),
-                          targetImprovePage: DyscalImproveG05Page(), // NOW PROPERLY WIRED
+                          targetImprovePage: DyscalImproveG05Page(),
                         ))),
                       ),
                       _buildGradeCard(
@@ -179,7 +180,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG06Page(),
-                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 6 Improve Page - Coming Soon"))),
+                          targetImprovePage: DyscalImproveG06Page(),
                         ))),
                       ),
                       _buildGradeCard(
@@ -188,7 +189,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG07Page(),
-                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 7 Improve Page - Coming Soon"))),
+                          targetImprovePage: DyscalImproveG07Page(),
                         ))),
                       ),
                     ],
