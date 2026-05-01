@@ -5,10 +5,11 @@ import 'Dyscal_Tasks/dyscal_g05.dart';
 import 'Dyscal_Tasks/dyscal_g06.dart';
 import 'Dyscal_Tasks/dyscal_g07.dart';
 
-// NEW IMPORTS FOR IMPROVE PAGES
+// IMPROVE PAGES
 import 'Dyscal_Improve/dyscal_improve_g03.dart';
 import 'Dyscal_Improve/dyscal_improve_g04.dart';
-// Note: You will need to import g05, g06, g07 here once we create them!
+import 'Dyscal_Improve/dyscal_improve_g05.dart';  // NEW
+// Note: g06, g07 improve pages still need to be created
 
 import 'dyscalculia_page.dart';
 
@@ -151,7 +152,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG03Page(),
-                          targetImprovePage: DyscalImproveG03Page(), // Grade 3 Dynamic
+                          targetImprovePage: DyscalImproveG03Page(),
                         ))),
                       ),
                       _buildGradeCard(
@@ -160,7 +161,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG04Page(),
-                          targetImprovePage: DyscalImproveG04Page(), // Grade 4 Dynamic
+                          targetImprovePage: DyscalImproveG04Page(),
                         ))),
                       ),
                       _buildGradeCard(
@@ -169,7 +170,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG05Page(),
-                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 5 Improve Page - Coming Soon"))), // Placeholder
+                          targetImprovePage: DyscalImproveG05Page(), // NOW PROPERLY WIRED
                         ))),
                       ),
                       _buildGradeCard(
@@ -178,7 +179,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG06Page(),
-                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 6 Improve Page - Coming Soon"))), // Placeholder
+                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 6 Improve Page - Coming Soon"))),
                         ))),
                       ),
                       _buildGradeCard(
@@ -187,7 +188,7 @@ class DyscalGradePage extends StatelessWidget {
                         context: context,
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DyscalculiaPage(
                           targetDetectPage: DyscalG07Page(),
-                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 7 Improve Page - Coming Soon"))), // Placeholder
+                          targetImprovePage: Scaffold(body: Center(child: Text("Grade 7 Improve Page - Coming Soon"))),
                         ))),
                       ),
                     ],
