@@ -19,6 +19,11 @@ class _DyscalImproveG04PageState extends State<DyscalImproveG04Page> {
   int _tasksCompleted = 0;
   List<dynamic> _questions = [];
 
+  // FIX: Track whether this session just finished a task set.
+  // Only show the special task dialog when we arrive here right after
+  // submitting the 5th task — NOT on a fresh navigation into the page.
+  bool _justCompletedTaskSet = false;
+
   int _currentQuestionIndex = 0;
   final TextEditingController _answerController = TextEditingController();
 
@@ -66,12 +71,20 @@ class _DyscalImproveG04PageState extends State<DyscalImproveG04Page> {
         _currentLevel = stateData['level'];
         _tasksCompleted = stateData['tasks_completed'];
 
-        if (_tasksCompleted > 0 && _tasksCompleted % 5 == 0) {
+        // FIX: Only show the special task dialog if this session triggered it
+        // (i.e., _justCompletedTaskSet was set to true by _submitTaskMetrics).
+        // Do NOT trigger it just because tasks_completed happens to be a
+        // multiple of 5 on a fresh page open — that caused the loop where
+        // the special task dialog kept re-appearing after returning from it.
+        if (_justCompletedTaskSet && _tasksCompleted > 0 && _tasksCompleted % 5 == 0) {
+          _justCompletedTaskSet = false;
           setState(() => _isLoading = false);
           _showSpecialTaskDialog();
           return;
         }
 
+        // Reset the flag for the next cycle
+        _justCompletedTaskSet = false;
         _fetchQuestions();
       } else {
         setState(() => _isLoading = false);
@@ -197,6 +210,15 @@ class _DyscalImproveG04PageState extends State<DyscalImproveG04Page> {
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
+        final int newTasksCompleted = data['tasks_completed'] ?? 0;
+
+        // FIX: Set the flag BEFORE calling _showResultDialog / _initLearningPath
+        // so the special task check in _initLearningPath knows this is a real
+        // completion event and not just a fresh page navigation.
+        if (newTasksCompleted > 0 && newTasksCompleted % 5 == 0) {
+          _justCompletedTaskSet = true;
+        }
+
         _showResultDialog(data['action'], data['message'], data['next_level']);
       } else {
         setState(() => _isLoading = false);
