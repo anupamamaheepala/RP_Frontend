@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '/theme.dart';
-import 'task_result.dart';
+import '../Dyscal_Results/task_result.dart';
 
 class _QuizQuestion {
   final String question;

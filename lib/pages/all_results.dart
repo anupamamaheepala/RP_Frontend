@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '/pages/Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
+import 'Dyscalculia/Dyscal_Results/dyscal_results.dart';
 import 'adhd/grade3/learning_tasks/adhd_progress_page.dart';
 
-import 'Dyscalculia/Dyscal_Tasks/dyscal_results.dart';
+import 'Dyscalculia/Dyscal_Results/dyscal_results.dart';
 import '/pages/Dysgraphia/dysgraphia_results_hub.dart';
 import 'Dyslexia/Learning Path/dyslexia_progress_result_details_page.dart';
 

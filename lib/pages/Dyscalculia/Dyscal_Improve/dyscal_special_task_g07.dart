@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
-import 'dyscal_improve_result.dart';
+import '../Dyscal_Results/dyscal_improve_result.dart';
 
 class DyscalSpecialTaskG07Page extends StatefulWidget {
   const DyscalSpecialTaskG07Page({super.key});
