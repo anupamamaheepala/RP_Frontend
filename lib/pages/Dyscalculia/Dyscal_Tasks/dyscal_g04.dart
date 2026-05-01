@@ -54,7 +54,7 @@ class _DyscalG04PageState extends State<DyscalG04Page> {
       _QuizQuestion(question: "පැය 3 යි මිනිත්තු 20 කින් මිනිත්තු කීයක් තිබේද?", answers: ["200"], units: ["minutes"]),
     ],
     [
-      _QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["4"], units: [""]),
+      _QuizQuestion(question: "ෂඩාස්‍රයක පැති කීයක් තිබේද?", answers: ["6"], units: [""]),
       _QuizQuestion(question: "චතුරස්‍රයක සමමිතික රේඛා කීයක් තිබේද?", answers: ["2"], units: [""]),
       _QuizQuestion(question: "6 cm, 8 cm සහ 10 cm දිග පැති සහිත ත්‍රිකෝණයක පරිමිතිය සොයා ගන්න.", answers: ["24"], units: ["cm"]),
       _QuizQuestion(question: "ඔබ සතුව ඇපල් ගෙඩි 12 ක් ඇති අතර ඉන් 4 ක් කොළ පාට නම්, ඇපල් ගෙඩිවලින් කොළ පාට කොටස කුමක්ද?", answers: ["1/3"], units: [""]),
