@@ -508,34 +508,34 @@ class _LearningPathsPageState extends State<LearningPathsPage>
   }
 
   Widget _gradeBadge() => Container(
-    // padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    // decoration: BoxDecoration(
-    //   color: const Color(0xFF4A90D9),
-    //   borderRadius: BorderRadius.circular(20),
-    // ),
-    // child: Text(
-    //   "Grade ${_gradeStr()}",
-    //   style: const TextStyle(
-    //       color: Colors.white,
-    //       fontSize: 11,
-    //       fontWeight: FontWeight.w700),
-    // ),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A90D9),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      "Grade ${_gradeStr()}",
+      style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700),
+    ),
   );
 
   Widget _levelBadge() => Container(
-    // padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    // decoration: BoxDecoration(
-    //   color: Colors.white,
-    //   borderRadius: BorderRadius.circular(20),
-    //   border: Border.all(color: const Color(0xFF6B7280), width: 1.5),
-    // ),
-    // child: Text(
-    //   "Level ${widget.level}",
-    //   style: const TextStyle(
-    //       color: Color(0xFF374151),
-    //       fontSize: 11,
-    //       fontWeight: FontWeight.w700),
-    // ),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: const Color(0xFF6B7280), width: 1.5),
+    ),
+    child: Text(
+      "Level ${widget.level}",
+      style: const TextStyle(
+          color: Color(0xFF374151),
+          fontSize: 11,
+          fontWeight: FontWeight.w700),
+    ),
   );
 
   String _gradeStr() => widget.grade.toString();

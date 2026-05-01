@@ -38,10 +38,21 @@ import 'Modules/Module1/G4_L1_High_A1.dart';
 import 'Modules/Module1/G4_L1_High_A2.dart';
 import 'Modules/Module1/G7_L1_High_A1.dart';
 import 'Modules/Module1/G7_L1_High_A2.dart';
+import 'Modules/Module1/G7_L1_High_A3.dart';
+import 'Modules/Module1/G7_L1_High_A4.dart';
+import 'Modules/Module1/G7_L1_High_A5.dart';
+import 'Modules/Module1/G7_L1_High_A6.dart';
 import 'Modules/Module1/G7_L2_High_A1.dart';
 import 'Modules/Module1/G7_L2_High_A2.dart';
+import 'Modules/Module1/G7_L2_High_A3.dart';
+import 'Modules/Module1/G7_L2_High_A4.dart';
+import 'Modules/Module1/G7_L2_High_A5.dart';
+import 'Modules/Module1/G7_L2_High_A6.dart';
 import 'Modules/Module1/G7_L3_High_A1.dart';
 import 'Modules/Module1/G7_L3_High_A2.dart';
+import 'Modules/Module1/G7_L3_High_A3.dart';
+import 'Modules/Module1/G7_L3_High_A4.dart';
+import 'Modules/Module1/G7_L3_High_A5.dart';
 import 'Modules/learning_progress_session_page.dart';
 
 class ModuleActivityPage extends StatefulWidget {
@@ -63,7 +74,11 @@ class ModuleActivityPage extends StatefulWidget {
 class _ModuleActivityPageState extends State<ModuleActivityPage> {
   late List<bool> _activityCompletionStatus;
   late int _activityCount;
+  int _currentActivityIndex = 0;
 
+  bool _isModuleCompleted() {
+    return _activityCompletionStatus.every((completed) => completed);
+  }
   // Gradients matching the image style
   final List<List<Color>> _activityGradients = const [
     [Color(0xFF9B7FD4), Color(0xFF7BB8E8)], // purple → blue
@@ -98,32 +113,98 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     _loadProgressFromBackend();
   }
 
+  // bool _isActivityUnlocked(int index) {
+  //   if (index == 0) return true;
+  //   return _activityCompletionStatus[index - 1];
+  // }
   bool _isActivityUnlocked(int index) {
-    if (index == 0) return true;
-    return _activityCompletionStatus[index - 1];
+    // ✅ If module completed → unlock everything
+    if (_isModuleCompleted()) {
+      return true;
+    }
+    // ✅ Otherwise:
+    // Allow completed activities + next activity
+    return index <= _currentActivityIndex;
   }
+
+  // void _markActivityAsCompleted(int activityIndex) {
+  //   setState(() {
+  //     _activityCompletionStatus[activityIndex] = true;
+  //   });
+  //   _storeActivityProgress(activityIndex);
+  // }
 
   void _markActivityAsCompleted(int activityIndex) {
     setState(() {
       _activityCompletionStatus[activityIndex] = true;
+      if (activityIndex == _currentActivityIndex) {
+        _currentActivityIndex++;
+      } // Increment the activity index after completing an activity
     });
-    _storeActivityProgress(activityIndex);
+    _storeActivityProgress(activityIndex);  // Store progress after completing the activity
   }
 
   // Store activity completion status in SharedPreferences
+  // Future<void> _storeActivityProgress(int activityIndex) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setBool('activity${activityIndex + 1}_completed', true);
+  // }
+
   Future<void> _storeActivityProgress(int activityIndex) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('activity${activityIndex + 1}_completed', true);
+
+    // Notify backend that the user completed an activity
+    final response = await http.post(
+      Uri.parse("${Config.baseUrl}/dyslexia/learning/complete-activity"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "user_id": prefs.getString('user_id'),
+        "grade": widget.sessionPayload["grade"],
+        "level": widget.sessionPayload["level"],
+        "risk_level": widget.sessionPayload["riskLevel"],
+      }),
+    );
+
+    // Optionally, update the current activity in backend if required
   }
 
   // Load activity completion status from SharedPreferences
+  // Future<void> _loadProgressFromBackend() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   for (int i = 0; i < _activityCount; i++) {
+  //     bool completed = prefs.getBool('activity${i + 1}_completed') ?? false;
+  //     setState(() {
+  //       _activityCompletionStatus[i] = completed;
+  //     });
+  //   }
+  // }
   Future<void> _loadProgressFromBackend() async {
     final prefs = await SharedPreferences.getInstance();
-    for (int i = 0; i < _activityCount; i++) {
-      bool completed = prefs.getBool('activity${i + 1}_completed') ?? false;
+    final userId = prefs.getString('user_id');
+
+    if (userId == null) {
+      return;  // Handle user not logged in
+    }
+
+    // Get the current activity from backend (or SharedPreferences)
+    final response = await http.get(
+      Uri.parse("${Config.baseUrl}/dyslexia/learning/progress?user_id=$userId&grade=${widget.sessionPayload['grade']}&level=${widget.sessionPayload['level']}&risk_level=${widget.sessionPayload['riskLevel']}"),
+    );
+
+    final data = jsonDecode(response.body);
+    if (data['ok'] == true) {
+      _currentActivityIndex = data['progress']['current_activity'] ?? 0;
+
       setState(() {
-        _activityCompletionStatus[i] = completed;
+        // Set completion status based on the current activity index
+        for (int i = 0; i < _currentActivityIndex; i++) {
+          _activityCompletionStatus[i] = true;
+        }
       });
+    } else {
+      // Handle error
+      _currentActivityIndex = 0; // If no progress, start from the first activity
     }
   }
 
@@ -324,30 +405,30 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     }
 
 //GRADE 3 LEVEL 3 LOW
-//     if (grade == 3 && level == 3 && risk == "LOW") {
-//       switch (activityIndex) {
-//         case 0:
-//           result = await Navigator.push(context, MaterialPageRoute(
-//             builder: (_) => const ExpressionReaderActivity(),
-//           ));
-//           break;
-//         case 1:
-//           result = await Navigator.push(context, MaterialPageRoute(
-//             builder: (_) => const G3_L1_LOW_A2(),
-//           ));
-//           break;
-//         case 2:
-//           result = await Navigator.push(context, MaterialPageRoute(
-//             builder: (_) => const G3_L1_LOW_A3(),
-//           ));
-//           break;
-//         case 3:
-//           result = await Navigator.push(context, MaterialPageRoute(
-//             builder: (_) => const G3_L1_LOW_A4(),
-//           ));
-//           break;
-//       }
-//     }
+    if (grade == 3 && level == 3 && risk == "LOW") {
+      switch (activityIndex) {
+        case 0:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const ExpressionReaderActivity(),
+          ));
+          break;
+        case 1:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A2(),
+          ));
+          break;
+        case 2:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A3(),
+          ));
+          break;
+        case 3:
+          result = await Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const G3_L1_LOW_A4(),
+          ));
+          break;
+      }
+    }
 
     //GRADE 3 LEVEL 3 HIGH
     else if (grade == 3 && level == 3 && risk == "HIGH") {
@@ -952,36 +1033,36 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
     }
 
     //GRADE 5 LEVEL 1 MEDIUM
-    else if (grade == 5 && level == 1 && risk == "MEDIUM") {
-      switch (activityIndex) {
-        case 0:
-          result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const WordChainActivity(),
-          ));
-          break;
-        case 1:
-          result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const SyllableTapActivity(),
-          ));
-          break;
-        case 2:
-          result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const PictureSentenceMatchActivity(),
-          ));
-          break;
-        case 3:
-          result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const SentenceRepairActivity(),
-          ));
-          break;
-        case 4:
-          result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const MyTurnToReadActivity(),
-          ));
-          break;
-
-      }
-    }
+    // else if (grade == 5 && level == 1 && risk == "MEDIUM") {
+    //   switch (activityIndex) {
+    //     case 0:
+    //       result = await Navigator.push(context, MaterialPageRoute(
+    //         builder: (_) => const WordChainActivity(),
+    //       ));
+    //       break;
+    //     case 1:
+    //       result = await Navigator.push(context, MaterialPageRoute(
+    //         builder: (_) => const SyllableTapActivity(),
+    //       ));
+    //       break;
+    //     case 2:
+    //       result = await Navigator.push(context, MaterialPageRoute(
+    //         builder: (_) => const PictureSentenceMatchActivity(),
+    //       ));
+    //       break;
+    //     case 3:
+    //       result = await Navigator.push(context, MaterialPageRoute(
+    //         builder: (_) => const SentenceRepairActivity(),
+    //       ));
+    //       break;
+    //     case 4:
+    //       result = await Navigator.push(context, MaterialPageRoute(
+    //         builder: (_) => const MyTurnToReadActivity(),
+    //       ));
+    //       break;
+    //
+    //   }
+    // }
 
     ////GRADE 5 LEVEL 2 LOW
     if (grade == 5 && level == 2 && risk == "LOW") {
@@ -1687,22 +1768,22 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           break;
         case 2:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+            builder: (_) => const G7_L1_High_A3(),
           ));
           break;
         case 3:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+            builder: (_) => const G7_L1_High_A4(),
           ));
           break;
         case 4:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_SyllableBlending_A5(),
+            builder: (_) => const G7_L1_High_A5(),
           ));
           break;
         case 5:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+            builder: (_) => const G7_L1_High_A6(),
           ));
           break;
       }
@@ -1781,22 +1862,22 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           break;
         case 2:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+            builder: (_) => const G7_L2_High_A3(),
           ));
           break;
         case 3:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+            builder: (_) => const G7_L2_High_A4(),
           ));
           break;
         case 4:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_SyllableBlending_A5(),
+            builder: (_) => const G7_L2_High_A5(),
           ));
           break;
         case 5:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_ShortPhraseReading_A6(),
+            builder: (_) => const G7_L2_High_A6(),
           ));
           break;
       }
@@ -1875,17 +1956,17 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           break;
         case 2:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+            builder: (_) => const G7_L3_High_A3(),
           ));
           break;
         case 3:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+            builder: (_) => const G7_L3_High_A4(),
           ));
           break;
         case 4:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_SyllableBlending_A5(),
+            builder: (_) => const G7_L3_High_A5(),
           ));
           break;
         case 5:
@@ -2023,31 +2104,31 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
 
 
     //TEST
-    else if (grade == 3 && level == 3 && risk == "LOW") {
+    else if (grade == 5 && level == 1 && risk == "MEDIUM") {
       switch (activityIndex) {
         case 0:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G7_L3_High_A1(),
+            builder: (_) => const G7_L3_High_A5(),
           ));
           break;
         case 1:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G7_L3_High_A2(),
+            builder: (_) => const G7_L1_High_A4(),
           ));
           break;
         case 2:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A3_MissingLetter(),
+            builder: (_) => const G7_L1_High_A5(),
           ));
           break;
         case 3:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_High_A4_RealOrNot(),
+            builder: (_) => const G7_L1_High_A6(),
           ));
           break;
         case 4:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G3_L1_SyllableBlending_A5(),
+            builder: (_) => const G7_L2_High_A5(),
           ));
           break;
 
@@ -2061,12 +2142,12 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           break;
       }
     }else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("ඉගෙනුම් මාර්ගය තවමත් ක්‍රියාත්මක කර නැත."),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text("ඉගෙනුම් මාර්ගය තවමත් ක්‍රියාත්මක කර නැත."),
+      //     backgroundColor: Colors.red,
+      //   ),
+      // );
     }
 
     if (result == true) {
@@ -2114,7 +2195,8 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
           "user_id": userId,
           "grade": widget.sessionPayload["grade"],
           "level": widget.sessionPayload["level"],
-          "module_number": widget.moduleNumber,
+          //"module_number": widget.moduleNumber,
+          "risk_level": widget.sessionPayload["riskLevel"],
         }),
       );
 
@@ -2298,14 +2380,22 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                 child: GestureDetector(
-                  onTap: _finishModule, // <--- Change this from () => Navigator.pop(context)
+                  onTap: _isModuleCompleted() ? _finishModule : null, // Disable if not completed
+                  //onTap: _finishModule, // <--- Change this from () => Navigator.pop(context)
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: _isModuleCompleted()
+                          ? const LinearGradient(
                         colors: [Color(0xFF9B7FD4), Color(0xFF7BB8E8)],
+                      )
+                          : const LinearGradient(
+                        colors: [Color(0xFFB0B0B0), Color(0xFFB0B0B0)], // Grey gradient when disabled
                       ),
+                      // gradient: const LinearGradient(
+                      //   colors: [Color(0xFF9B7FD4), Color(0xFF7BB8E8)],
+                      // ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -2315,11 +2405,11 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
                         ),
                       ],
                     ),
-                    child: const Center(
+                    child:  Center(
                       child: Text(
                         'මොඩියුලය අවසන් කරන්න',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: _isModuleCompleted() ? Colors.white : Colors.grey,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),

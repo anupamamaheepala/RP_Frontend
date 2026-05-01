@@ -1,3 +1,5 @@
+//reading_task_result_page.dart
+
 import 'package:flutter/material.dart';
 import 'dyslexia_read_session_page.dart';
 
@@ -29,10 +31,41 @@ class ReadingTaskResultPage extends StatelessWidget {
     return double.tryParse(v.toString()) ?? 0.0;
   }
 
+  TextSpan _buildHighlightedText(String text, List errors) {
+    return TextSpan(
+      style: const TextStyle(fontSize: 18, color: Colors.white),
+      children: List.generate(text.length, (i) {
+        final error = errors.firstWhere(
+              (e) => e['position'] == i,
+          orElse: () => null,
+        );
+
+        return TextSpan(
+          text: text[i],
+          style: TextStyle(
+            color: error != null ? _getColor(error['severity']) : Colors.white,
+            fontWeight: error != null ? FontWeight.bold : FontWeight.normal,
+          ),
+        );
+      }),
+    );
+  }
+
+  Color _getColor(String severity) {
+    switch (severity) {
+      case "high":
+        return Colors.red;
+      case "medium":
+        return Colors.orange;
+      default:
+        return Colors.white;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final metrics = attempt.metrics ?? {};
     final transcript = metrics["transcript"]?.toString() ?? "";
+    final xaiFeedback = metrics["xai_feedback"] ?? [];
     final wer = _toDouble(metrics["wer"]);
     final cer = _toDouble(metrics["cer"]);
     final wps = _toDouble(metrics["words_per_second"]);
@@ -76,8 +109,41 @@ class ReadingTaskResultPage extends StatelessWidget {
                     children: [
                       _gradientInfo("📘 දෙන ලද වාක්‍යය", attempt.referenceSentence),
                       const SizedBox(height: 12),
-                      _gradientInfo("🎤 ඔබ කියවූ වාක්‍යය", transcript.isEmpty ? "-" : transcript),
+                     // _gradientInfo("🎤 ඔබ කියවූ වාක්‍යය", transcript.isEmpty ? "-" : transcript),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.blue.shade400, Colors.purple.shade400],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "🎤 ඔබ කියවූ වාක්‍යය",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+
+                            transcript.isEmpty
+                                ? const Text("-", style: TextStyle(color: Colors.white))
+                                : Text(
+                              transcript,
+                              style: const TextStyle(color: Colors.white, fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 18),
+                      const SizedBox(height: 20),
+
 
                       // _metric("WER", wer.toStringAsFixed(2), Icons.close, Colors.red),
                       // const SizedBox(height: 10),

@@ -1,5 +1,8 @@
+//overall_reading_result+page.dart
+
 import 'package:flutter/material.dart';
-import 'learning_paths_page.dart';  // Import Learning Paths Page
+import 'learning_paths_page.dart';
+import 'mistake_analysis_page.dart';  // Import Learning Paths Page
 
 class OverallReadingResultPage extends StatelessWidget {
   final int grade;
@@ -179,6 +182,27 @@ class OverallReadingResultPage extends StatelessWidget {
                         label: const Text('Go to Learning Plans'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MistakeAnalysisPage(
+                                sentences: sentences, // already available
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.search),
+                        label: const Text("View My Mistakes"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
                           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                         ),
                       ),
