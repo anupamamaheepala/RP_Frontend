@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/config.dart';
 import '/profile.dart';
+import 'dyscal_improve_result_all.dart';  // NEW IMPORT
 
 class DyscalImproveResultPage extends StatefulWidget {
   const DyscalImproveResultPage({super.key});
@@ -108,7 +109,6 @@ class _DyscalImproveResultPageState extends State<DyscalImproveResultPage> {
     Color actionColor = Colors.blue;
     IconData actionIcon = Icons.remove;
 
-    // Extract grade from backend item, fallback to 3 for older DB entries
     int grade = item['grade'] ?? 3;
 
     if (action == "Promote") {
@@ -191,7 +191,37 @@ class _DyscalImproveResultPageState extends State<DyscalImproveResultPage> {
             else
               ..._historyList.asMap().entries.map((entry) => _buildHistoryCard(entry.value, entry.key)),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+
+            // --- NEW: SEE ALL RESULTS BUTTON ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const DyscalImproveResultAllPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 5,
+                  ),
+                  icon: const Icon(Icons.list_alt_rounded),
+                  label: const Text(
+                    "සියලුම ප්‍රතිඵල බලන්න (See All Results)",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
 
             // --- BACK TO PROFILE BUTTON ---
             Padding(
