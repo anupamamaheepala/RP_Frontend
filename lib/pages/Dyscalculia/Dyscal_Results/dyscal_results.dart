@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dyscal_detect_result.dart';
 import 'dyscal_improve_result.dart';
+import 'dyscal_dashboard_instructions.dart';  // NEW IMPORT
 
 class DyscalResultsPage extends StatelessWidget {
   const DyscalResultsPage({super.key});
@@ -116,6 +117,7 @@ class DyscalResultsPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 10),
                         _buildSquareButton(
                           context: context,
                           titleSi: 'ගණිත දුෂ්කරතා හඳුනාගැනීමේ ප්‍රතිඵල',
@@ -126,7 +128,7 @@ class DyscalResultsPage extends StatelessWidget {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => const DyscalDetectResultPage()));
                           },
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 25),
                         _buildSquareButton(
                           context: context,
                           titleSi: 'ගණිත හැකියා දියුණු කිරීමේ ප්‍රතිඵල',
@@ -137,6 +139,19 @@ class DyscalResultsPage extends StatelessWidget {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => const DyscalImproveResultPage()));
                           },
                         ),
+                        const SizedBox(height: 25),
+                        // NEW DASHBOARD BUTTON
+                        _buildSquareButton(
+                          context: context,
+                          titleSi: 'ප්‍රතිඵල පුවරුව සහ උපදෙස්',
+                          titleEn: 'Dashboard & Instructions',
+                          icon: Icons.dashboard_rounded,
+                          gradientColors: [Colors.purple.shade400, Colors.indigo.shade400],
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const DyscalDashboardInstructionsPage()));
+                          },
+                        ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),
