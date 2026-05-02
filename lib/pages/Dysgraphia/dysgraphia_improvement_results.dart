@@ -1,9 +1,9 @@
-// dysgraphia_improvement_results.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '/config.dart';
 import '/utils/sessions.dart';
+import 'dysgraphia_xai_service.dart';
 
 class DysgraphiaImprovementResults extends StatefulWidget {
   const DysgraphiaImprovementResults({super.key});
@@ -272,8 +272,8 @@ class _DysgraphiaImprovementResultsState
 
   // ── Main body ──────────────────────────────────────────────────────────────
   Widget _buildBody() {
-    final total = _data!['total_sessions'] as int? ?? 0;
-    if (total == 0) return _buildEmpty();
+    final totalCount = _data!['total_sessions'] as int? ?? 0;
+    if (totalCount == 0) return _buildEmpty();
 
     final summary = _data!['summary'] as Map<String, dynamic>;
     final sessions = (_data!['sessions'] as List<dynamic>)
@@ -285,24 +285,15 @@ class _DysgraphiaImprovementResultsState
       child: ListView(
         padding: const EdgeInsets.only(top: 20, bottom: 40),
         children: [
-          // 1. Overview summary card
-          _buildOverviewCard(summary, total),
+          _buildOverviewCard(summary, totalCount),
           const SizedBox(height: 16),
-
-          // 2. Parent/teacher insight banner
           _buildInsightBanner(summary),
           const SizedBox(height: 16),
-
-          // 3. Activity best scores bar chart
           _buildActivityBarChart(summary),
           const SizedBox(height: 16),
-
-          // 4. Risk tier breakdown
           _buildRiskTierCard(summary),
           const SizedBox(height: 16),
-
-          // 5. Session history
-          _buildSessionHistoryHeader(total),
+          _buildSessionHistoryHeader(totalCount),
           const SizedBox(height: 8),
           ...sessions.asMap().entries.map(
                 (e) => _buildSessionCard(e.value, e.key),
@@ -313,7 +304,7 @@ class _DysgraphiaImprovementResultsState
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 1. OVERVIEW CARD
+  // OVERVIEW & CHART WIDGETS
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildOverviewCard(Map<String, dynamic> summary, int total) {
     final avg    = (summary['average_score']  as num?)?.toDouble() ?? 0;
@@ -343,7 +334,6 @@ class _DysgraphiaImprovementResultsState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title row
             Row(
               children: [
                 Container(
@@ -374,8 +364,7 @@ class _DysgraphiaImprovementResultsState
                   ),
                 ),
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -388,62 +377,40 @@ class _DysgraphiaImprovementResultsState
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
-
-            // Three score chips
             Row(
               children: [
-                _overviewChip('Average\nScore',
-                    '${avg.toStringAsFixed(1)}%', Icons.bar_chart_rounded),
+                _overviewChip('Average\nScore', '${avg.toStringAsFixed(1)}%', Icons.bar_chart_rounded),
                 const SizedBox(width: 10),
-                _overviewChip('Best\nScore',
-                    '${best.toStringAsFixed(1)}%', Icons.star_rounded),
+                _overviewChip('Best\nScore', '${best.toStringAsFixed(1)}%', Icons.star_rounded),
                 const SizedBox(width: 10),
-                _overviewChip('Latest\nScore',
-                    '${latest.toStringAsFixed(1)}%', Icons.access_time_rounded),
+                _overviewChip('Latest\nScore', '${latest.toStringAsFixed(1)}%', Icons.access_time_rounded),
               ],
             ),
-
             const SizedBox(height: 16),
             const Divider(color: Colors.white24),
             const SizedBox(height: 12),
-
-            // Latest activity label
             Row(
               children: [
-                const Icon(Icons.play_circle_outline_rounded,
-                    color: Colors.white70, size: 16),
+                const Icon(Icons.play_circle_outline_rounded, color: Colors.white70, size: 16),
                 const SizedBox(width: 6),
-                const Text('Last Activity: ',
-                    style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text('Last Activity: ', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 Expanded(
                   child: Text(latestActivity,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
-
             const SizedBox(height: 10),
-
-            // Average progress bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Overall Average',
-                        style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('${avg.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold)),
+                    const Text('Overall Average', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('${avg.toStringAsFixed(1)}%', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -452,8 +419,7 @@ class _DysgraphiaImprovementResultsState
                   child: LinearProgressIndicator(
                     value: (avg / 100).clamp(0.0, 1.0),
                     backgroundColor: Colors.white24,
-                    valueColor:
-                    const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 10,
                   ),
                 ),
@@ -477,28 +443,19 @@ class _DysgraphiaImprovementResultsState
           children: [
             Icon(icon, color: Colors.white, size: 20),
             const SizedBox(height: 4),
-            Text(value,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
-            Text(label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70, fontSize: 10)),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 10)),
           ],
         ),
       ),
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 2. PARENT / TEACHER INSIGHT BANNER
-  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildInsightBanner(Map<String, dynamic> summary) {
-    final avg        = (summary['average_score'] as num?)?.toDouble() ?? 0;
+    final avg = (summary['average_score'] as num?)?.toDouble() ?? 0;
     final riskCounts = summary['risk_counts'] as Map<String, dynamic>? ?? {};
-    final highCount  = (riskCounts['high']   as int?) ?? 0;
-    final medCount   = (riskCounts['medium'] as int?) ?? 0;
+    final highCount = (riskCounts['high'] as int?) ?? 0;
+    final medCount = (riskCounts['medium'] as int?) ?? 0;
 
     String insightSi;
     String insightEn;
@@ -506,25 +463,25 @@ class _DysgraphiaImprovementResultsState
     IconData insightIcon;
 
     if (avg >= 75) {
-      insightSi   = 'දරුවා ඉතා හොඳ ප්‍රගතියක් දක්වයි! 🎉';
-      insightEn   = 'The child is showing excellent improvement. Keep up the great work!';
+      insightSi = 'දරුවා ඉතා හොඳ ප්‍රගතියක් දක්වයි! 🎉';
+      insightEn = 'The child is showing excellent improvement. Keep up the great work!';
       insightColor = const Color(0xFF2E7D32);
-      insightIcon  = Icons.celebration_rounded;
+      insightIcon = Icons.celebration_rounded;
     } else if (avg >= 55) {
-      insightSi   = 'දරුවා ස්ථාවර ප්‍රගතියක් දක්වයි. 👍';
-      insightEn   = 'The child is making steady progress. Continue regular practice.';
+      insightSi = 'දරුවා ස්ථාවර ප්‍රගතියක් දක්වයි. 👍';
+      insightEn = 'The child is making steady progress. Continue regular practice.';
       insightColor = const Color(0xFF1565C0);
-      insightIcon  = Icons.trending_up_rounded;
+      insightIcon = Icons.trending_up_rounded;
     } else if (highCount > medCount) {
-      insightSi   = 'ඉහළ අවදානම් ක්‍රියාකාරකම් වැඩිපුර කළ යුතුය.';
-      insightEn   = 'The child has been doing high-risk activities. Consider more guided practice sessions.';
+      insightSi = 'ඉහළ අවදානම් ක්‍රියාකාරකම් වැඩිපුර කළ යුතුය.';
+      insightEn = 'The child has been doing high-risk activities. Consider more guided practice sessions.';
       insightColor = const Color(0xFFB71C1C);
-      insightIcon  = Icons.warning_amber_rounded;
+      insightIcon = Icons.warning_amber_rounded;
     } else {
-      insightSi   = 'දරුවාට තව ප්‍රගතියක් අවශ්‍ය වේ. 💪';
-      insightEn   = 'The child needs more consistent practice to improve scores.';
+      insightSi = 'දරුවාට තව ප්‍රගතියක් අවශ්‍ය වේ. 💪';
+      insightEn = 'The child needs more consistent practice to improve scores.';
       insightColor = const Color(0xFFE65100);
-      insightIcon  = Icons.info_outline_rounded;
+      insightIcon = Icons.info_outline_rounded;
     }
 
     return Container(
@@ -540,10 +497,7 @@ class _DysgraphiaImprovementResultsState
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: insightColor.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: insightColor.withOpacity(0.15), shape: BoxShape.circle),
             child: Icon(insightIcon, color: insightColor, size: 22),
           ),
           const SizedBox(width: 12),
@@ -551,21 +505,11 @@ class _DysgraphiaImprovementResultsState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('ගුරු / දෙමාපිය අදහස',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: insightColor.withOpacity(0.7),
-                        fontWeight: FontWeight.w600)),
+                Text('ගුරු / දෙමාපිය අදහස', style: TextStyle(fontSize: 11, color: insightColor.withOpacity(0.7), fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text(insightSi,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: insightColor)),
+                Text(insightSi, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: insightColor)),
                 const SizedBox(height: 4),
-                Text(insightEn,
-                    style: TextStyle(
-                        fontSize: 12, color: insightColor.withOpacity(0.8))),
+                Text(insightEn, style: TextStyle(fontSize: 12, color: insightColor.withOpacity(0.8))),
               ],
             ),
           ),
@@ -574,12 +518,8 @@ class _DysgraphiaImprovementResultsState
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 3. ACTIVITY BEST SCORES BAR CHART
-  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildActivityBarChart(Map<String, dynamic> summary) {
-    final activityBests =
-        (summary['activity_bests'] as Map<String, dynamic>?) ?? {};
+    final activityBests = (summary['activity_bests'] as Map<String, dynamic>?) ?? {};
     if (activityBests.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -588,61 +528,35 @@ class _DysgraphiaImprovementResultsState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.bar_chart_rounded,
-                    color: Colors.deepOrange, size: 20),
+                decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.bar_chart_rounded, color: Colors.deepOrange, size: 20),
               ),
               const SizedBox(width: 10),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ක්‍රියාකාරකම් ප්‍රගතිය',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
-                  Text('Best score achieved per activity',
-                      style: TextStyle(fontSize: 11, color: Colors.black45)),
+                  Text('ක්‍රියාකාරකම් ප්‍රගතිය', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text('Best score achieved per activity', style: TextStyle(fontSize: 11, color: Colors.black45)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 20),
-
-          // One bar per activity
           ...activityBests.entries.map((e) {
             final name  = e.key;
             final score = (e.value as num).toDouble();
-            return _buildActivityBar(
-              _activityEmoji(name),
-              _activityEn(name),
-              score,
-              _activityColor(name),
-            );
+            return _buildActivityBar(_activityEmoji(name), _activityEn(name), score, _activityColor(name));
           }),
-
           const SizedBox(height: 8),
-
-          // Legend
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -658,8 +572,7 @@ class _DysgraphiaImprovementResultsState
     );
   }
 
-  Widget _buildActivityBar(
-      String emoji, String label, double score, Color actColor) {
+  Widget _buildActivityBar(String emoji, String label, double score, Color actColor) {
     final scoreColor = _scoreColor(score);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -671,49 +584,22 @@ class _DysgraphiaImprovementResultsState
               Text(emoji, style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 6),
               Expanded(
-                child: Text(label,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87),
-                    overflow: TextOverflow.ellipsis),
+                child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87), overflow: TextOverflow.ellipsis),
               ),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: scoreColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text('${score.toStringAsFixed(0)}%',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: scoreColor)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: scoreColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                child: Text('${score.toStringAsFixed(0)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scoreColor)),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Stack(
             children: [
-              Container(
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
+              Container(height: 12, decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6))),
               FractionallySizedBox(
                 widthFactor: (score / 100).clamp(0.0, 1.0),
-                child: Container(
-                  height: 12,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [scoreColor.withOpacity(0.7), scoreColor],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
+                child: Container(height: 12, decoration: BoxDecoration(gradient: LinearGradient(colors: [scoreColor.withOpacity(0.7), scoreColor]), borderRadius: BorderRadius.circular(6))),
               ),
             ],
           ),
@@ -725,26 +611,19 @@ class _DysgraphiaImprovementResultsState
   Widget _legendDot(Color color, String label) {
     return Row(
       children: [
-        Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 4),
-        Text(label,
-            style: const TextStyle(fontSize: 10, color: Colors.black45)),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.black45)),
       ],
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 4. RISK TIER CARD
-  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildRiskTierCard(Map<String, dynamic> summary) {
     final riskCounts = (summary['risk_counts'] as Map<String, dynamic>?) ?? {};
-    final high   = (riskCounts['high']   as int?) ?? 0;
+    final high = (riskCounts['high'] as int?) ?? 0;
     final medium = (riskCounts['medium'] as int?) ?? 0;
-    final low    = (riskCounts['low']    as int?) ?? 0;
-    final total  = high + medium + low;
+    final low = (riskCounts['low'] as int?) ?? 0;
+    final total = high + medium + low;
     if (total == 0) return const SizedBox.shrink();
 
     return Container(
@@ -753,13 +632,7 @@ class _DysgraphiaImprovementResultsState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,51 +641,29 @@ class _DysgraphiaImprovementResultsState
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.layers_rounded,
-                    color: Colors.purple, size: 20),
+                decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.layers_rounded, color: Colors.purple, size: 20),
               ),
               const SizedBox(width: 10),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ක්‍රියාකාරකම් මට්ටම්',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
-                  Text('Sessions completed per difficulty tier',
-                      style: TextStyle(fontSize: 11, color: Colors.black45)),
+                  Text('ක්‍රියාකාරකම් මට්ටම්', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text('Sessions completed per difficulty tier', style: TextStyle(fontSize: 11, color: Colors.black45)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 20),
-
-          _buildTierRow('High Risk',   '👻', high,   total,
-              const Color(0xFFEF5350),
-              'Most intensive — needs strong support'),
+          _buildTierRow('High Risk', '👻', high, total, const Color(0xFFEF5350), 'Most intensive — needs strong support'),
           const SizedBox(height: 12),
-          _buildTierRow('Medium Risk', '✍️', medium, total,
-              const Color(0xFFFFA726),
-              'Moderate difficulty — building consistency'),
+          _buildTierRow('Medium Risk', '✍️', medium, total, const Color(0xFFFFA726), 'Moderate difficulty — building consistency'),
           const SizedBox(height: 12),
-          _buildTierRow('Low Risk',    '⭐', low,    total,
-              const Color(0xFF42A5F5),
-              'Refinement activities — near independent'),
-
+          _buildTierRow('Low Risk', '⭐', low, total, const Color(0xFF42A5F5), 'Refinement activities — near independent'),
           const SizedBox(height: 16),
           const Divider(),
           const SizedBox(height: 10),
-
-          const Text('What this means for the child:',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54)),
+          const Text('What this means for the child:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54)),
           const SizedBox(height: 6),
           _tierExplanation(high, medium, low),
         ],
@@ -820,8 +671,7 @@ class _DysgraphiaImprovementResultsState
     );
   }
 
-  Widget _buildTierRow(String label, String emoji, int count, int total,
-      Color color, String subtitle) {
+  Widget _buildTierRow(String label, String emoji, int count, int total, Color color, String subtitle) {
     final frac = total > 0 ? count / total : 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -834,43 +684,21 @@ class _DysgraphiaImprovementResultsState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87)),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 10, color: Colors.black45)),
+                  Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.black45)),
                 ],
               ),
             ),
-            Text('$count session${count == 1 ? '' : 's'}',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: color)),
+            Text('$count session${count == 1 ? '' : 's'}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
           ],
         ),
         const SizedBox(height: 5),
         Stack(
           children: [
-            Container(
-              height: 8,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
+            Container(height: 8, decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(4))),
             FractionallySizedBox(
               widthFactor: frac.clamp(0.0, 1.0),
-              child: Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
+              child: Container(height: 8, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
             ),
           ],
         ),
@@ -881,24 +709,15 @@ class _DysgraphiaImprovementResultsState
   Widget _tierExplanation(int high, int medium, int low) {
     String text;
     if (high > medium && high > low) {
-      text = 'The child has been practising mostly high-risk activities — '
-          'the most intensive level of support. Consider reviewing whether '
-          'they are ready to progress to medium-risk activities.';
+      text = 'The child has been practising mostly high-risk activities...';
     } else if (low > medium && low > high) {
-      text = 'The child has been working on low-risk activities. '
-          'This is a great sign — they are close to independent writing fluency.';
+      text = 'The child has been working on low-risk activities...';
     } else {
-      text = 'The child has a balanced mix of activity levels. '
-          'Continue monitoring progress across all tiers.';
+      text = 'The child has a balanced mix of activity levels...';
     }
-    return Text(text,
-        style: const TextStyle(
-            fontSize: 12, color: Colors.black54, height: 1.5));
+    return Text(text, style: const TextStyle(fontSize: 12, color: Colors.black54, height: 1.5));
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // 5. SESSION HISTORY
-  // ─────────────────────────────────────────────────────────────────────────
   Widget _buildSessionHistoryHeader(int total) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
@@ -906,11 +725,7 @@ class _DysgraphiaImprovementResultsState
         children: [
           const Icon(Icons.history_rounded, size: 18, color: Colors.black45),
           const SizedBox(width: 6),
-          Text('සැසි ඉතිහාසය ($total)',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54)),
+          Text('සැසි ඉතිහාසය ($total)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black54)),
         ],
       ),
     );
@@ -949,123 +764,125 @@ class _DysgraphiaImprovementResultsState
       ),
       child: Column(
         children: [
-          // Activity header strip
+          _buildSessionHeaderContent(emoji, activityLabel, actEn, actColor, score, scoreColor),
+          const Divider(height: 1),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: actColor.withOpacity(0.08),
-              borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            color: Colors.blue.withOpacity(0.03),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 22)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(activityLabel,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: actColor)),
-                      Text(actEn,
-                          style: const TextStyle(
-                              fontSize: 11, color: Colors.black45)),
-                    ],
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, size: 16, color: Colors.blue.shade700),
+                    const SizedBox(width: 6),
+                    Text("AI FEEDBACK & ANALYSIS",
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade700,
+                            letterSpacing: 1.1
+                        )
+                    ),
+                  ],
                 ),
-                // Score badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: scoreColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: scoreColor.withOpacity(0.4), width: 1),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('${score.toStringAsFixed(0)}%',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: scoreColor)),
-                      Text(_scoreLabel(score),
-                          style: TextStyle(
-                              fontSize: 9,
-                              color: scoreColor.withOpacity(0.8))),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                DysgraphiaXAIService(
+                  riskLevel: riskLevel,
+                  kinematicData: {
+                    'duration': duration ?? 0,
+                    'accuracy': score,
+                    'strokeCount': session['stroke_count'] ?? 0,
+                    'clears': session['clear_count'] ?? 0,
+                  },
                 ),
               ],
             ),
           ),
+          const Divider(height: 1),
+          _buildSessionFooterDetails(correct, total, scoreColor, grade, riskLevel, riskColor, duration, date),
+        ],
+      ),
+    );
+  }
 
-          // Body
-          Padding(
-            padding: const EdgeInsets.all(14),
+  Widget _buildSessionHeaderContent(String emoji, String activityLabel, String actEn, Color actColor, double score, Color scoreColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 10),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Progress bar — correct vs total
-                Row(
-                  children: [
-                    const Text('Score',
-                        style:
-                        TextStyle(fontSize: 11, color: Colors.black45)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: (score / 100).clamp(0.0, 1.0),
-                          backgroundColor: Colors.grey.shade100,
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(scoreColor),
-                          minHeight: 8,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text('$correct / $total correct',
-                        style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Detail chips
-                Row(
-                  children: [
-                    _chip(Icons.school_rounded,
-                        'Grade $grade', Colors.purple),
-                    const SizedBox(width: 8),
-                    _chip(Icons.layers_rounded,
-                        _riskLabel(riskLevel), riskColor),
-                    if (duration != null) ...[
-                      const SizedBox(width: 8),
-                      _chip(Icons.timer_outlined,
-                          _formatDuration(duration), Colors.teal),
-                    ],
-                    const Spacer(),
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_today_rounded,
-                            size: 11, color: Colors.black38),
-                        const SizedBox(width: 3),
-                        Text(date,
-                            style: const TextStyle(
-                                fontSize: 11, color: Colors.black38)),
-                      ],
-                    ),
-                  ],
-                ),
+                Text(activityLabel, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: actColor)),
+                Text(actEn, style: const TextStyle(fontSize: 11, color: Colors.black45)),
               ],
             ),
+          ),
+          _buildScoreBadge(score, scoreColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScoreBadge(double score, Color scoreColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: scoreColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: scoreColor.withOpacity(0.4), width: 1),
+      ),
+      child: Column(
+        children: [
+          Text('${score.toStringAsFixed(0)}%', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: scoreColor)),
+          Text(_scoreLabel(score), style: TextStyle(fontSize: 9, color: scoreColor.withOpacity(0.8))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionFooterDetails(int correct, int total, Color scoreColor, int grade, String riskLevel, Color riskColor, double? duration, String date) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Text('Score', style: TextStyle(fontSize: 11, color: Colors.black45)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (total > 0 ? correct / total : 0.0),
+                    backgroundColor: Colors.grey.shade100,
+                    valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                    minHeight: 8,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('$correct / $total correct', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _chip(Icons.school_rounded, 'Grade $grade', Colors.purple),
+              const SizedBox(width: 8),
+              _chip(Icons.layers_rounded, _riskLabel(riskLevel), riskColor),
+              if (duration != null) ...[
+                const SizedBox(width: 8),
+                _chip(Icons.timer_outlined, _formatDuration(duration), Colors.teal),
+              ],
+              const Spacer(),
+              Text(date, style: const TextStyle(fontSize: 11, color: Colors.black38)),
+            ],
           ),
         ],
       ),
@@ -1084,11 +901,7 @@ class _DysgraphiaImprovementResultsState
         children: [
           Icon(icon, size: 12, color: color),
           const SizedBox(width: 3),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: color)),
+          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
