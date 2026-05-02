@@ -2108,17 +2108,17 @@ class _ModuleActivityPageState extends State<ModuleActivityPage> {
       switch (activityIndex) {
         case 0:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G7_L3_High_A5(),
+            builder: (_) => const G7_L3_High_A1(),
           ));
           break;
         case 1:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G7_L1_High_A4(),
+            builder: (_) => const G7_L3_High_A2(),
           ));
           break;
         case 2:
           result = await Navigator.push(context, MaterialPageRoute(
-            builder: (_) => const G7_L1_High_A5(),
+            builder: (_) => const G7_L3_High_A3(),
           ));
           break;
         case 3:

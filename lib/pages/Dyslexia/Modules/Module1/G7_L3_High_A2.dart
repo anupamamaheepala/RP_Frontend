@@ -20,20 +20,21 @@ class _G7_L3_High_A2State extends State<G7_L3_High_A2> {
     {
       "topic": "නව පාසල් ආහාරගාරය",
       "topicEnglish": "A New School Canteen",
-      "author": "School Principal's Newsletter",
+      "author": "පාසල් විදුහල්පතිගේ පුවත් පත්‍රිකාව",
       "authorBg": const Color(0xFF1A4D2E),
       "text":
       "අපගේ නව ආහාරගාරය සිසුන්ගේ නවතම සෞඛ්‍ය සම්පන්න ආහාර ලබා දීමට සූදානම් ය. සිසුන්ගේ ශාරීරික හා මානසික සෞඛ්‍යය වර්ධනය කිරීම අපගේ ප්‍රධාන අරමුණයි.",
       "english":
       "Our new canteen is ready to provide students with fresh, healthy food. Promoting students' physical and mental health is our primary goal.",
       "answer": 2,
-      "feedbackTitle": "✓ To promote / persuade",
+      "feedbackTitle":"✓ ප්‍රවර්ධනය කිරීමට / ඒත්තු ගැන්වීමට",
+      // "feedbackTitle": "✓ To promote / persuade",
       "explanation":
-      "Positive language such as 'healthy', 'primary goal' indicates the author is promoting something. The principal wants to build confidence in the new canteen.",
+      "'සෞඛ්‍ය සම්පන්න', 'ප්‍රාථමික ඉලක්කය' වැනි ධනාත්මක භාෂාවෙන් කතුවරයා යමක් ප්‍රවර්ධනය කරන බව අඟවයි. විදුහල්පතිවරයාට නව ආපන ශාලාව කෙරෙහි විශ්වාසය ගොඩනැගීමට අවශ්‍ය වේ.",
     },
     {
       "topic": "පාසල් ක්‍රීඩා තරඟ",
-      "topicEnglish": "School Sports Event",
+      "topicEnglish": "පාසල් ක්‍රීඩා ඉසව්ව",
       "author": "Student Newspaper",
       "authorBg": const Color(0xFF1A3A8F),
       "text":
@@ -41,13 +42,14 @@ class _G7_L3_High_A2State extends State<G7_L3_High_A2> {
       "english":
       "This year's sports event was full of excitement and fun for students. Celebrating victory with friends was a special experience.",
       "answer": 1,
-      "feedbackTitle": "✓ To entertain / amuse",
+     // "feedbackTitle": "✓ To entertain / amuse",
+      "feedbackTitle": "✓ විනෝද වීමට / සතුටු වීමට",
       "explanation":
-      "Words like 'fun', 'exciting', 'special experience' suggest the author is entertaining readers. The student journalist focuses on emotion and enjoyment.",
+      "'විනෝදය', 'උද්යෝගිමත්', 'විශේෂ අත්දැකීම' වැනි වචන වලින් කතුවරයා පාඨකයින්ට විනෝදාස්වාදය ලබා දෙන බව අඟවයි. ශිෂ්‍ය මාධ්‍යවේදියා හැඟීම් සහ රසවින්දනය කෙරෙහි අවධානය යොමු කරයි.",
     },
     {
       "topic": "පරිසර ආරක්ෂාව",
-      "topicEnglish": "Environmental Protection",
+      "topicEnglish": "පාරිසරික ආරක්ෂාව",
       "author": "Science Article",
       "authorBg": const Color(0xFF7B3FA0),
       "text":
@@ -55,9 +57,10 @@ class _G7_L3_High_A2State extends State<G7_L3_High_A2> {
       "english":
       "Scientists are investigating the increase of environmental pollution. These studies aim to find methods to reduce pollution.",
       "answer": 0,
-      "feedbackTitle": "✓ To question / investigate",
+      // "feedbackTitle": "✓ To question / investigate",
+      "feedbackTitle": "✓ ප්‍රශ්න කිරීමට / විමර්ශනයට",
       "explanation":
-      "Words like 'investigate', 'research', 'study' indicate questioning or investigating. The science article uses neutral, analytical language with no persuasive or emotional tone.",
+      "'පරීක්ෂා කරන්න', 'පර්යේෂණ', 'අධ්‍යයනය' වැනි වචන ප්‍රශ්න කිරීම හෝ විමර්ශනය කිරීම දක්වයි. විද්‍යා ලිපියේ කිසිදු ඒත්තු ගැන්වීමේ හෝ චිත්තවේගීය ස්වරයකින් තොරව මධ්‍යස්ථ, විශ්ලේෂණාත්මක භාෂාවක් භාවිතා කර ඇත.",
     },
   ];
 
@@ -68,7 +71,7 @@ class _G7_L3_High_A2State extends State<G7_L3_High_A2> {
       "dotColor": const Color(0xFF1A4D2E),
     },
     {
-      "label": "විනෝද වීමට / විනෝද වීමට",
+      "label": "විනෝද වීමට / සතුටු වීමට",
       "dotColor": const Color(0xFF1A4D2E),
     },
     {
@@ -413,7 +416,7 @@ class _G7_L3_High_A2State extends State<G7_L3_High_A2> {
                     const SizedBox(height: 20),
 
                     const Text(
-                      "Text A හි කතුවරයා කිරීමට උත්සාහ කරන්නේ කුමක්ද?",
+                      "ඉහත වාක්‍යයෙහි කතුවරයා කිරීමට උත්සාහ කරන්නේ කුමක්ද?",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

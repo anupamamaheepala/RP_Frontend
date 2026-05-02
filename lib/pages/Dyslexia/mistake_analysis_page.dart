@@ -252,7 +252,7 @@ class MistakeAnalysisPage extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
-                          child: Text("Sentence ${i + 1}"),
+                          child: Text("වාක්‍යය ${i + 1}"),
                         ),
                       ),
                     ),
@@ -291,7 +291,7 @@ class MistakeAnalysisPage extends StatelessWidget {
                               padding:
                               const EdgeInsets.only(left: 4, bottom: 8),
                               child: Text(
-                                "WORD ERRORS FOUND",
+                                "හමු වූ වචන දෝෂ",
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -333,7 +333,7 @@ class MistakeAnalysisPage extends StatelessWidget {
           ),
           const Expanded(
             child: Text(
-              '🧠 Mistake Analysis',
+              '🧠 වැරදි විශ්ලේෂණය',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
@@ -373,7 +373,7 @@ class MistakeAnalysisPage extends StatelessWidget {
               Text("📘", style: TextStyle(fontSize: 14)),
               SizedBox(width: 6),
               Text(
-                "Reference Sentence",
+                "දෙන ලද වාක්‍යය",
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
@@ -425,7 +425,7 @@ class MistakeAnalysisPage extends StatelessWidget {
               Text("🎤", style: TextStyle(fontSize: 14)),
               SizedBox(width: 6),
               Text(
-                "Your Sentence",
+                "කියවූ වාක්‍යය",
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
@@ -484,7 +484,7 @@ class MistakeAnalysisPage extends StatelessWidget {
           Text("🎉", style: TextStyle(fontSize: 36)),
           SizedBox(height: 10),
           Text(
-            "No mistakes found!",
+            "දෝෂ හමු නොවීය!",
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -493,7 +493,7 @@ class MistakeAnalysisPage extends StatelessWidget {
           ),
           SizedBox(height: 4),
           Text(
-            "Perfect pronunciation on this sentence.",
+            "මෙම වාක්‍යයේ පරිපූර්ණ උච්චාරණය.",
             style: TextStyle(
               fontSize: 13,
               color: Color(0xFF66BB6A),
@@ -531,7 +531,7 @@ class MistakeAnalysisPage extends StatelessWidget {
                   color: Color(0xFFE53935), size: 18),
               const SizedBox(width: 6),
               const Text(
-                "You said:",
+                "ඔයා කිව්වා:",
                 style: TextStyle(
                     fontSize: 12, color: Color(0xFF9E9E9E)),
               ),
@@ -556,7 +556,7 @@ class MistakeAnalysisPage extends StatelessWidget {
 
           // Character analysis
           const Text(
-            "CHARACTER ANALYSIS",
+            "අක්ෂර විශ්ලේෂණය",
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -568,7 +568,7 @@ class MistakeAnalysisPage extends StatelessWidget {
 
           (w["char_errors"] as List).isEmpty
               ? const Text(
-            "• No detailed character errors",
+            "• සවිස්තරාත්මක අක්ෂර දෝෂ නොමැත",
             style: TextStyle(
                 fontSize: 13, color: Color(0xFF9E9E9E)),
           )

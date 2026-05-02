@@ -71,7 +71,7 @@ class _G7_L3_High_A1State extends State<G7_L3_High_A1> {
       "category": "General",
       "categoryColor": Color(0xFF7B3FA0),
       "categoryBg": Color(0xFFF5EEFF),
-      "text": "හැමෝම දන්නවා මේක හොඳම ක්‍රීඩාව කියලා.",
+      "text": "හැමෝම දන්නවා ක්‍රිකට් හොඳම ක්‍රීඩාව කියලා.",
       "english": "Everyone knows this is the best sport.",
       "answer": 3,
       "feedbackTitle": "✗ මෙය පැහැදිලි මතයකි",

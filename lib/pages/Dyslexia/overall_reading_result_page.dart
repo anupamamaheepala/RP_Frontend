@@ -200,7 +200,7 @@ class OverallReadingResultPage extends StatelessWidget {
                           );
                         },
                         icon: const Icon(Icons.search),
-                        label: const Text("View My Mistakes"),
+                        label: const Text("වැරදි බලන්න"),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),

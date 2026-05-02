@@ -17,7 +17,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
   static const List<Map<String, dynamic>> ratingOptions = [
     {
       "value": "strong",
-      "label": "Strong",
+      "label": "ශක්තිමත්",
       "emoji": "💪",
       "color": Color(0xFF1A6B4A),
       "bg": Color(0xFFEAF7EE),
@@ -27,7 +27,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
     },
     {
       "value": "ok",
-      "label": "OK",
+      "label": "සාමාන්‍යය",
       "emoji": "🔶",
       "color": Color(0xFFE67E00),
       "bg": Color(0xFFFFF8E6),
@@ -37,7 +37,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
     },
     {
       "value": "weak",
-      "label": "Weak",
+      "label": "දුර්වල",
       "emoji": "⚠️",
       "color": Color(0xFFB71C1C),
       "bg": Color(0xFFFFF0F0),
@@ -56,27 +56,27 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
       "evidence": [
         {
           "text":
-          "A 2019 study of 4,000 students across 12 countries found that students who read for 30+ minutes daily scored 23% higher on reading comprehension tests.",
+          "රටවල් 12 ක සිසුන් 4,000 ක් යොදාගෙන 2019 දී කරන ලද අධ්‍යයනයකින් හෙළි වූයේ දිනකට මිනිත්තු 30+ ක් කියවන සිසුන් කියවීමේ අවබෝධතා පරීක්ෂණවලදී 23% ක් ඉහළ ලකුණු ලබා ඇති බවයි.",
           "correct": "strong",
-          "whyTitle": "Why Strong Evidence:",
+          "whyTitle": "ප්‍රබල සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "Specific year + large sample (4,000) + multiple countries + exact percentage = high credibility. This is empirical data from a large-scale study.",
+          "නිශ්චිත වර්ෂය + විශාල නියැදිය (4,000) + රටවල් කිහිපයක් + නිශ්චිත ප්‍රතිශතය = ඉහළ විශ්වසනීයත්වයක්. මෙය මහා පරිමාණ අධ්‍යයනයකින් ලබාගත් ප්‍රායෝගික දත්ත වේ.",
         },
         {
           "text":
-          "My teacher says students who read more always do better in school.",
+          "මගේ ගුරුතුමිය කියනවා වැඩිපුර කියවන ළමයි හැම විටම පාසලේදී හොඳින් ඉගෙන ගන්නවා කියලා.",
           "correct": "weak",
-          "whyTitle": "Why Weak Evidence:",
+          "whyTitle": "දුර්වල සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "One person's opinion with no data. 'Always' is an absolute word — extreme claims need strong evidence. Personal observation from one teacher is anecdotal, not research.",
+          "දත්ත නොමැතිව එක් පුද්ගලයෙකුගේ මතය. 'සැමවිටම' යනු නිරපේක්ෂ වචනයකි - අන්තවාදී ප්‍රකාශ සඳහා ශක්තිමත් සාක්ෂි අවශ්‍ය වේ. එක් ගුරුවරයෙකුගේ පෞද්ගලික නිරීක්ෂණයක් යනු පර්යේෂණයක් නොව, කතන්දරයකි.",
         },
         {
           "text":
-          "The National Education Ministry reported that schools with reading programmes showed improved Grade 5 scholarship exam pass rates over three years.",
+          "ජාතික අධ්‍යාපන අමාත්‍යාංශය වාර්තා කළේ කියවීමේ වැඩසටහන් සහිත පාසල් වසර තුනක් තුළ 5 ශ්‍රේණියේ ශිෂ්‍යත්ව විභාග සමත් වීමේ අනුපාතයේ දියුණුවක් පෙන්නුම් කළ බවයි.",
           "correct": "ok",
-          "whyTitle": "Why OK Evidence:",
+          "whyTitle": "සාමාන්‍ය සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "Official source (Ministry) + time period (3 years) + specific exam — good! But 'improved' is vague (how much?) and it's one country's data. Stronger than anecdote, not as strong as the multi-country study.",
+          "නිල මූලාශ්‍රය (අමාත්‍යාංශය) + කාල සීමාව (අවුරුදු 3) + නිශ්චිත විභාගය — හොඳයි! නමුත් 'වැඩිදියුණු කර ඇත' යන්න අපැහැදිලියි (කොපමණද?) එය එක් රටක දත්ත. උපමාවකට වඩා ශක්තිමත්, බහු-රට අධ්‍යයනය තරම් ශක්තිමත් නොවේ.",
         },
       ],
     },
@@ -88,27 +88,27 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
       "evidence": [
         {
           "text":
-          "A Harvard study (2022) tracking 10,000 teenagers over 5 years found a 34% increase in anxiety among heavy social media users.",
+          "වසර 5ක් පුරා යෞවනයන් 10,000ක් නිරීක්ෂණය කරන ලද හාවඩ් අධ්‍යයනයකින් (2022) සමාජ මාධ්‍ය භාවිතා කරන්නන් අතර කාංසාව 34% කින් වැඩි වී ඇති බව සොයා ගන්නා ලදී.",
           "correct": "strong",
-          "whyTitle": "Why Strong Evidence:",
+          "whyTitle": "ප්‍රබල සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "Prestigious institution + large sample + long duration + specific percentage = highly credible research data.",
+          "කීර්තිමත් ආයතනය + විශාල නියැදිය + දිගු කාලසීමාව + නිශ්චිත ප්‍රතිශතය = ඉතා විශ්වාසදායක පර්යේෂණ දත්ත.",
         },
         {
           "text":
-          "Everyone knows that too much screen time makes you feel bad.",
+          "ඕනෑවට වඩා තිර කාලය ගත කිරීම ඔබට නරක හැඟීමක් ඇති කරන බව කවුරුත් දනිති.",
           "correct": "weak",
-          "whyTitle": "Why Weak Evidence:",
+          "whyTitle": "දුර්වල සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "'Everyone knows' is a logical fallacy. No data, no source. This is common belief presented as fact.",
+          "'හැමෝම දන්නවා' යනු තාර්කික වැරැද්දකි. දත්ත නැත, මූලාශ්‍රයක් නැත. මෙය සත්‍යයක් ලෙස ඉදිරිපත් කරන ලද පොදු විශ්වාසයකි.",
         },
         {
           "text":
-          "The WHO noted in a 2021 report that excessive social media use was associated with sleep disruption in adolescents.",
+          "2021 දී නිකුත් කළ වාර්තාවක ලෝක සෞඛ්‍ය සංවිධානය සඳහන් කළේ, අධික සමාජ මාධ්‍ය භාවිතය නව යොවුන් වියේ පසුවන්නන්ගේ නින්දට බාධා ඇති කිරීමට හේතු වන බවයි.",
           "correct": "ok",
-          "whyTitle": "Why OK Evidence:",
+          "whyTitle": "සාමාන්‍ය සාක්ෂි ඇති වීමට හේතුව:",
           "why":
-          "Credible source (WHO) + year. However, 'associated with' shows correlation, not causation. Scope limited to sleep, not all mental health.",
+          "විශ්වාසදායක මූලාශ්‍රය (WHO) + වර්ෂය. කෙසේ වෙතත්, 'සම්බන්ධ' යන්නෙන් පෙන්නුම් කරන්නේ සහසම්බන්ධතාවය මිස හේතුඵල සම්බන්ධතාවය නොවේ. නින්දට පමණක් සීමා වූ විෂය පථය, සියලු මානසික සෞඛ්‍ය නොවේ.",
         },
       ],
     },
@@ -208,7 +208,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: const Text(
-                        "ACTIVITY 3 OF 6 · CRITICAL EVALUATION",
+                        "පැවරුම 3 · විවේචනාත්මක ඇගයීම",
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -221,7 +221,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                     const SizedBox(height: 18),
 
                     const Text(
-                      "Evidence Weigher",
+                      "සාක්ෂි බර කරන්නා",
                       style: TextStyle(
                           fontSize: 26, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
@@ -230,7 +230,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                     const SizedBox(height: 14),
 
                     Text(
-                      "Not every piece of evidence is equal. You'll read a claim, then judge three pieces of evidence — rating each as Strong, OK or Weak. Then discover exactly why each rating is correct.",
+                      "සෑම සාක්ෂි කොටසක්ම සමාන නොවේ. ඔබ හිමිකම් පෑමක් කියවා, පසුව සාක්ෂි තුනක් විනිශ්චය කරනු ඇත - එක් එක් සාක්ෂි ශක්තිමත්, හරි හෝ දුර්වල ලෙස ශ්‍රේණිගත කරන්න. ඉන්පසු සෑම ශ්‍රේණිගත කිරීමක්ම නිවැරදි වන්නේ මන්දැයි හරියටම සොයා ගන්න.",
                       style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade700,
@@ -254,7 +254,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "Facts can be checked with data. Opinions contain judgments. Words like 'always', 'best', 'should' are opinion signals. Numbers and named sources are fact signals.",
+                              "දත්ත සමඟ කරුණු පරීක්ෂා කළ හැකිය. මතවල විනිශ්චයන් අඩංගු වේ. 'සැමවිටම', 'හොඳම', 'කළ යුතු' වැනි වචන මත සංඥා වේ. සංඛ්‍යා සහ නම් කරන ලද මූලාශ්‍ර කරුණු සංඥා වේ.",
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
@@ -286,7 +286,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                     elevation: 0,
                   ),
                   child: const Text(
-                    "🚀  Let's Start",
+                    "🚀  අපි ආරම්භ කරමු",
                     style: TextStyle(
                         fontSize: 17, fontWeight: FontWeight.bold),
                   ),
@@ -341,7 +341,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                     const SizedBox(height: 18),
 
                     const Text(
-                      "Rate each piece of evidence:",
+                      "එක් එක් සාක්ෂි කොටස ශ්‍රේණිගත කරන්න:",
                       style: TextStyle(
                           fontSize: 16, fontWeight: FontWeight.bold),
                     ),
@@ -383,9 +383,9 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
                   child: Text(
                     showResult
                         ? (setIndex < sets.length - 1
-                        ? "Next Claim →"
-                        : "Finish Activity ✓")
-                        : "Rate all evidence to continue",
+                        ? "ඊළඟ හිමිකම් පෑම →"
+                        : "ක්‍රියාකාරකම් අවසන් කරන්න ✓")
+                        : "ඉදිරියට යාමට සියලු සාක්ෂි ශ්‍රේණිගත කරන්න",
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -626,14 +626,14 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
               ),
               Row(
                 children: [
-                  _buildTag("● High Risk",
+                  _buildTag("● ඉහළ අවදානම",
                       const Color(0xFFFFE4E4), const Color(0xFFD32F2F)),
                   const SizedBox(width: 8),
-                  _buildTag("Grade 7 · Level 3",
+                  _buildTag("ශ්‍රේණිය 7 · මට්ටම 3",
                       const Color(0xFF1A4D2E), Colors.white),
                   const SizedBox(width: 8),
-                  _buildTag("Module 1",
-                      Colors.grey.shade200, Colors.black87),
+                  // _buildTag("පැවරුම 3",
+                  //     Colors.grey.shade200, Colors.black87),
                 ],
               ),
             ],
@@ -644,7 +644,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
               Text("🎯", style: TextStyle(fontSize: 18)),
               SizedBox(width: 6),
               Text(
-                "Think Like a Reader",
+                "කියවන්නෙකු මෙන් සිතන්න",
                 style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
@@ -729,7 +729,7 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
               Text("⚖️", style: TextStyle(fontSize: 13)),
               SizedBox(width: 4),
               Text(
-                "Evidence Weigher",
+                "සාක්ෂි බර කරන්නා",
                 style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF1A4D2E),
@@ -737,8 +737,8 @@ class _G7_L3_High_A3State extends State<G7_L3_High_A3> {
               ),
             ],
           ),
-          const Text("Activity 3 of 6",
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
+          // const Text("Activity 3 of 6",
+          //     style: TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );

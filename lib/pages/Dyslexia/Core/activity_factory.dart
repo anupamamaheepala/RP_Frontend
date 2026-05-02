@@ -798,11 +798,11 @@ class ActivityFactory {
     //------------------TEST
 
       case "5_1_MEDIUM_A1":
-        return const G7_L3_High_A5();
+        return const G7_L3_High_A1();
       case "5_1_MEDIUM_A2":
-        return const G7_L1_High_A4();
+        return const G7_L3_High_A2();
       case "5_1_MEDIUM_A3":
-        return const G7_L1_High_A5();
+        return const G7_L3_High_A3();
       case "5_1_MEDIUM_A4":
         return const G7_L1_High_A6();
       case "5_1_MEDIUM_A5":
