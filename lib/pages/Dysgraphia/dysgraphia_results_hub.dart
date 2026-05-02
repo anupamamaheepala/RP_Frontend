@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rp_frontend/pages/Dysgraphia/Dysgraphia_improve/dashboard/screens/dysgraphia_dashboard_main.dart';
 import 'dysgraphia_detection_results.dart';
-import 'dysgraphia_improvement_results.dart';
-
 class DysgraphiaResultsHub extends StatelessWidget {
   const DysgraphiaResultsHub({super.key});
 
@@ -70,7 +69,7 @@ class DysgraphiaResultsHub extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const DysgraphiaDetectionResults(),
+                            builder: (_) => const DysgraphiaDashboardMain(),
                           ),
                         ),
                       ),
@@ -87,7 +86,7 @@ class DysgraphiaResultsHub extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const DysgraphiaImprovementResults(),
+                            builder: (_) => const DysgraphiaDashboardMain(),
                           ),
                         ),
                       ),

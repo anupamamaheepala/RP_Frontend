@@ -334,6 +334,20 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
       parent: _celebrationController,
       curve: Curves.elasticOut,
     );
+    _ensureModelDownloaded(_recognizer);
+  }
+
+  /// Downloads the Sinhala ink model if it is not already on device.
+  /// Without this, recognize() throws and the catch block silently passes
+  /// every letter as correct.
+  Future<void> _ensureModelDownloaded(mlkit.DigitalInkRecognizer recognizer) async {
+    try {
+      final modelManager = mlkit.DigitalInkRecognizerModelManager();
+      final isDownloaded = await modelManager.isModelDownloaded('si');
+      if (!isDownloaded) {
+        await modelManager.downloadModel('si');
+      }
+    } catch (_) {}
   }
 
   @override
@@ -405,23 +419,31 @@ class _GhostTraceActivityState extends State<GhostTraceActivity>
   Future<void> _submitTrace() async {
     if (_strokes.isEmpty) return;
     setState(() => _isRecognizing = true);
+
+    bool isCorrect = false;
     try {
       final ink = mlkit.Ink();
+      int baseTime = DateTime.now().millisecondsSinceEpoch;
       for (final stroke in _strokes) {
+        int t = baseTime;
         final points = stroke.map((o) => mlkit.StrokePoint(
-          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+          x: o.dx, y: o.dy, t: t++,
         )).toList();
+        baseTime += stroke.length + 50; // gap between strokes
         if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
       }
       final candidates = await _recognizer.recognize(ink);
       final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
-      final correct = recognized == _currentLetter;
-      setState(() { _isCorrect = correct; _isRecognizing = false; });
-      if (!correct) return; // stay on same letter, show error
+      isCorrect = recognized == _currentLetter;
     } catch (_) {
-      setState(() { _isCorrect = null; _isRecognizing = false; });
+      // Recognition failed (e.g. model not downloaded) — treat as wrong
+      isCorrect = false;
     }
-    // Correct (or catch fallthrough) — celebrate and advance
+
+    setState(() { _isCorrect = isCorrect; _isRecognizing = false; });
+    if (!isCorrect) return; // stay on same letter, show error
+
+    // Correct — celebrate and advance
     _correctCount1++;
     setState(() => _showCelebration = true);
     _celebrationController.forward().then((_) {
@@ -1915,6 +1937,20 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     );
+    _ensureModelDownloaded();
+  }
+
+  /// Downloads the Sinhala ink model if it is not already on device.
+  /// Without this, recognize() throws and the catch block silently passes
+  /// every letter as correct.
+  Future<void> _ensureModelDownloaded() async {
+    try {
+      final modelManager = mlkit.DigitalInkRecognizerModelManager();
+      final isDownloaded = await modelManager.isModelDownloaded('si');
+      if (!isDownloaded) {
+        await modelManager.downloadModel('si');
+      }
+    } catch (_) {}
   }
 
   @override
@@ -1946,29 +1982,38 @@ class _WatchAndCopyActivityState extends State<WatchAndCopyActivity>
   Future<void> _submitDrawing() async {
     if (_strokes.isEmpty) return;
     setState(() => _isRecognizing4 = true);
+
+    bool isCorrect = false;
     try {
       final ink = mlkit.Ink();
+      int baseTime = DateTime.now().millisecondsSinceEpoch;
       for (final stroke in _strokes) {
+        int t = baseTime;
         final points = stroke.map((o) => mlkit.StrokePoint(
-          x: o.dx, y: o.dy, t: DateTime.now().millisecondsSinceEpoch,
+          x: o.dx, y: o.dy, t: t++,
         )).toList();
+        baseTime += stroke.length + 50; // gap between strokes
         if (points.isNotEmpty) ink.strokes.add(mlkit.Stroke()..points.addAll(points));
       }
       final candidates = await _recognizer4.recognize(ink);
       final recognized = candidates.isNotEmpty ? candidates.first.text.trim() : '';
-      final correct = recognized == _currentLetter;
-      setState(() { _isCorrect4 = correct; _isRecognizing4 = false; });
-      if (!correct) return;
+      isCorrect = recognized == _currentLetter;
     } catch (_) {
-      setState(() { _isCorrect4 = null; _isRecognizing4 = false; });
+      // Recognition failed (e.g. model not downloaded) — treat as wrong
+      isCorrect = false;
     }
+
+    setState(() { _isCorrect4 = isCorrect; _isRecognizing4 = false; });
+    if (!isCorrect) return; // stay on same letter, show error
+
+    // Correct — increment count immediately, then celebrate
+    _correctCount4++;
     setState(() => _showCelebration = true);
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
       if (_currentIndex < widget.letters.length - 1) {
         setState(() {
           _currentIndex++;
-          _correctCount4++;
           _isWatching = true;
           _strokes = [];
           _isCorrect4 = null;
